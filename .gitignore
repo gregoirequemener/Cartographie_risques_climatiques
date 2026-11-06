@@ -1,0 +1,9 @@
+# Fichiers système et caches
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Écriture temporaire de build.py (remplacée par docs/index.html en fin de construction)
+*.html.tmp

@@ -1,12 +1,19 @@
 """Assemble la carte « Risques climatiques des réseaux RATP Dev » en une seule page HTML autonome.
 
-Toutes les données (réseaux, budgets estimés, climat, inondation, relief, eau, plans de réseau) sont injectées
-dans le gabarit src/template.html. Seules les bibliothèques JavaScript (Leaflet, Leaflet.markercluster,
-topojson-client) sont chargées depuis le CDN jsDelivr.
+Toutes les données (réseaux, budgets et fréquentation estimés, climat, inondation, relief, fond de carte précis,
+plans de réseau) et les bibliothèques JavaScript (Leaflet, Leaflet.markercluster, topojson-client, copiées dans
+src/vendor/) sont intégrées au gabarit src/template.html : la page fonctionne hors ligne. Seules les polices
+Google Fonts viennent d'Internet (polices du système à défaut).
+
+Version affichée en haut de la page : « Alpha V0.mois.jour.n ».
+  - mois.jour : date de la dernière mise à jour du code de l'application (src/, data/, scripts/, build.py) ;
+  - n : numéro de la mise à jour ce jour-là (1, 2, 3…). Il augmente d'un cran chaque fois que la page officielle
+    (docs/index.html) est reconstruite après une modification du code ; reconstruire sans modification ne change
+    rien. Le dernier état est noté dans version.json.
 
 Usage :
-    python build.py                       # écrit docs/index.html
-    python build.py --out carte.html      # autre destination
+    python build.py                       # écrit docs/index.html et enregistre la version
+    python build.py --out carte.html      # autre destination (essai) : la version n'est pas enregistrée
 
 Aucune dépendance hors bibliothèque standard (Python 3.9+).
 """
@@ -14,16 +21,25 @@ from __future__ import annotations
 
 import argparse
 import base64
+import hashlib
 import json
+import subprocess
+from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 SRC, DATA = ROOT / "src", ROOT / "data"
+OUT = ROOT / "docs/index.html"
+VERSION_FILE = ROOT / "version.json"
+CODE = ("src", "data", "scripts", "build.py")  # ce qui compose l'application ; docs/ en est le résultat
+IGNORED = {"__pycache__", ".DS_Store"}
+MOIS = ("janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre")
 
+# Bibliothèques intégrées à la page : copies dans src/vendor/ des fichiers publiés sur npm (jsDelivr)
 LIBS = [
-    "leaflet@1.9.4/dist/leaflet.js",
-    "leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js",
-    "topojson-client@3.1.0/dist/topojson-client.min.js",
+    ("leaflet.js", "Leaflet 1.9.4 · BSD-2-Clause · https://leafletjs.com"),
+    ("leaflet.markercluster.js", "Leaflet.markercluster 1.5.3 · MIT · https://github.com/Leaflet/Leaflet.markercluster"),
+    ("topojson-client.min.js", "topojson-client 3.1.0 · ISC · https://github.com/topojson/topojson-client"),
 ]
 
 
@@ -36,7 +52,89 @@ def compact(path: Path) -> str:
     return json.dumps(json.loads(read(path)), ensure_ascii=False, separators=(",", ":"))
 
 
-def build() -> str:
+def code_files() -> list[Path]:
+    files: list[Path] = []
+    for name in CODE:
+        path = ROOT / name
+        files += sorted(f for f in path.rglob("*") if f.is_file()) if path.is_dir() else [path]
+    return [f for f in files if not IGNORED & set(f.relative_to(ROOT).parts)]
+
+
+def fingerprint() -> str:
+    """Empreinte du contenu du code : change dès qu'un fichier de l'application est modifié, ajouté ou retiré."""
+    h = hashlib.sha256()
+    for f in code_files():
+        h.update(f.relative_to(ROOT).as_posix().encode() + b"\0" + f.read_bytes() + b"\0")
+    return h.hexdigest()[:16]
+
+
+def _mtime(path: Path) -> float:
+    """Date de modification la plus récente d'un fichier ou d'un dossier (0 s'il n'existe plus)."""
+    if path.is_dir():
+        return max((f.stat().st_mtime for f in path.rglob("*") if f.is_file() and not IGNORED & set(f.parts)), default=0.0)
+    return path.stat().st_mtime if path.exists() else 0.0
+
+
+def last_update() -> date:
+    """Date de la dernière mise à jour du code de l'application.
+
+    - fichiers du code modifiés depuis le dernier commit : date de modification la plus récente parmi eux ;
+    - sinon : date du dernier commit qui touche le code ;
+    - hors dépôt git (archive téléchargée) : date de modification la plus récente des fichiers du code.
+    """
+    def git(*args: str) -> str:
+        return subprocess.run(["git", "-c", "core.quotepath=false", *args], cwd=ROOT,
+                              capture_output=True, text=True, check=True).stdout
+    try:
+        status = git("status", "--porcelain", "--untracked-files=all", "--", *CODE)
+        changed = [line[3:].split(" -> ")[-1].strip('"') for line in status.splitlines()]
+        changed = [p for p in changed if not IGNORED & set(Path(p).parts)]
+        if changed:
+            stamps = [_mtime(ROOT / path) for path in changed]
+            return date.today() if 0.0 in stamps else date.fromtimestamp(max(stamps))  # suppression : aujourd'hui
+        last = git("log", "-1", "--format=%cd", "--date=format:%Y-%m-%d", "--", *CODE).strip()
+        if last:
+            return date.fromisoformat(last)
+    except (OSError, subprocess.CalledProcessError):
+        pass
+    return date.fromtimestamp(max(_mtime(ROOT / path) for path in CODE))
+
+
+def version(record: bool) -> tuple[str, str]:
+    """Libellé « Alpha V0.mois.jour.n » et texte de l'infobulle.
+
+    n repart à 1 chaque nouveau jour de mise à jour et augmente d'un cran à chaque modification du code.
+    Avec record=True (page officielle), le nouvel état est enregistré dans version.json.
+    """
+    try:
+        state = json.loads(read(VERSION_FILE))
+    except (OSError, ValueError):
+        state = {}
+    fp = fingerprint()
+    if state.get("empreinte") == fp and state.get("date") and state.get("n"):
+        d, n = date.fromisoformat(state["date"]), int(state["n"])  # code inchangé : même version
+    else:
+        d = last_update()
+        prev = date.fromisoformat(state["date"]) if state.get("date") else None
+        if prev and prev > d:
+            d = prev  # une version ne recule jamais
+        n = int(state.get("n", 0)) + 1 if prev == d else 1
+    label = f"Alpha V0.{d.month}.{d.day}.{n}"
+    if record and state.get("empreinte") != fp:
+        VERSION_FILE.write_text(json.dumps({"version": label, "date": d.isoformat(), "n": n, "empreinte": fp},
+                                           ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    jour = "1er" if d.day == 1 else str(d.day)
+    return label, f"Version alpha · code mis à jour le {jour} {MOIS[d.month - 1]} {d.year} · mise à jour n° {n} du jour"
+
+
+def inline_script(path: Path, label: str) -> str:
+    js = read(path)
+    if "</script" in js.lower():
+        raise SystemExit(f"{path.name} contient « </script », qui fermerait la balise : intégration impossible")
+    return f"<script>/*! {label} */\n{js}\n</script>"
+
+
+def build(label: str, title: str) -> str:
     tpl = read(SRC / "template.html")
     css = read(SRC / "vendor/leaflet.css") + "\n" + read(SRC / "vendor/MarkerCluster.css")
     geo = "{" + ",".join([
@@ -46,36 +144,44 @@ def build() -> str:
         '"frDep":' + compact(DATA / "geo/fr-dep.topo.json"),
     ]) + "}"
     temp = {k: v for k, v in json.loads(read(DATA / "temp_grids.json")).items() if k != "sums"}
-    lines_gz = base64.b64encode((DATA / "lines.json.gz").read_bytes()).decode()
-    scripts = "\n".join(f'<script src="https://cdn.jsdelivr.net/npm/{lib}"></script>' for lib in LIBS)
+    gz64 = lambda name: base64.b64encode((DATA / name).read_bytes()).decode()  # noqa: E731
+    scripts = "\n".join(inline_script(SRC / "vendor" / name, lab) for name, lab in LIBS)
 
     replacements = [
+        ("<!--__VERSION__-->", label),
+        ("__VERSION_TITLE__", title),
         ("/*__LEAFLET_CSS__*/", css),
         ("/*__DATA__*/", compact(DATA / "networks.json")),
         ("/*__FINANCE__*/", json.dumps(json.loads(read(DATA / "finance.json"))["networks"], ensure_ascii=False, separators=(",", ":"))),
+        ("/*__RIDERSHIP__*/", json.dumps(json.loads(read(DATA / "ridership.json"))["networks"], ensure_ascii=False, separators=(",", ":"))),
         ("/*__CLIMATE__*/", compact(DATA / "climate_raw.json")),
         ("/*__GEO__*/", geo),
-        ("/*__FLOOD__*/", read(DATA / "flood.json")),
-        ("/*__WATER__*/", read(DATA / "water.json")),
-        ("/*__LINES__*/", lines_gz),
+        ("/*__FLOOD__*/", compact(DATA / "flood.json")),
+        ("/*__BASEMAP__*/", gz64("basemap.json.gz")),
+        ("/*__LINES__*/", gz64("lines.json.gz")),
         ("/*__TEMP__*/", json.dumps(temp, separators=(",", ":"))),
-        ("<!--__SCRIPTS__-->", scripts),
+        ("<!--__SCRIPTS__-->", scripts),  # en dernier : le code des bibliothèques n'est pas parcouru par les remplacements
     ]
     page = tpl
     for marker, value in replacements:
-        if marker not in page:
-            raise SystemExit(f"Marqueur absent du gabarit : {marker}")
+        if page.count(marker) != 1:
+            raise SystemExit(f"Marqueur absent ou en double dans le gabarit : {marker}")
         page = page.replace(marker, value)
     return page
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--out", type=Path, default=ROOT / "docs/index.html", help="fichier HTML à écrire")
+    ap.add_argument("--out", type=Path, default=OUT, help="fichier HTML à écrire (par défaut docs/index.html)")
     args = ap.parse_args()
+    official = args.out.resolve() == OUT.resolve()
+    label, title = version(record=official)
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(build(), encoding="utf-8")
-    print(f"{args.out} : {args.out.stat().st_size / 1024:,.0f} Ko".replace(",", " "))
+    tmp = args.out.with_name(args.out.name + ".tmp")  # écriture atomique : jamais de page à moitié écrite
+    tmp.write_text(build(label, title), encoding="utf-8")
+    tmp.replace(args.out)
+    print(f"{args.out} : {args.out.stat().st_size / 1024:,.0f} Ko · {label}".replace(",", " ")
+          + ("" if official else " (essai : version non enregistrée)"))
 
 
 if __name__ == "__main__":

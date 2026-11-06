@@ -1,0 +1,365 @@
+{
+ "_doc": "Fréquentation annuelle estimée par réseau (millions de voyages par an), dans l'ordre de networks.json. Généré par scripts/prepare_ridership.py.",
+ "networks": [
+  {
+   "v": 3.33,
+   "base": "budget estimé (30,6 M€) ÷ 8,0 € par voyage (bus aux États-Unis, coûts France)"
+  },
+  {
+   "v": 0.3,
+   "base": "300 000 voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 0.368,
+   "base": "budget estimé (3,4 M€) ÷ 8,0 € par voyage (bus aux États-Unis, coûts France)"
+  },
+  {
+   "v": 0.233,
+   "base": "233 000 voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 1.7,
+   "base": "1,7 M voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 0.115,
+   "base": "115 000 voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 2.0,
+   "base": "2 M voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 1.6,
+   "base": "1,6 M voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 3.0,
+   "base": "3 M voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 0.126,
+   "base": "126 000 voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 4.5,
+   "base": "4,5 M voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 6.5,
+   "base": "6,5 M trajets annuels (ratpdev.com)"
+  },
+  {
+   "v": 2.1,
+   "base": "2,1 M voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 21.0,
+   "base": "21 M voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 0.78,
+   "base": "780 000 trajets annuels (ratpdev.com)"
+  },
+  {
+   "v": 0.45,
+   "base": "450 000 voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 0.161,
+   "base": "161 000 voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 1.0,
+   "base": "1 M de voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 0.0733,
+   "base": "73 266 voyageurs annuels (ratpdev.com)"
+  },
+  {
+   "v": 0.724,
+   "base": "budget estimé (6,7 M€) ÷ 8,0 € par voyage (bus aux États-Unis, coûts France)"
+  },
+  {
+   "v": 2.5,
+   "base": "2,5 M voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 0.345,
+   "base": "budget estimé (3,2 M€) ÷ 8,0 € par voyage (bus aux États-Unis, coûts France)"
+  },
+  {
+   "v": 0.7,
+   "base": "700 000 voyages par an (ratpdev.com)"
+  },
+  {
+   "v": 17.0,
+   "base": "18 M de trajets combinés bus + tramway, dont ~1 M en tramway"
+  },
+  {
+   "v": 1.0,
+   "base": "~1 M sur les 18 M de trajets combinés bus + tramway"
+  },
+  {
+   "v": 0.417,
+   "base": "417 000 voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 5.0,
+   "base": "5 M de trajets par an (ratpdev.com)"
+  },
+  {
+   "v": 1.8,
+   "base": "1,8 M voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 0.13,
+   "base": "budget estimé (1,2 M€) ÷ 8,0 € par voyage (bus aux États-Unis, coûts France)"
+  },
+  {
+   "v": 0.276,
+   "base": "276 000 voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 0.05,
+   "base": "50 000 voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 0.08,
+   "base": "80 000 voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 0.518,
+   "base": "518 114 voyages annuels (ratpdev.com)"
+  },
+  {
+   "v": 2.1,
+   "base": "2,1 M de trajets annuels (ratpdev.com)"
+  },
+  {
+   "v": 135.0,
+   "base": "135 M de voyageurs par an (ratpdev.com)"
+  },
+  {
+   "v": 60.7,
+   "base": "budget estimé (104,7 M€) ÷ 1,5 € par voyage (métro, coûts France)"
+  },
+  {
+   "v": 53.7,
+   "base": "budget estimé (92,6 M€) ÷ 1,5 € par voyage (métro, coûts France)"
+  },
+  {
+   "v": 19.2,
+   "base": "budget estimé (38,3 M€) ÷ 2,0 € par voyage (réseau avec tramway, coûts France)"
+  },
+  {
+   "v": 77.0,
+   "base": "budget estimé (115,5 M€) ÷ 1,5 € par voyage (métro, coûts France)"
+  },
+  {
+   "v": 25.2,
+   "base": "budget estimé (50,4 M€) ÷ 2,0 € par voyage (réseau avec tramway, coûts France)"
+  },
+  {
+   "v": 3.0,
+   "base": "navette d'aéroport (Orlyval), ordre de grandeur"
+  },
+  {
+   "v": 27.0,
+   "base": "budget estimé (54,0 M€) ÷ 2,0 € par voyage (réseau avec tramway, coûts France)"
+  },
+  {
+   "v": 1.29,
+   "base": "budget estimé (4,5 M€) ÷ 3,5 € par voyage (bus urbain, coûts France)"
+  },
+  {
+   "v": 1.5,
+   "base": "budget estimé (12,0 M€) ÷ 8,0 € par voyage (autocar, coûts France)"
+  },
+  {
+   "v": 0.494,
+   "base": "budget estimé (4,0 M€) ÷ 8,0 € par voyage (autocar, coûts France)"
+  },
+  {
+   "v": 0.475,
+   "base": "budget estimé (3,8 M€) ÷ 8,0 € par voyage (autocar, coûts France)"
+  },
+  {
+   "v": 1.7,
+   "base": "budget estimé (13,6 M€) ÷ 8,0 € par voyage (autocar, coûts France)"
+  },
+  {
+   "v": 1.54,
+   "base": "budget estimé (5,4 M€) ÷ 3,5 € par voyage (bus urbain, coûts France)"
+  },
+  {
+   "v": 0.263,
+   "base": "263 000 voyages réalisés (ratpdev.com)"
+  },
+  {
+   "v": 2.69,
+   "base": "budget estimé (9,4 M€) ÷ 3,5 € par voyage (bus urbain, coûts France)"
+  },
+  {
+   "v": 2.6,
+   "base": "budget estimé (9,1 M€) ÷ 3,5 € par voyage (bus urbain, coûts France)"
+  },
+  {
+   "v": 18.9,
+   "base": "budget estimé (66,0 M€) ÷ 3,5 € par voyage (bus urbain, coûts France)"
+  },
+  {
+   "v": 1.37,
+   "base": "3 800 élèves × 2 trajets × 180 jours de classe"
+  },
+  {
+   "v": 2.06,
+   "base": "budget estimé (7,2 M€) ÷ 3,5 € par voyage (bus urbain, coûts France)"
+  },
+  {
+   "v": 2.4,
+   "base": "2,4 M de voyageurs par an (ratpdev.com)"
+  },
+  {
+   "v": 1.5,
+   "base": "1,5 M de voyageurs par an (ratpdev.com)"
+  },
+  {
+   "v": 2.4,
+   "base": "budget estimé (8,4 M€) ÷ 3,5 € par voyage (bus urbain, coûts France)"
+  },
+  {
+   "v": 1.78,
+   "base": "budget estimé (14,2 M€) ÷ 8,0 € par voyage (autocar, coûts France)"
+  },
+  {
+   "v": 3.56,
+   "base": "budget estimé (28,5 M€) ÷ 8,0 € par voyage (autocar, coûts France)"
+  },
+  {
+   "v": 1.1,
+   "base": "budget estimé (3,9 M€) ÷ 3,5 € par voyage (bus urbain, coûts France)"
+  },
+  {
+   "v": 4.61,
+   "base": "budget estimé (16,1 M€) ÷ 3,5 € par voyage (bus urbain, coûts France)"
+  },
+  {
+   "v": 0.76,
+   "base": "budget estimé (6,1 M€) ÷ 8,0 € par voyage (autocar, coûts France)"
+  },
+  {
+   "v": 1.7,
+   "base": "budget estimé (13,6 M€) ÷ 8,0 € par voyage (autocar, coûts France)"
+  },
+  {
+   "v": 0.724,
+   "base": "budget estimé (5,8 M€) ÷ 8,0 € par voyage (autocar, coûts France)"
+  },
+  {
+   "v": 3.0,
+   "base": "3 M de voyages par an (ratpdev.com)"
+  },
+  {
+   "v": 0.888,
+   "base": "888 155 voyages par an (ratpdev.com)"
+  },
+  {
+   "v": 2.7,
+   "base": "225 000 passagers par mois × 12 (ratpdev.com)"
+  },
+  {
+   "v": 3.8,
+   "base": "budget estimé (13,3 M€) ÷ 3,5 € par voyage (bus urbain, coûts France)"
+  },
+  {
+   "v": 2.38,
+   "base": "budget estimé (19,0 M€) ÷ 8,0 € par voyage (autocar, coûts France)"
+  },
+  {
+   "v": 1.76,
+   "base": "budget estimé (6,2 M€) ÷ 3,5 € par voyage (bus urbain, coûts France)"
+  },
+  {
+   "v": 2.96,
+   "base": "budget estimé (10,3 M€) ÷ 3,5 € par voyage (bus urbain, coûts France)"
+  },
+  {
+   "v": 3.2,
+   "base": "3,2 M de voyageurs en 2023 (ratpdev.com)"
+  },
+  {
+   "v": 7.9,
+   "base": "7,9 M de voyages (ratpdev.com)"
+  },
+  {
+   "v": 7.0,
+   "base": "7 M de voyageurs par an (ratpdev.com)"
+  },
+  {
+   "v": 184.0,
+   "base": "budget estimé (290,4 M€) réparti par mode ÷ coût par voyage (métro 1,5 € + tramway 1,5 € + train 6,0 €)"
+  },
+  {
+   "v": 40.0,
+   "base": "budget estimé (54,0 M€) ÷ 1,5 € par voyage (tramway, coûts France)"
+  },
+  {
+   "v": 60.0,
+   "base": "~165 000 voyageurs par jour sur les lignes 1 et 2, ordre de grandeur"
+  },
+  {
+   "v": 0.3,
+   "base": "1 M de passagers depuis le lancement, ordre de grandeur annuel"
+  },
+  {
+   "v": 10.7,
+   "base": "budget estimé (28,8 M€) ÷ 6,0 € par voyage (train, coûts France)"
+  },
+  {
+   "v": 56.0,
+   "base": "budget estimé (79,8 M€) ÷ 1,5 € par voyage (métro, coûts France)"
+  },
+  {
+   "v": 182.0,
+   "base": "500 000 passagers par jour × 365 (ratpdev.com)"
+  },
+  {
+   "v": 100.0,
+   "base": "budget estimé (60,0 M€) ÷ 1,5 € par voyage (tramway, coûts France)"
+  },
+  {
+   "v": 51.1,
+   "base": "140 000 voyageurs par jour × 365 (ratpdev.com)"
+  },
+  {
+   "v": 11.2,
+   "base": "budget estimé (60,3 M€) ÷ 6,0 € par voyage (train, coûts France)"
+  },
+  {
+   "v": 2.5,
+   "base": "6 850 passagers par jour × 365 (ratpdev.com)"
+  },
+  {
+   "v": 136.0,
+   "base": "budget estimé (427,5 M€) ÷ 3,5 € par voyage (bus urbain, coûts France)"
+  },
+  {
+   "v": 55.0,
+   "base": "~150 000 voyageurs par jour, ordre de grandeur"
+  },
+  {
+   "v": 110.0,
+   "base": "~300 000 voyageurs par jour, ordre de grandeur"
+  },
+  {
+   "v": 25.3,
+   "base": "budget estimé (39,9 M€) ÷ 1,5 € par voyage (tramway, coûts France)"
+  },
+  {
+   "v": 161.0,
+   "base": "budget estimé (108,7 M€) ÷ 1,5 € par voyage (métro, coûts France)"
+  }
+ ]
+}
