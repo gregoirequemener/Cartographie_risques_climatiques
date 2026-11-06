@@ -1,0 +1,86 @@
+[
+ {
+  "reseau": "Assurer un transport fiable dans le comté de Lake, en Floride",
+  "champ": "Client",
+  "avant": "Comté du Lacy, FL",
+  "apres": "Comté de Lake, FL",
+  "motif": "Coquille « Comté du Lacy »"
+ },
+ {
+  "reseau": "Assurer un transport fiable dans le comté de Lake, en Floride",
+  "champ": "Ville",
+  "avant": "Comté du Lac",
+  "apres": "Comté de Lake",
+  "motif": "Traduction littérale « Comté du Lac »"
+ },
+ {
+  "reseau": "Assurer un transport en commun fiable à Tucson",
+  "champ": "Ville",
+  "avant": "Tuscon",
+  "apres": "Tucson",
+  "motif": "Coquille « Tuscon »"
+ },
+ {
+  "reseau": "Assurer un transport en commun fiable à Tucson",
+  "champ": "Client",
+  "avant": "Agglomération de Tuscon",
+  "apres": "Agglomération de Tucson",
+  "motif": "Coquille « Tuscon »"
+ },
+ {
+  "reseau": "Soutenir la croissance de Tucson grâce au tramway",
+  "champ": "Ville",
+  "avant": "Tuscon",
+  "apres": "Tucson",
+  "motif": "Coquille « Tuscon »"
+ },
+ {
+  "reseau": "Soutenir la croissance de Tucson grâce au tramway",
+  "champ": "Client",
+  "avant": "Agglomération de Tuscon",
+  "apres": "Agglomération de Tucson",
+  "motif": "Coquille « Tuscon »"
+ },
+ {
+  "reseau": "Sécurité des passagers et système écoresponsable",
+  "champ": "Client",
+  "avant": "Ventura County Transportation Commission",
+  "apres": "Comté de Volusia (Votran)",
+  "motif": "Client indiqué « Ventura County Transportation Commission » (copie de la fiche Ventura)"
+ },
+ {
+  "reseau": "Une offre de mobilité adaptée à chacun",
+  "champ": "Coordonnées",
+  "avant": "46.6121, 0.4654",
+  "apres": "45.5255, 4.8740",
+  "motif": "Point placé dans le département de la Vienne (Poitou) au lieu de Vienne (Isère), siège de Vienne Condrieu Agglomération"
+ },
+ {
+  "reseau": "Redynamiser le Ding Ding, l’un des plus anciens tramways électriques d’Asie",
+  "champ": "Coordonnées",
+  "avant": "22.3492, 114.1858",
+  "apres": "22.2815, 114.1700",
+  "motif": "Point placé sur les collines de Kowloon (≈190 m) ; le tramway longe la rive nord de l'île de Hong Kong, au niveau de la mer"
+ },
+ {
+  "reseau": "Participer au déploiement ferroviaire de la Toscane",
+  "champ": "Coordonnées",
+  "avant": "43.4587, 11.1389",
+  "apres": "43.4633, 11.8796",
+  "motif": "Point identique à celui d'Autolinee Toscane ; LFI est basée à Arezzo"
+ },
+ {
+  "reseau": "Un réseau multimodal pour accompagner la croissance de Doha",
+  "champ": "Coordonnées",
+  "avant": "25.3337, 51.2295",
+  "apres": "25.2854, 51.5310",
+  "motif": "Point situé à ~30 km à l'ouest de Doha, en zone désertique"
+ },
+ {
+  "reseau": "Construire la colonne vertébrale de la mobilité de Québec",
+  "champ": "Coordonnées",
+  "avant": "52.4761, -71.8259",
+  "apres": "46.8139, -71.2080",
+  "motif": "Point placé au centre de la province de Québec, à ~600 km de la ville"
+ }
+]

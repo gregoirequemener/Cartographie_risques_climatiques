@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Risques climatiques des réseaux RATP Dev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/*__LEAFLET_CSS__*/
+</style>
+<style>
+/* Layout : barre de pilotage (aléa, scénario, année) en haut ; portefeuille à gauche ; carte au centre ; fiche réseau en tiroir à droite. */
+:root {
+  color-scheme: light;
+  --paper: #f3f4f1;
+  --card: #ffffff;
+  --ink: #16201c;
+  --ink-2: #4b5651;
+  --muted: #76807b;
+  --line: #dde2de;
+  --accent: #0e7666;
+  --accent-wash: #e2f1ed;
+  --sea: #dce6ea;
+  --land: #f8f8f4;
+  --coast: #b7c2c0;
+  --border: #c3c9c4;
+  --admin: #d6dbd6;
+  --ring: #ffffff;
+  --r1: #e49a62; --r2: #d8743c; --r3: #c2531f; --r4: #9b3a12; --r5: #69240a;
+  --on-r1: #1a0d05; --on-r2: #1a0d05; --on-r3: #ffffff; --on-r4: #ffffff; --on-r5: #ffffff;
+  --s1: #2a78d6; --s2: #1baf7a; --s3: #eb6834;
+  --up: #b4421a;
+  --water: #2f7fc8; --water-fill: #a9cdf0;
+  --shadow: 0 1px 2px rgba(16, 24, 20, .18), 0 4px 14px rgba(16, 24, 20, .10);
+  --font-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #141918; --card: #1c2220; --ink: #edf1ee; --ink-2: #b6c0bb; --muted: #87918c; --line: #2c3431;
+    --accent: #43c3ad; --accent-wash: #193631;
+    --sea: #0e1416; --land: #232826; --coast: #3d4744; --border: #47514c; --admin: #343c39; --ring: #141918;
+    --r1: #a0391a; --r2: #c24f22; --r3: #de6e38; --r4: #f09460; --r5: #fbbf91;
+    --on-r1: #ffffff; --on-r2: #ffffff; --on-r3: #1a0d05; --on-r4: #1a0d05; --on-r5: #1a0d05;
+    --s1: #3987e5; --s2: #199e70; --s3: #d95926;
+    --up: #f09460;
+    --water: #5ea6e6; --water-fill: #1f3d5c;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 6px 18px rgba(0, 0, 0, .35);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #141918; --card: #1c2220; --ink: #edf1ee; --ink-2: #b6c0bb; --muted: #87918c; --line: #2c3431;
+  --accent: #43c3ad; --accent-wash: #193631;
+  --sea: #0e1416; --land: #232826; --coast: #3d4744; --border: #47514c; --admin: #343c39; --ring: #141918;
+  --r1: #a0391a; --r2: #c24f22; --r3: #de6e38; --r4: #f09460; --r5: #fbbf91;
+  --on-r1: #ffffff; --on-r2: #ffffff; --on-r3: #1a0d05; --on-r4: #1a0d05; --on-r5: #1a0d05;
+  --s1: #3987e5; --s2: #199e70; --s3: #d95926;
+  --up: #f09460;
+  --water: #5ea6e6; --water-fill: #1f3d5c;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 6px 18px rgba(0, 0, 0, .35);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--paper); color: var(--ink); font: 400 14px/1.45 var(--font-body); -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+
+.app { height: 100%; display: grid; grid-template-rows: auto 1fr; grid-template-columns: minmax(0, 1fr); }
+
+/* Barre de pilotage */
+.topbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px;
+  padding: 10px 16px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  z-index: 900;
+}
+.brand { display: flex; flex-direction: column; }
+.brand b { font: 700 16px/1.1 var(--font-display); letter-spacing: -.01em; }
+.brand span { font-size: 11.5px; color: var(--muted); }
+.ctl { display: flex; align-items: center; gap: 8px; }
+.ctl-label { font: 600 11px/1 var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--paper); }
+.seg button {
+  border: 0; background: none; padding: 6px 11px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--ink-2);
+  border-right: 1px solid var(--line);
+}
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent); }
+.seg button[aria-disabled="true"] { color: var(--muted); cursor: not-allowed; }
+.seg-note { align-self: center; padding: 0 9px; font-size: 11px; color: var(--muted); }
+.seg button[aria-disabled="true"] { opacity: .6; }
+.year { display: flex; align-items: center; gap: 10px; }
+.year output { font: 700 20px/1 var(--font-display); min-width: 48px; font-variant-numeric: tabular-nums; }
+.year input[type="range"] { width: 150px; accent-color: var(--accent); }
+.icon-btn {
+  display: inline-grid; place-items: center; width: 32px; height: 32px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--paper); cursor: pointer;
+}
+.icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+.icon-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+.main { display: grid; grid-template-columns: minmax(330px, 390px) 1fr; min-height: 0; }
+
+/* Portefeuille */
+.panel { display: flex; flex-direction: column; gap: 16px; min-height: 0; overflow-y: auto; padding: 16px; border-right: 1px solid var(--line); }
+.panel h2 { margin: 0; font: 600 12px/1.2 var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
+.panel-sub { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+.kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.kpi { padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kpi .k-label { font-size: 11.5px; color: var(--ink-2); line-height: 1.25; }
+.kpi .k-val { font: 700 22px/1.1 var(--font-display); }
+.kpi .k-val small { font: 500 12px var(--font-body); color: var(--muted); }
+.kpi .k-delta { font-size: 11.5px; color: var(--muted); overflow-wrap: anywhere; }
+.delta-up { color: var(--up); font-weight: 600; }
+
+.distrib { display: flex; height: 26px; gap: 2px; border-radius: 6px; overflow: hidden; }
+.distrib div { display: grid; place-items: center; min-width: 0; font: 600 11.5px/1 var(--font-body); }
+.class-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 8px; font-size: 12px; color: var(--ink-2); }
+.class-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
+
+.chart-box { position: relative; }
+.chart-box svg { display: block; width: 100%; height: auto; overflow: visible; }
+.axis text, .chart-label { font: 500 10.5px var(--font-body); fill: var(--muted); }
+.axis .cur { fill: var(--ink); font-weight: 700; }
+.tip {
+  position: absolute; z-index: 5; pointer-events: none;
+  padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); box-shadow: var(--shadow);
+  font-size: 12px; line-height: 1.35; white-space: nowrap; display: none;
+}
+.tip b { font-weight: 600; }
+.tip .row-t { display: flex; align-items: center; gap: 6px; }
+
+.filters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.filters .full { grid-column: 1 / -1; }
+.filters label { display: flex; flex-direction: column; gap: 4px; font: 600 11.5px/1.2 var(--font-body); color: var(--ink-2); }
+.filters select, .filters input { padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); font-weight: 400; font-size: 13px; }
+
+.tbl-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.link-btn { border: 0; background: none; padding: 0; cursor: pointer; font-size: 12px; font-weight: 500; color: var(--accent); }
+.link-btn:hover { text-decoration: underline; }
+.rank { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.rank button {
+  width: 100%; display: grid; grid-template-columns: 1fr 92px 46px; align-items: center; gap: 10px;
+  padding: 7px 6px; border: 0; border-bottom: 1px solid var(--line); background: none; text-align: left; cursor: pointer;
+}
+.rank button:hover, .rank button.is-active { background: var(--accent-wash); }
+.rank .who { min-width: 0; }
+.rank .who b { display: block; font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank .who span { display: block; font-size: 11.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar { position: relative; height: 8px; border-radius: 4px; background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; }
+.rank .v { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.rank .v small { display: block; font-weight: 500; font-size: 11px; color: var(--muted); }
+
+.method { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); font-size: 12.5px; color: var(--ink-2); }
+.method summary { cursor: pointer; font-weight: 600; color: var(--ink); }
+.method p, .method ul { margin: 8px 0 0; }
+.method ul { padding-left: 16px; display: flex; flex-direction: column; gap: 4px; }
+.method a { color: var(--accent); }
+.method table { border-collapse: collapse; margin-top: 8px; width: 100%; font-size: 12px; }
+.method td, .method th { border-bottom: 1px solid var(--line); padding: 4px 4px; text-align: left; }
+.method th { font-weight: 600; color: var(--ink); }
+
+/* Carte */
+.map-wrap { position: relative; min-height: 0; overflow: hidden; }
+#map { position: absolute; inset: 0; background: var(--sea); font-family: var(--font-body); }
+.leaflet-container a { color: var(--accent); }
+.leaflet-control-attribution { background: color-mix(in srgb, var(--paper) 85%, transparent) !important; color: var(--muted) !important; font-size: 10.5px !important; }
+.leaflet-bar { border: 1px solid var(--line) !important; box-shadow: var(--shadow) !important; }
+.leaflet-bar a { background: var(--card) !important; color: var(--ink) !important; border-bottom-color: var(--line) !important; }
+.leaflet-bar a:hover { background: var(--accent-wash) !important; }
+.zones { position: absolute; top: 10px; left: 10px; z-index: 500; display: flex; flex-wrap: wrap; gap: 4px; max-width: calc(100% - 70px); }
+.zones button { padding: 4px 9px; border: 1px solid var(--line); border-radius: 6px; background: color-mix(in srgb, var(--card) 92%, transparent); font-size: 12px; cursor: pointer; box-shadow: var(--shadow); }
+.zones button:hover { border-color: var(--accent); color: var(--accent); }
+
+.overlay-panel {
+  position: absolute; top: 46px; left: 10px; z-index: 500; width: 280px; max-height: calc(100% - 300px); overflow-y: auto;
+  display: flex; flex-direction: column; gap: 8px; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: 10px; background: color-mix(in srgb, var(--card) 95%, transparent); box-shadow: var(--shadow);
+  font-size: 12px;
+}
+.switch { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 600; font-size: 12.5px; cursor: pointer; }
+.switch input { appearance: none; -webkit-appearance: none; margin: 0; width: 34px; height: 20px; border-radius: 999px; background: var(--border); position: relative; cursor: pointer; transition: background .15s; flex: none; }
+.switch input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--card); box-shadow: 0 1px 2px rgba(0,0,0,.3); transition: transform .15s; }
+.switch input:checked { background: var(--accent); }
+.switch input:checked::after { transform: translateX(14px); }
+.ov-body { display: flex; flex-direction: column; gap: 8px; }
+.ov-body[hidden] { display: none; }
+.ov-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.ov-body select { min-width: 0; padding: 5px 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); font-size: 12px; }
+.ov-sub { color: var(--muted); font-size: 11.5px; margin-top: -2px; }
+.ramp { height: 10px; border-radius: 3px; }
+.ramp-ticks { position: relative; height: 14px; font-size: 10.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.ramp-ticks span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
+.ramp-ticks span:first-child { transform: none; }
+.ramp-ticks span:last-child { transform: translateX(-100%); }
+.ov-probe { color: var(--ink-2); font-size: 11.5px; min-height: 1.35em; padding-top: 6px; border-top: 1px solid var(--line); }
+.ov-title { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; font: 600 11px/1.2 var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ov-title[aria-expanded="false"] span { transform: rotate(-90deg); }
+.ov-content { display: flex; flex-direction: column; gap: 8px; }
+.ov-content[hidden] { display: none; }
+.ov-sec { display: flex; flex-direction: column; gap: 6px; }
+.ov-sec + .ov-sec { padding-top: 8px; border-top: 1px solid var(--line); }
+.ov-note { margin: 0; color: var(--muted); font-size: 11px; }
+.ov-note[hidden] { display: none; }
+.chk { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); cursor: pointer; }
+.chk input { accent-color: var(--accent); margin: 0; }
+#ln-heat { width: 100%; margin: 6px 0 2px; }
+#ln-heat[hidden] { display: none; }
+.ln-legend { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 11.5px; color: var(--ink-2); }
+.ln-k { display: inline-flex; align-items: center; gap: 5px; }
+.ln-k i { width: 18px; border-radius: 3px; display: inline-block; }
+.ln-row { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; padding: 0; cursor: pointer; font-weight: 600; color: var(--ink); text-align: left; }
+.ln-row:hover { color: var(--accent); text-decoration: underline; }
+.ln-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
+.wl-key { display: flex; align-items: center; gap: 6px; color: var(--ink-2); font-size: 11.5px; }
+.wl-key i { width: 18px; height: 3px; border-radius: 2px; background: var(--water); display: inline-block; }
+.wl-key b { width: 12px; height: 10px; border-radius: 3px; background: var(--water-fill); border: 1px solid var(--water); display: inline-block; }
+.ov-probe b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.ov-op { display: flex; align-items: center; gap: 8px; color: var(--ink-2); }
+.ov-op input { flex: 1; accent-color: var(--accent); }
+.pt-wrap { background: none; border: 0; }
+.pt {
+  display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid var(--ring); box-shadow: var(--shadow);
+  font: 700 10.5px/1 var(--font-display); font-variant-numeric: tabular-nums;
+  transition: transform .12s;
+}
+.pt-wrap:hover .pt, .pt-wrap.is-active .pt { transform: scale(1.22); }
+.pt-wrap.is-active .pt { box-shadow: 0 0 0 3px var(--ink), var(--shadow); }
+.c1 { background: var(--r1); color: var(--on-r1); } .c2 { background: var(--r2); color: var(--on-r2); }
+.c3 { background: var(--r3); color: var(--on-r3); } .c4 { background: var(--r4); color: var(--on-r4); }
+.c5 { background: var(--r5); color: var(--on-r5); }
+.pt-label {
+  position: absolute; left: 30px; top: 50%; transform: translateY(-50%); display: none; white-space: nowrap;
+  font: 600 11.5px/1 var(--font-body); color: var(--ink);
+  text-shadow: 0 0 3px var(--land), 0 0 3px var(--land), 0 0 2px var(--land); pointer-events: none;
+}
+.show-labels .pt-label { display: block; }
+.cluster-wrap { background: none; border: 0; }
+.cluster { width: 100%; height: 100%; border-radius: 50%; padding: 4px; box-shadow: var(--shadow); }
+.cluster span { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; background: var(--card); color: var(--ink); font: 700 13px/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.leaflet-tooltip { background: var(--card); color: var(--ink); border: 1px solid var(--line); box-shadow: var(--shadow); font: 500 12px/1.3 var(--font-body); padding: 5px 8px; border-radius: 6px; }
+.leaflet-tooltip-top:before { border-top-color: var(--card); }
+
+.legend {
+  position: absolute; left: 10px; bottom: 26px; z-index: 500;
+  display: flex; flex-direction: column; gap: 6px; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: 10px; background: color-mix(in srgb, var(--card) 95%, transparent); box-shadow: var(--shadow);
+  font-size: 12px; max-width: 280px;
+}
+.legend-title { font-weight: 600; }
+.legend-sub { color: var(--muted); font-size: 11.5px; margin-top: -4px; }
+.legend-scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
+.legend-scale div { height: 10px; border-radius: 2px; }
+.legend-ticks { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; font-size: 10.5px; color: var(--ink-2); }
+.legend-ticks span { text-align: center; line-height: 1.2; }
+.legend-key { display: flex; align-items: center; gap: 6px; padding-top: 6px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--ink-2); }
+.legend-key .pt { width: 20px; height: 20px; font-size: 9px; border-width: 1.5px; box-shadow: none; }
+.legend-key .ring { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 3px solid var(--r2); background: var(--card); font: 700 9px/1 var(--font-display); margin-left: 6px; }
+.ind-select { padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); font-size: 12.5px; }
+
+/* Fiche réseau */
+.drawer {
+  position: absolute; top: 0; right: 0; bottom: 0; z-index: 800;
+  width: min(420px, 100%);
+  display: flex; flex-direction: column;
+  background: var(--card); border-left: 1px solid var(--line); box-shadow: var(--shadow);
+  transform: translateX(105%); transition: transform .22s ease;
+}
+.drawer.open { transform: none; }
+.map-wrap.drawer-open .leaflet-right { right: min(420px, 100%); }
+.map-wrap .leaflet-right { transition: right .22s ease; }
+.drawer-head { display: flex; gap: 10px; align-items: flex-start; padding: 16px 16px 12px; border-bottom: 1px solid var(--line); }
+.drawer-head .t { flex: 1; min-width: 0; }
+.drawer-head .eyebrow { margin: 0; font: 600 11px/1.2 var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+.drawer-head h3 { margin: 4px 0 2px; font: 700 18px/1.15 var(--font-display); text-wrap: balance; }
+.drawer-head p { margin: 0; color: var(--ink-2); font-size: 12.5px; }
+.close { flex: none; width: 30px; height: 30px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); cursor: pointer; font-size: 16px; line-height: 1; }
+.drawer-body { overflow-y: auto; padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 18px; }
+.sec h4 { margin: 0 0 8px; font: 600 12px/1.2 var(--font-body); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-2); }
+.score-row { display: flex; align-items: center; gap: 14px; }
+.score-big { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 14px; font: 700 26px/1 var(--font-display); font-variant-numeric: tabular-nums; flex: none; }
+.score-txt b { display: block; font: 700 16px/1.2 var(--font-display); }
+.score-txt span { font-size: 12.5px; color: var(--ink-2); }
+.ind-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.ind-table th, .ind-table td { padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: right; font-variant-numeric: tabular-nums; }
+.ind-table th:first-child, .ind-table td:first-child { text-align: left; }
+.ind-table thead th { font-weight: 600; color: var(--muted); font-size: 11.5px; }
+.ind-table td:first-child { color: var(--ink); }
+.ind-table td small { color: var(--muted); }
+.contrib { display: flex; flex-direction: column; gap: 7px; }
+.contrib-row { display: grid; grid-template-columns: 1fr 110px 34px; gap: 8px; align-items: center; font-size: 12.5px; }
+.contrib-row .bar i { background: var(--ink-2); }
+.contrib-row span:last-child { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.note { margin: 6px 0 0; font-size: 11.5px; color: var(--muted); }
+.vig { margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.facts { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; font-size: 12.5px; }
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; }
+.drawer a { color: var(--accent); font-weight: 600; }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--ink-2); margin-top: 4px; }
+.chart-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.chart-legend i { width: 14px; height: 2px; display: inline-block; }
+
+@media (max-width: 860px) {
+  .main { grid-template-columns: minmax(0, 1fr); grid-template-rows: 55vh auto; overflow-y: auto; }
+  .map-wrap { order: -1; min-height: 55vh; }
+  .panel { border-right: 0; overflow: visible; }
+  .drawer { position: fixed; top: 0; width: 100%; }
+  .year input[type="range"] { width: 140px; }
+  .legend { max-width: calc(100% - 20px); bottom: 22px; padding: 8px 10px; }
+  .zones { display: none; }
+  .overlay-panel { top: 10px; width: min(250px, calc(100% - 64px)); padding: 8px 10px; gap: 6px; }
+  .ov-probe, .ov-op, .ov-sub, .ov-note { display: none; }
+  .overlay-panel { max-height: 45%; }
+  .seg { max-width: 100%; overflow-x: auto; }
+  .ctl { max-width: 100%; min-width: 0; }
+  .seg { min-width: 0; }
+  .legend-ticks, .legend-key { display: none; }
+  .kpi .k-val { font-size: 19px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><b>Risques climatiques</b><span>Réseaux RATP Dev · aléas physiques</span></div>
+    <div class="ctl" role="group" aria-label="Aléa">
+      <span class="ctl-label">Aléa</span>
+      <div class="seg" id="hazards"></div>
+    </div>
+    <div class="ctl" role="group" aria-label="Scénario d’émissions">
+      <span class="ctl-label">Scénario</span>
+      <div class="seg" id="scenarios"></div>
+    </div>
+    <div class="ctl year">
+      <label class="ctl-label" for="year">Année</label>
+      <button class="icon-btn" id="play" type="button" aria-label="Animer de 2026 à 2036"><svg viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></svg></button>
+      <input id="year" type="range" min="2026" max="2036" step="1" value="2036">
+      <output id="year-out" for="year">2036</output>
+    </div>
+  </header>
+
+  <div class="main">
+    <aside class="panel" aria-label="Portefeuille">
+      <section>
+        <h2 id="pf-title">Portefeuille · risque chaleur</h2>
+        <p class="panel-sub" id="ctx"></p>
+      </section>
+      <div class="kpis" id="kpis"></div>
+      <section>
+        <h2 id="distrib-title">Répartition par classe</h2>
+        <div class="distrib" id="distrib" style="margin-top:8px"></div>
+        <div class="class-legend" id="class-legend"></div>
+      </section>
+      <section>
+        <h2>Évolution 2026–2036</h2>
+        <p class="panel-sub">Nombre de réseaux par classe, chaque année</p>
+        <div class="chart-box" id="evo" style="margin-top:8px"></div>
+      </section>
+      <section class="filters">
+        <label class="full" for="q">Rechercher
+          <input id="q" type="search" placeholder="Ville, réseau, client…" autocomplete="off">
+        </label>
+        <label for="f-pays">Pays<select id="f-pays"></select></label>
+        <label for="f-mode">Mode principal<select id="f-mode"></select></label>
+      </section>
+      <section>
+        <div class="tbl-head"><h2 id="rank-title">Classement</h2><button class="link-btn" id="copy" type="button">Copier le tableau (CSV)</button></div>
+        <ul class="rank" id="rank" style="margin-top:6px"></ul>
+      </section>
+      <details class="method">
+        <summary>Méthode et sources</summary>
+        <div id="method"></div>
+      </details>
+    </aside>
+
+    <main class="map-wrap">
+      <div id="map" role="region" aria-label="Carte du risque chaleur"></div>
+      <div class="zones" id="zones"></div>
+      <div class="overlay-panel" id="ov">
+        <button type="button" class="ov-title" id="ov-toggle" aria-expanded="true" aria-controls="ov-content">Calques <span aria-hidden="true">▾</span></button>
+        <div class="ov-content" id="ov-content">
+        <section class="ov-sec">
+        <label class="switch" for="ov-on"><span>Températures</span><input type="checkbox" id="ov-on" role="switch" checked></label>
+        <div class="ov-body" id="ov-body">
+          <div class="ov-row">
+            <select id="ov-var" aria-label="Variable de température"><option value="tas">Moyenne annuelle</option><option value="txx">Jour le plus chaud</option></select>
+            <select id="ov-mode" aria-label="Valeur ou écart"><option value="abs">Valeur</option><option value="anom">Écart vs 1995–2014</option></select>
+          </div>
+          <div class="ov-sub" id="ov-sub"></div>
+          <div class="ramp" id="ov-ramp"></div>
+          <div class="ramp-ticks" id="ov-ticks"></div>
+          <label class="ov-op" for="ov-opacity">Opacité <input type="range" id="ov-opacity" min="20" max="100" value="80"></label>
+        </div>
+        </section>
+        <section class="ov-sec">
+          <label class="switch" for="fl-on"><span>Zones inondables (crue centennale)</span><input type="checkbox" id="fl-on" role="switch"></label>
+          <div class="ov-body" id="fl-body" hidden>
+            <select id="fl-type" aria-label="Type d’inondation"><option value="all">Crues fluviales + submersion marine</option><option value="river">Crues fluviales</option><option value="coast">Submersion marine</option></select>
+            <div class="ov-sub" id="fl-sub"></div>
+            <div class="ramp" id="fl-ramp"></div>
+            <div class="ramp-ticks" id="fl-ticks"></div>
+            <p class="ov-note">Hauteur d’eau en mètres, calculée sur 0,5° autour de chaque réseau. Sans digues ni protections.</p>
+          </div>
+        </section>
+        <section class="ov-sec">
+          <label class="switch" for="wa-on"><span>Cours d’eau et lacs</span><input type="checkbox" id="wa-on" role="switch"></label>
+          <div class="ov-body" id="wa-body" hidden><div class="wl-key"><i></i> fleuves et rivières <b></b> lacs et réservoirs</div></div>
+        </section>
+        <section class="ov-sec">
+          <label class="switch" for="re-on"><span>Relief</span><input type="checkbox" id="re-on" role="switch"></label>
+          <div class="ov-body" id="re-body" hidden>
+            <div class="ramp" id="re-ramp"></div>
+            <div class="ramp-ticks" id="re-ticks"></div>
+            <p class="ov-note">Altitude (m) avec ombrage. Détail fin autour des réseaux.</p>
+          </div>
+        </section>
+        <section class="ov-sec">
+          <label class="switch" for="ln-on"><span>Plans de réseau (France)</span><input type="checkbox" id="ln-on" role="switch" checked></label>
+          <div class="ov-body" id="ln-body">
+            <label class="chk" for="ln-hl"><input type="checkbox" id="ln-hl" checked> Mettre en évidence les tronçons exposés</label>
+            <select id="ln-heat" aria-label="Lecture de la chaleur par tronçon" hidden><option value="abs">Seuils de température</option><option value="rel">Points chauds de chaque réseau</option></select>
+            <div class="ov-sub" id="ln-sub"></div>
+            <div class="ln-legend" id="ln-legend"></div>
+            <p class="ov-note" id="ln-zoom">Zoomez sur une agglomération française pour afficher les lignes.</p>
+          </div>
+        </section>
+        <div class="ov-probe" id="ov-probe">Survolez la carte pour lire les valeurs.</div>
+        </div>
+      </div>
+      <div class="legend" id="legend">
+        <label class="legend-title" for="ind">Indicateur affiché</label>
+        <select class="ind-select" id="ind"></select>
+        <div class="legend-sub" id="legend-sub"></div>
+        <div class="legend-scale" id="legend-scale"></div>
+        <div class="legend-ticks" id="legend-ticks"></div>
+        <div class="legend-key"><span class="pt c3" aria-hidden="true">52</span> valeur du réseau <span class="ring" aria-hidden="true">12</span> regroupement (nb de réseaux)</div>
+      </div>
+      <aside class="drawer" id="drawer" aria-label="Fiche réseau" aria-hidden="true">
+        <div class="drawer-head">
+          <div class="t" id="d-head"></div>
+          <button class="close" id="d-close" type="button" aria-label="Fermer la fiche">×</button>
+        </div>
+        <div class="drawer-body" id="d-body"></div>
+      </aside>
+    </main>
+  </div>
+</div>
+
+<!--__SCRIPTS__-->
+<script>
+const NETWORKS = /*__DATA__*/;
+const CLIMATE = /*__CLIMATE__*/;
+const GEO = /*__GEO__*/;
+const TEMP = /*__TEMP__*/;
+const FLOOD = /*__FLOOD__*/;
+const WATER = /*__WATER__*/;
+const LINES_GZ = "/*__LINES__*/";
+
+/* ---------- Référentiels ---------- */
+const YEARS = Array.from({ length: 11 }, (_, i) => 2026 + i);
+const SCEN = [
+  { key: "ssp126", label: "SSP1-2.6", desc: "fortes réductions d’émissions", color: "--s1" },
+  { key: "ssp245", label: "SSP2-4.5", desc: "trajectoire intermédiaire", color: "--s2" },
+  { key: "ssp585", label: "SSP5-8.5", desc: "émissions très élevées", color: "--s3" },
+];
+const HAZARDS = [
+  { key: "heat", label: "Chaleur", on: true },
+  { key: "flood", label: "Inondation", on: true }, { key: "drought", label: "Sécheresse" },
+  { key: "surge", label: "Submersion" }, { key: "storm", label: "Tempêtes" },
+];
+const IND_HEAT = {
+  score: { label: "Score chaleur", unit: "/ 100", cuts: [20, 40, 60, 80], dec: 0 },
+  hd35: { label: "Jours ≥ 35 °C", unit: "j/an", cuts: [2, 10, 30, 60], dec: 0 },
+  tr: { label: "Nuits tropicales (Tmin ≥ 20 °C)", unit: "nuits/an", cuts: [10, 40, 90, 180], dec: 0 },
+  hi35: { label: "Jours de chaleur humide (indice ≥ 35 °C)", unit: "j/an", cuts: [1, 5, 20, 60], dec: 0 },
+  txx: { label: "Température max. annuelle", unit: "°C", cuts: [32, 35, 38, 42], dec: 1 },
+};
+const VARS = ["hd35", "tr", "hi35", "txx"];
+const CLASSES = ["Très faible", "Faible", "Modéré", "Élevé", "Très élevé"];
+const BP = {
+  hd35: [[0, 0], [2, 10], [10, 30], [30, 50], [60, 70], [120, 90], [180, 100]],
+  tr: [[0, 0], [5, 10], [20, 25], [60, 45], [120, 65], [200, 85], [300, 100]],
+  hi35: [[0, 0], [1, 10], [5, 30], [20, 50], [60, 75], [150, 100]],
+  txx: [[28, 0], [30, 10], [35, 35], [38, 55], [40, 65], [43, 80], [47, 95], [50, 100]],
+};
+const W = { hd35: 0.35, txx: 0.30, tr: 0.20, hi35: 0.15 };
+const MODE_LABEL = { bus: "Bus & car", tad: "TAD / PMR", tram: "Tramway", metro: "Métro", train: "Ferroviaire", cable: "Câble", boat: "Navette fluviale" };
+const ZONES = [
+  { label: "Monde", b: [[-42, -125], [60, 152]] }, { label: "Europe", b: [[36, -10], [57, 22]] },
+  { label: "France", b: [[42.3, -5.2], [51.1, 8.2]] }, { label: "États-Unis", b: [[25, -123], [48, -68]] },
+  { label: "Moyen-Orient", b: [[12, 25], [36, 58]] }, { label: "Asie-Pacifique", b: [[-40, 100], [24, 153]] },
+];
+
+/* ---------- Calcul ---------- */
+const C = {};
+for (const [k, v] of Object.entries(CLIMATE)) if (!k.startsWith("_")) C[k] = v.split(",").map(Number);
+const ref = (v, i) => C[`${v}|historical|median|1995-2014`][i];
+function value(v, s, y, i) {
+  const h = ref(v, i), a = C[`${v}|${s}|median|2020-2039`][i], b = C[`${v}|${s}|median|2040-2059`][i];
+  const x = y <= 2029.5 ? h + (a - h) * (y - 2004.5) / 25 : a + (b - a) * (y - 2029.5) / 20;
+  return Math.max(0, x);
+}
+function pw(bp, x) {
+  if (x <= bp[0][0]) return bp[0][1];
+  for (let k = 1; k < bp.length; k++) if (x <= bp[k][0]) { const [x0, y0] = bp[k - 1], [x1, y1] = bp[k]; return y0 + (y1 - y0) * (x - x0) / (x1 - x0); }
+  return bp[bp.length - 1][1];
+}
+function compute(vals) {
+  const sub = {}; let score = 0;
+  for (const v of VARS) { sub[v] = pw(BP[v], vals[v]); score += W[v] * sub[v]; }
+  return { ...vals, sub, score };
+}
+const M_HEAT = {};
+for (const s of SCEN) { M_HEAT[s.key] = {}; for (const y of YEARS) M_HEAT[s.key][y] = NETWORKS.map((_, i) => compute(Object.fromEntries(VARS.map(v => [v, value(v, s.key, y, i)])))); }
+const REF_HEAT = NETWORKS.map((_, i) => compute(Object.fromEntries(VARS.map(v => [v, ref(v, i)]))));
+let IND = IND_HEAT, M = M_HEAT, REF = REF_HEAT;
+const IND_FLOOD = {
+  score: { label: "Score inondation", unit: "/ 100", cuts: [20, 40, 60, 80], dec: 0 },
+  ext: { label: "Surface inondable (rayon 10 km)", unit: "%", cuts: [1, 3, 7, 15], dec: 1 },
+  depth: { label: "Hauteur d’eau moyenne en zone inondée", unit: "m", cuts: [0.25, 0.5, 1, 2], dec: 1 },
+  pdepth: { label: "Hauteur d’eau au point du réseau", unit: "m", cuts: [0.1, 0.5, 1, 2], dec: 1 },
+};
+let M_FLOOD = null, REF_FLOOD = null;
+const cls = (ind, x) => IND[ind].cuts.reduce((n, c) => n + (x >= c ? 1 : 0), 0);
+const fmtN = (x, d = 0) => x.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmtInd = (ind, x) => fmtN(x, IND[ind].dec);
+const signed = (x, d = 0) => (x > 0 ? "+" : x < 0 ? "−" : "±") + fmtN(Math.abs(x), d);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const norm = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const state = { hz: "heat", scen: "ssp245", year: 2036, ind: "score", q: "", pays: "", mode: "", sel: null };
+const cur = i => M[state.scen][state.year][i];
+const indVal = (m, ind = state.ind) => ind === "score" ? m.score : m[ind];
+
+/* ---------- Carte ---------- */
+const map = L.map("map", { zoomControl: false, minZoom: 2, maxZoom: 15, zoomSnap: 0.25, zoomDelta: 0.5, maxBounds: [[-80, -210], [85, 210]], maxBoundsViscosity: 0.8 });
+L.control.zoom({ position: "topright", zoomInTitle: "Zoomer", zoomOutTitle: "Dézoomer" }).addTo(map);
+map.attributionControl.setPrefix(false).addAttribution('Climat : Banque mondiale (CMIP6) · Inondation : WRI Aqueduct · Relief : AWS Terrain Tiles · Fonds : Natural Earth, IGN, US Census · Réseaux : ratpdev.com');
+map.createPane("base"); map.getPane("base").style.zIndex = 200;
+map.createPane("admin"); map.getPane("admin").style.zIndex = 250;
+const renderer = L.canvas({ padding: 0.5, pane: "base" }), adminRenderer = L.canvas({ padding: 0.5, pane: "admin" });
+function unwrap(g) {
+  const fix = l => { for (let i = 1; i < l.length; i++) { const d = l[i][0] - l[i - 1][0]; if (d > 180) l[i][0] -= 360; else if (d < -180) l[i][0] += 360; } };
+  const t = g.type, c = g.coordinates;
+  if (t === "LineString") fix(c); else if (t === "Polygon" || t === "MultiLineString") c.forEach(fix); else if (t === "MultiPolygon") c.forEach(p => p.forEach(fix));
+  return g;
+}
+const countries = topojson.feature(GEO.world, GEO.world.objects.countries);
+countries.features = countries.features.filter(f => f.properties.name !== "Antarctica");
+countries.features.forEach(f => f.geometry && unwrap(f.geometry));
+const landLayer = L.geoJSON(countries, { renderer, interactive: false, pane: "base" }).addTo(map);
+const bordersLayer = L.geoJSON(unwrap(topojson.mesh(GEO.world, GEO.world.objects.countries, (a, b) => a !== b)), { renderer: adminRenderer, interactive: false, pane: "admin" }).addTo(map);
+const meshOf = t => topojson.mesh(t, t.objects[Object.keys(t.objects)[0]], (a, b) => a !== b);
+const usStates = L.geoJSON(topojson.mesh(GEO.us, GEO.us.objects.states, (a, b) => a !== b), { renderer: adminRenderer, interactive: false, pane: "admin" });
+const frRegions = L.geoJSON(meshOf(GEO.frReg), { renderer: adminRenderer, interactive: false, pane: "admin" });
+const frDeps = L.geoJSON(meshOf(GEO.frDep), { renderer: adminRenderer, interactive: false, pane: "admin" });
+function styleBase() {
+  landLayer.setStyle({ fillColor: tok("--land"), fillOpacity: 1, color: tok("--coast"), weight: 0.7 });
+  bordersLayer.setStyle({ color: tok("--border"), weight: 0.9, fill: false });
+  usStates.setStyle({ color: tok("--admin"), weight: 0.8, fill: false });
+  frRegions.setStyle({ color: tok("--border"), weight: 0.8, fill: false });
+  frDeps.setStyle({ color: tok("--admin"), weight: 0.6, fill: false, dashArray: "2 3" });
+}
+styleBase();
+function onZoom() {
+  const z = map.getZoom();
+  for (const [layer, on] of [[usStates, z >= 3.75], [frRegions, z >= 5], [frDeps, z >= 7]]) {
+    if (on && !map.hasLayer(layer)) layer.addTo(map);
+    if (!on && map.hasLayer(layer)) map.removeLayer(layer);
+  }
+  map.getContainer().classList.toggle("show-labels", z >= 7);
+}
+map.on("zoomend", onZoom);
+const onTheme = () => { styleBase(); if (typeof LUT !== "undefined") { LUT = buildLUT(rampOf()); styleSea(); refreshOverlay(); } renderAll(); };
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => onTheme());
+new MutationObserver(() => onTheme()).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+/* ---------- Calque températures (grille CMIP6 0,5°) ---------- */
+const OV = { on: true, v: "tas", mode: "abs", opacity: 0.8 };
+const RAMPS = {
+  tas: { min: -20, max: 30, stops: [[-20, "#0d366b"], [-10, "#2a78d6"], [-3, "#b7d3f6"], [0, "N"], [5, "#f6c4b8"], [12, "#ec8b74"], [20, "#d9533b"], [26, "#a8321f"], [30, "#6b1b10"]], ticks: [-20, -10, 0, 10, 20, 30] },
+  txx: { min: 15, max: 50, stops: [[15, "#fbe9da"], [25, "#f4bb8f"], [32, "#e49a62"], [37, "#d8743c"], [41, "#c2531f"], [45, "#9b3a12"], [50, "#5a1e08"]], ticks: [15, 25, 35, 45, 50] },
+  anom: { min: -1, max: 3, stops: [[-1, "#2a78d6"], [-0.4, "#b7d3f6"], [0, "N"], [0.5, "#f6c4b8"], [1, "#ec8b74"], [1.6, "#d9533b"], [2.3, "#a8321f"], [3, "#6b1b10"]], ticks: [-1, 0, 1, 2, 3] },
+};
+const OV_LABEL = { tas: "Température moyenne annuelle", txx: "Température du jour le plus chaud" };
+const neutral = () => (document.documentElement.dataset.theme === "dark" || (document.documentElement.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches)) ? "#383835" : "#f0efec";
+const rampOf = () => OV.mode === "anom" ? RAMPS.anom : RAMPS[OV.v];
+const hex2rgb = h => [1, 3, 5].map(k => parseInt(h.slice(k, k + 2), 16));
+function buildLUT(r) {
+  const st = r.stops.map(([v, c]) => [v, hex2rgb(c === "N" ? neutral() : c)]);
+  const lut = { min: r.min, max: r.max, r: new Uint8Array(256), g: new Uint8Array(256), b: new Uint8Array(256) };
+  for (let k = 0; k < 256; k++) {
+    const v = r.min + (r.max - r.min) * k / 255;
+    let j = 1; while (j < st.length - 1 && v > st[j][0]) j++;
+    const [v0, c0] = st[j - 1], [v1, c1] = st[j], t = Math.max(0, Math.min(1, (v - v0) / (v1 - v0)));
+    lut.r[k] = c0[0] + (c1[0] - c0[0]) * t; lut.g[k] = c0[1] + (c1[1] - c0[1]) * t; lut.b[k] = c0[2] + (c1[2] - c0[2]) * t;
+  }
+  return lut;
+}
+const TG = {};
+const gridsReady = Promise.all(Object.entries(TEMP.fields).map(([k, uri]) => new Promise((res, rej) => {
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement("canvas"); c.width = TEMP.cols; c.height = TEMP.rows;
+    const x = c.getContext("2d", { willReadFrequently: true }); x.drawImage(img, 0, 0);
+    const d = x.getImageData(0, 0, c.width, c.height).data, a = new Uint8Array(c.width * c.height);
+    for (let i = 0; i < a.length; i++) a[i] = d[i * 4];
+    TG[k] = a; res();
+  };
+  img.onerror = rej; img.src = uri;
+})));
+const fieldCache = new Map();
+function field(v, mode, scen, year) {
+  const key = `${v}|${mode}|${scen}|${year}`;
+  if (fieldCache.has(key)) return fieldCache.get(key);
+  const base = TG[`${v}|base`], A = TG[`${v}|${scen}|2020-2039`], B = TG[`${v}|${scen}|2040-2059`];
+  if (!base || !A || !B) return null;
+  const [b0, bs] = TEMP.enc[v].base, [a0, as] = TEMP.enc.anom, n = base.length, out = new Float32Array(n);
+  const early = year <= 2029.5, t = early ? (year - 2004.5) / 25 : (year - 2029.5) / 20;
+  for (let i = 0; i < n; i++) {
+    const a = a0 + A[i] * as, an = early ? a * t : a + (a0 + B[i] * as - a) * t;
+    out[i] = mode === "anom" ? an : b0 + (base[i] - 1) * bs + an;
+  }
+  fieldCache.set(key, out);
+  if (fieldCache.size > 8) fieldCache.delete(fieldCache.keys().next().value);
+  return out;
+}
+function sample(f, lat, lon) {
+  const fr = (TEMP.lat0 - lat) / TEMP.res - TEMP.row0;
+  if (fr < -0.5 || fr > TEMP.rows - 0.5) return NaN;
+  const C = TEMP.cols;
+  let fc = (lon - TEMP.lon0) / TEMP.res; fc = ((fc % C) + C) % C;
+  const r0 = Math.max(0, Math.min(TEMP.rows - 1, Math.floor(fr))), r1 = Math.min(TEMP.rows - 1, r0 + 1);
+  const c0 = Math.floor(fc) % C, c1 = (c0 + 1) % C, dr = Math.max(0, Math.min(1, fr - r0)), dc = fc - Math.floor(fc);
+  return (f[r0 * C + c0] * (1 - dc) + f[r0 * C + c1] * dc) * (1 - dr) + (f[r1 * C + c0] * (1 - dc) + f[r1 * C + c1] * dc) * dr;
+}
+let LUT = buildLUT(rampOf());
+const curField = () => field(OV.v, OV.mode, state.scen, state.year);
+function paintTile(t, coords) {
+  const f = curField(); if (!f) return;
+  const ctx = t.getContext("2d"), im = ctx.createImageData(256, 256), d = im.data;
+  const N = 256 * Math.pow(2, coords.z), span = LUT.max - LUT.min;
+  for (let py = 0; py < 256; py++) {
+    const gy = coords.y * 256 + py + 0.5, lat = Math.atan(Math.sinh(Math.PI * (1 - 2 * gy / N))) * 180 / Math.PI;
+    for (let px = 0; px < 256; px++) {
+      const lon = (coords.x * 256 + px + 0.5) / N * 360 - 180, v = sample(f, lat, lon), k = (py * 256 + px) * 4;
+      if (isNaN(v)) continue;
+      const idx = Math.max(0, Math.min(255, Math.round((v - LUT.min) / span * 255)));
+      d[k] = LUT.r[idx]; d[k + 1] = LUT.g[idx]; d[k + 2] = LUT.b[idx]; d[k + 3] = 255;
+    }
+  }
+  ctx.putImageData(im, 0, 0);
+}
+map.createPane("temp"); map.getPane("temp").style.zIndex = 215;
+map.createPane("sea"); map.getPane("sea").style.zIndex = 230;
+const TempLayer = L.GridLayer.extend({
+  createTile(coords) { const t = document.createElement("canvas"); t.width = t.height = 256; paintTile(t, coords); return t; },
+});
+const tempLayer = new TempLayer({ pane: "temp", opacity: OV.opacity, updateWhenZooming: false, keepBuffer: 1 });
+const landMerged = unwrap(topojson.merge(GEO.world, GEO.world.objects.countries.geometries.filter(g => !g.properties || g.properties.name !== "Antarctica")));
+const seaMask = L.polygon(
+  [[[-85, -220], [86, -220], [86, 220], [-85, 220]], ...landMerged.coordinates.map(p => p[0].map(([lo, la]) => [la, lo]))],
+  { renderer: L.canvas({ padding: 0.5, pane: "sea" }), pane: "sea", interactive: false, fillOpacity: 1, weight: 0.7, noClip: true, smoothFactor: 1.5 }
+);
+function styleSea() { seaMask.setStyle({ fillColor: tok("--sea"), color: tok("--coast") }); }
+function renderOvLegend() {
+  const r = rampOf(), pct = v => (v - r.min) / (r.max - r.min) * 100;
+  document.getElementById("ov-ramp").style.background = `linear-gradient(90deg, ${r.stops.map(([v, c]) => `${c === "N" ? neutral() : c} ${pct(v).toFixed(1)}%`).join(", ")})`;
+  document.getElementById("ov-ticks").innerHTML = r.ticks.map(t => `<span style="left:${pct(t)}%">${OV.mode === "anom" && t > 0 ? "+" : ""}${fmtN(t)}${t === r.ticks[r.ticks.length - 1] ? " °C" : ""}</span>`).join("");
+  const sc = SCEN.find(s => s.key === state.scen);
+  document.getElementById("ov-sub").textContent = `${OV_LABEL[OV.v]}${OV.mode === "anom" ? ", écart vs 1995–2014" : ""} · ${state.year} · ${sc.label}`;
+}
+function refreshOverlay() {
+  renderOvLegend();
+  if (!OV.on) return;
+  if (!map.hasLayer(tempLayer)) { tempLayer.addTo(map); syncSea(); }
+  tempLayer.redraw();
+}
+function setOverlay(on) {
+  OV.on = on; document.getElementById("ov-body").hidden = !on;
+  if (on) refreshOverlay(); else { map.removeLayer(tempLayer); syncSea(); }
+}
+function syncSea() {
+  const want = OV.on || RE.on;
+  if (want && !map.hasLayer(seaMask)) { seaMask.addTo(map); styleSea(); }
+  if (!want && map.hasLayer(seaMask)) map.removeLayer(seaMask);
+}
+document.getElementById("ov-on").addEventListener("change", e => setOverlay(e.target.checked));
+document.getElementById("ov-var").addEventListener("change", e => { OV.v = e.target.value; LUT = buildLUT(rampOf()); refreshOverlay(); });
+document.getElementById("ov-mode").addEventListener("change", e => { OV.mode = e.target.value; LUT = buildLUT(rampOf()); refreshOverlay(); });
+document.getElementById("ov-opacity").addEventListener("input", e => { OV.opacity = +e.target.value / 100; tempLayer.setOpacity(OV.opacity); });
+const probe = document.getElementById("ov-probe");
+map.on("mousemove", e => {
+  const { lat, lng } = e.latlng, parts = [];
+  if (OV.on) { const f = curField(); if (f) { const v = sample(f, lat, lng); if (!isNaN(v)) parts.push(`Température <b>${OV.mode === "anom" ? signed(v, 1) : fmtN(v, 1)} °C</b>`); } }
+  if (FL.on && M_FLOOD) { const d = floodDepthAt(lat, lng); if (d != null) parts.push(d >= 0.1 ? `Hauteur d’eau <b>${fmtN(d, 1)} m</b>` : "Hors zone inondable"); }
+  if (RE.on && demReady) { const h = elevAt(lat, lng); if (!isNaN(h)) parts.push(`Altitude <b>${fmtN(Math.max(0, h))} m</b>`); }
+  probe.innerHTML = parts.length ? parts.join(" · ") : "Survolez la carte pour lire les valeurs.";
+});
+map.on("mouseout", () => { probe.textContent = "Survolez la carte pour lire les valeurs."; });
+gridsReady.then(() => { if (OV.on) refreshOverlay(); if (state.sel != null) renderDrawer(); });
+
+/* ---------- Aléa inondation : fenêtres WRI Aqueduct (~1 km), MNT, cours d'eau ---------- */
+const FL = { on: false, type: "all" }, RE = { on: false }, WA = { on: false };
+const SCEN_RCP = { ssp126: "rcp4p5", ssp245: "rcp4p5", ssp585: "rcp8p5" };
+const FW = FLOOD.win, FS = FLOOD.fs, DS = FLOOD.dem.ds, NW = FW.length, R_KM = 10;
+const FG = {};
+let DEMW = null, DEMG = null, demReady = false, NET = null;
+const BPF = {
+  ext: [[0, 0], [1, 15], [3, 30], [7, 50], [15, 70], [30, 90], [50, 100]],
+  depth: [[0, 0], [0.25, 15], [0.5, 30], [1, 50], [2, 70], [3.5, 90], [5, 100]],
+};
+function decodePng(uri, w, h) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      const x = c.getContext("2d", { willReadFrequently: true }); x.drawImage(img, 0, 0);
+      const d = x.getImageData(0, 0, w, h).data, a = new Uint8Array(w * h);
+      for (let i = 0; i < a.length; i++) a[i] = d[i * 4];
+      res(a);
+    };
+    img.onerror = rej; img.src = uri;
+  });
+}
+function unpack(a, mw, size, perRow) {
+  const out = new Uint8Array(NW * size * size);
+  for (let i = 0; i < NW; i++) {
+    const ox = (i % perRow) * size, oy = Math.floor(i / perRow) * size;
+    for (let r = 0; r < size; r++) out.set(a.subarray((oy + r) * mw + ox, (oy + r) * mw + ox + size), (i * size + r) * size);
+  }
+  return out;
+}
+const WB = FW.map(([r0, c0]) => ({ n: 90 - r0 / 120, s: 90 - (r0 + FS) / 120, w: -180 + c0 / 120, e: -180 + (c0 + FS) / 120 }));
+const ALLW = FW.map((_, i) => i);
+function windowsIn(s, w, n, e) { return ALLW.filter(i => { const b = WB[i]; return b.s < n && b.n > s && b.w < e && b.e > w; }); }
+function winAt(lat, lon, cand = ALLW) {
+  for (const i of cand) { const b = WB[i]; if (lat <= b.n && lat > b.s && lon >= b.w && lon < b.e) return i; }
+  return -1;
+}
+function interpQ(kind, rcp, year, idx) {
+  const h = FG[`${kind}|hist`][idx], a = FG[`${kind}|${rcp}|2030`][idx], b = FG[`${kind}|${rcp}|2050`][idx];
+  const v = year <= 2030 ? h + (a - h) * (year - 2010) / 20 : a + (b - a) * (year - 2030) / 20;
+  return Math.max(0, v) / 25;
+}
+let GE = null;
+function globElev(lat, lon) {
+  const g = FLOOD.glob, fr = (g.lat0 - lat) / g.res, W = g.w;
+  if (fr < 0 || fr > g.h - 1) return NaN;
+  let fc = (lon - g.lon0) / g.res; fc = ((fc % W) + W) % W;
+  const r0 = Math.floor(fr), r1 = Math.min(g.h - 1, r0 + 1), c0 = Math.floor(fc) % W, c1 = (c0 + 1) % W, dr = fr - r0, dc = fc - Math.floor(fc);
+  return (GE[r0 * W + c0] * (1 - dc) + GE[r0 * W + c1] * dc) * (1 - dr) + (GE[r1 * W + c0] * (1 - dc) + GE[r1 * W + c1] * dc) * dr;
+}
+function elevAt(lat, lon, cand = ALLW) {
+  if (!demReady) return NaN;
+  const i = winAt(lat, lon, cand);
+  if (i >= 0) {
+    const [r0, c0] = FW[i], base = i * DS * DS, mn = FLOOD.dem.min[i], st = FLOOD.dem.step[i];
+    let fr = (90 - lat) * 240 - 2 * r0 - 0.5, fc = (lon + 180) * 240 - 2 * c0 - 0.5;
+    fr = Math.max(0, Math.min(DS - 1.001, fr)); fc = Math.max(0, Math.min(DS - 1.001, fc));
+    const a = Math.floor(fr), b = Math.floor(fc), dr = fr - a, dc = fc - b;
+    const q = (DEMW[base + a * DS + b] * (1 - dc) + DEMW[base + a * DS + b + 1] * dc) * (1 - dr) + (DEMW[base + (a + 1) * DS + b] * (1 - dc) + DEMW[base + (a + 1) * DS + b + 1] * dc) * dr;
+    return mn + q * st;
+  }
+  return globElev(lat, lon);
+}
+function cellElev(i, a, b) {
+  const base = i * DS * DS; let s = 0;
+  for (let u = 0; u < 2; u++) for (let v = 0; v < 2; v++) s += DEMW[base + (2 * a + u) * DS + 2 * b + v];
+  return FLOOD.dem.min[i] + s / 4 * FLOOD.dem.step[i];
+}
+function floodMetrics(i, scen, year) {
+  const rcp = SCEN_RCP[scen], S = NET[i];
+  let land = 0, fl = 0, flR = 0, flC = 0, sum = 0; const elevs = [];
+  for (const c of S.cells) {
+    if (!c.land) continue;
+    land++;
+    const idx = i * FS * FS + c.k, dr = interpQ("river", rcp, year, idx), dc = interpQ("coast", rcp, year, idx), d = Math.max(dr, dc);
+    if (dr >= 0.1) flR++; if (dc >= 0.1) flC++;
+    if (d >= 0.1) { fl++; sum += d; elevs.push(c.e); }
+  }
+  let pd = 0;
+  if (S.pk >= 0) { const idx = i * FS * FS + S.pk; pd = Math.max(interpQ("river", rcp, year, idx), interpQ("coast", rcp, year, idx)); }
+  elevs.sort((a, b) => a - b);
+  const fe = elevs.length ? elevs[Math.floor(elevs.length / 2)] : NaN, dh = isNaN(fe) ? NaN : S.pe - fe;
+  const ext = land ? fl / land * 100 : 0, depth = fl ? sum / fl : 0;
+  const sExt = pw(BPF.ext, ext), sInt = pw(BPF.depth, depth), hzd = 0.5 * sExt + 0.5 * sInt;
+  const f = pd >= 0.1 || isNaN(dh) ? 1 : 1 - 0.6 * Math.max(0, Math.min(1, (dh - 2) / 28));
+  return { score: hzd * f, ext, extR: land ? flR / land * 100 : 0, extC: land ? flC / land * 100 : 0, depth, pdepth: pd < 0.1 ? 0 : pd, fe, dh, f, sExt, sInt, hzd, pe: S.pe };
+}
+const floodReady = (async () => {
+  await Promise.all(Object.entries(FLOOD.fields).map(async ([k, uri]) => { FG[k] = unpack(await decodePng(uri, FLOOD.mw, FLOOD.mh), FLOOD.mw, FS, FLOOD.perRow); }));
+  DEMW = unpack(await decodePng(FLOOD.dem.uri, FLOOD.dem.mw, FLOOD.dem.mh), FLOOD.dem.mw, DS, FLOOD.dem.perRow);
+  DEMG = await decodePng(FLOOD.glob.uri, FLOOD.glob.w, FLOOD.glob.h);
+  GE = new Float32Array(DEMG.length);
+  const k = Math.sqrt(FLOOD.glob.max) / 254;
+  for (let j = 0; j < GE.length; j++) GE[j] = DEMG[j] ? Math.pow((DEMG[j] - 1) * k, 2) : 0;
+  demReady = true;
+  NET = NETWORKS.map((n, i) => {
+    const [r0, c0] = FW[i], cosl = Math.cos(n.la * Math.PI / 180), cells = [];
+    for (let a = 0; a < FS; a++) for (let b = 0; b < FS; b++) {
+      const lat = 90 - (r0 + a + 0.5) / 120, lon = -180 + (c0 + b + 0.5) / 120;
+      const dy = (lat - n.la) * 111.2, dx = (lon - n.lo) * 111.2 * cosl;
+      if (dx * dx + dy * dy <= R_KM * R_KM) { const e = cellElev(i, a, b); cells.push({ k: a * FS + b, e, land: e >= -1 }); }
+    }
+    const pr = Math.floor((90 - n.la) * 120) - r0, pc = Math.floor((n.lo + 180) * 120) - c0;
+    return { cells, pk: pr >= 0 && pr < FS && pc >= 0 && pc < FS ? pr * FS + pc : -1, pe: FLOOD.pelev[i] };
+  });
+  M_FLOOD = {};
+  for (const s of SCEN) { M_FLOOD[s.key] = {}; for (const y of YEARS) M_FLOOD[s.key][y] = NETWORKS.map((_, i) => floodMetrics(i, s.key, y)); }
+  REF_FLOOD = NETWORKS.map((_, i) => floodMetrics(i, "ssp245", 2010));
+  if (state.hz === "flood") { M = M_FLOOD; REF = REF_FLOOD; renderAll(); }
+  refreshFlood();
+  if (RE.on) reliefLayer.redraw();
+})();
+
+/* Calque zones inondables */
+const FLOOD_RAMP = { min: 0, max: 6, stops: [[0, "#d6e7f9"], [0.5, "#9cc5f0"], [1, "#629fe3"], [2, "#3277cc"], [3.5, "#1f539c"], [6, "#10346a"]], ticks: [0, 1, 2, 4, 6] };
+const LUT_FL = buildLUT(FLOOD_RAMP);
+let FD = null;
+function floodField() {
+  const key = `${FL.type}|${state.scen}|${state.year}`;
+  if (FD && FD.key === key) return FD.a;
+  const a = new Float32Array(NW * FS * FS), rcp = SCEN_RCP[state.scen];
+  for (let idx = 0; idx < a.length; idx++) {
+    const dr = FL.type !== "coast" ? interpQ("river", rcp, state.year, idx) : 0, dc = FL.type !== "river" ? interpQ("coast", rcp, state.year, idx) : 0;
+    a[idx] = Math.max(dr, dc);
+  }
+  FD = { key, a };
+  return a;
+}
+function floodDepthAt(lat, lon) {
+  const i = winAt(lat, lon); if (i < 0) return null;
+  const [r0, c0] = FW[i], a = Math.floor((90 - lat) * 120) - r0, b = Math.floor((lon + 180) * 120) - c0;
+  return floodField()[i * FS * FS + a * FS + b];
+}
+function tileBounds(coords) {
+  const N = Math.pow(2, coords.z), lon = x => x / N * 360 - 180, lat = y => Math.atan(Math.sinh(Math.PI * (1 - 2 * y / N))) * 180 / Math.PI;
+  return { w: lon(coords.x), e: lon(coords.x + 1), n: lat(coords.y), s: lat(coords.y + 1), N: N * 256 };
+}
+function paintFloodTile(t, coords) {
+  if (!M_FLOOD) return;
+  const tb = tileBounds(coords), cand = windowsIn(tb.s, tb.w, tb.n, tb.e);
+  if (!cand.length) return;
+  const f = floodField(), ctx = t.getContext("2d"), im = ctx.createImageData(256, 256), d = im.data, span = LUT_FL.max - LUT_FL.min;
+  for (let py = 0; py < 256; py++) {
+    const gy = coords.y * 256 + py + 0.5, lat = Math.atan(Math.sinh(Math.PI * (1 - 2 * gy / tb.N))) * 180 / Math.PI;
+    for (let px = 0; px < 256; px++) {
+      const lon = (coords.x * 256 + px + 0.5) / tb.N * 360 - 180, i = winAt(lat, lon, cand);
+      if (i < 0) continue;
+      const [r0, c0] = FW[i];
+      let fr = (90 - lat) * 120 - r0 - 0.5, fc = (lon + 180) * 120 - c0 - 0.5;
+      fr = Math.max(0, Math.min(FS - 1.001, fr)); fc = Math.max(0, Math.min(FS - 1.001, fc));
+      const a = Math.floor(fr), b = Math.floor(fc), dr = fr - a, dc = fc - b, base = i * FS * FS;
+      const v = (f[base + a * FS + b] * (1 - dc) + f[base + a * FS + b + 1] * dc) * (1 - dr) + (f[base + (a + 1) * FS + b] * (1 - dc) + f[base + (a + 1) * FS + b + 1] * dc) * dr;
+      if (v < 0.1) continue;
+      const k = (py * 256 + px) * 4, idx = Math.max(0, Math.min(255, Math.round((v - LUT_FL.min) / span * 255)));
+      d[k] = LUT_FL.r[idx]; d[k + 1] = LUT_FL.g[idx]; d[k + 2] = LUT_FL.b[idx]; d[k + 3] = 225;
+    }
+  }
+  ctx.putImageData(im, 0, 0);
+}
+map.createPane("relief"); map.getPane("relief").style.zIndex = 205;
+map.createPane("flood"); map.getPane("flood").style.zIndex = 235;
+map.createPane("water"); map.getPane("water").style.zIndex = 240;
+const CanvasGrid = L.GridLayer.extend({ createTile(coords) { const t = document.createElement("canvas"); t.width = t.height = 256; this.options.paint(t, coords); return t; } });
+const floodLayer = new CanvasGrid({ pane: "flood", paint: paintFloodTile, updateWhenZooming: false, keepBuffer: 1 });
+
+/* Calque relief : teinte hypsométrique + ombrage */
+const RELIEF = {
+  light: [[0, "#eef1e6"], [100, "#dfe7cf"], [300, "#e8e0bd"], [700, "#dcc59a"], [1500, "#c6a57d"], [2500, "#a88b72"], [4000, "#d6d1cb"], [6000, "#ffffff"]],
+  dark: [[0, "#2b302a"], [100, "#343e30"], [300, "#474634"], [700, "#574a37"], [1500, "#5e4a3b"], [2500, "#5c5048"], [4000, "#77736e"], [6000, "#9c9993"]],
+  ticks: [0, 500, 1500, 3000, 6000],
+};
+const isDark = () => neutral() === "#383835";
+const reliefPos = e => Math.sqrt(Math.max(0, e) / 6000);
+function reliefLUT() {
+  const st = (isDark() ? RELIEF.dark : RELIEF.light).map(([v, c]) => [reliefPos(v), hex2rgb(c)]);
+  const lut = { r: new Uint8Array(256), g: new Uint8Array(256), b: new Uint8Array(256) };
+  for (let k = 0; k < 256; k++) {
+    const v = k / 255; let j = 1; while (j < st.length - 1 && v > st[j][0]) j++;
+    const [v0, c0] = st[j - 1], [v1, c1] = st[j], t = Math.max(0, Math.min(1, (v - v0) / (v1 - v0)));
+    lut.r[k] = c0[0] + (c1[0] - c0[0]) * t; lut.g[k] = c0[1] + (c1[1] - c0[1]) * t; lut.b[k] = c0[2] + (c1[2] - c0[2]) * t;
+  }
+  return lut;
+}
+let LUT_RE = reliefLUT();
+function paintReliefTile(t, coords) {
+  if (!demReady) return;
+  const tb = tileBounds(coords), cand = windowsIn(tb.s - 0.1, tb.w - 0.1, tb.n + 0.1, tb.e + 0.1);
+  const S = 257, E = new Float32Array(S * S), lats = new Float32Array(S), fine = coords.z >= 6 ? new Uint8Array(S * S) : null;
+  for (let py = 0; py < S; py++) {
+    const gy = coords.y * 256 + py, lat = Math.atan(Math.sinh(Math.PI * (1 - 2 * gy / tb.N))) * 180 / Math.PI; lats[py] = lat;
+    for (let px = 0; px < S; px++) { const lon = (coords.x * 256 + px) / tb.N * 360 - 180; E[py * S + px] = elevAt(lat, lon, cand); if (fine) fine[py * S + px] = winAt(lat, lon, cand) >= 0 ? 1 : 0; }
+  }
+  const ctx = t.getContext("2d"), im = ctx.createImageData(256, 256), d = im.data;
+  const zf = 1.4 * Math.pow(1.7, Math.max(0, 9 - coords.z)), lx = -0.5, ly = -0.5, lz = 0.7071;
+  for (let py = 0; py < 256; py++) {
+    const mpp = 40075016 * Math.cos(lats[py] * Math.PI / 180) / tb.N;
+    for (let px = 0; px < 256; px++) {
+      const e = E[py * S + px]; if (isNaN(e)) continue;
+      const dzdx = (E[py * S + px + 1] - e) / mpp * zf, dzdy = (E[(py + 1) * S + px] - e) / mpp * zf;
+      const nl = Math.hypot(dzdx, dzdy, 1), shade = Math.max(0, (-dzdx * lx - dzdy * ly + lz) / nl);
+      const m = fine && !fine[py * S + px] ? 0.98 : 0.55 + 0.6 * shade, idx = Math.round(reliefPos(e) * 255), k = (py * 256 + px) * 4;
+      d[k] = Math.min(255, LUT_RE.r[idx] * m); d[k + 1] = Math.min(255, LUT_RE.g[idx] * m); d[k + 2] = Math.min(255, LUT_RE.b[idx] * m); d[k + 3] = 255;
+    }
+  }
+  ctx.putImageData(im, 0, 0);
+}
+const reliefLayer = new CanvasGrid({ pane: "relief", paint: paintReliefTile, updateWhenZooming: false, keepBuffer: 1 });
+
+/* Cours d'eau et lacs */
+const waterRenderer = L.canvas({ padding: 0.5, pane: "water" });
+const lakesLayer = L.geoJSON(topojson.feature(WATER.lakes, WATER.lakes.objects.lakes), { renderer: waterRenderer, pane: "water", interactive: false });
+const riversLayer = L.geoJSON(topojson.feature(WATER.rivers, WATER.rivers.objects.rivers), { renderer: waterRenderer, pane: "water", interactive: false });
+function styleWater() {
+  const z = map.getZoom(), maxSr = z < 4 ? 5 : z < 5.5 ? 8 : z < 7 ? 10 : 12, col = tok("--water"), fill = tok("--water-fill");
+  riversLayer.setStyle(f => { const sr = f.properties.sr, on = sr <= maxSr; return { color: col, opacity: on ? 0.95 : 0, weight: on ? (sr <= 3 ? 2.4 : sr <= 6 ? 1.7 : sr <= 9 ? 1.2 : 0.9) : 0, lineCap: "round" }; });
+  lakesLayer.setStyle(f => { const on = f.properties.sr <= maxSr + 1; return { color: col, weight: 0.7, opacity: on ? 0.9 : 0, fillColor: fill, fillOpacity: on ? 0.95 : 0 }; });
+}
+map.on("zoomend", () => { if (WA.on) styleWater(); });
+
+/* Bascules et légendes */
+function setLayer(k, on) {
+  const el = document.getElementById(k + "-on"); el.checked = on;
+  const body = document.getElementById(k + "-body"); if (body) body.hidden = !on;
+  if (k === "ov") return setOverlay(on);
+  if (k === "fl") { FL.on = on; if (on) { if (!map.hasLayer(floodLayer)) floodLayer.addTo(map); refreshFlood(); } else map.removeLayer(floodLayer); }
+  if (k === "wa") { WA.on = on; if (on) { lakesLayer.addTo(map); riversLayer.addTo(map); styleWater(); } else { map.removeLayer(lakesLayer); map.removeLayer(riversLayer); } }
+  if (k === "re") { RE.on = on; if (on) { if (!map.hasLayer(reliefLayer)) reliefLayer.addTo(map); renderReLegend(); } else map.removeLayer(reliefLayer); syncSea(); }
+}
+["fl", "wa", "re"].forEach(k => document.getElementById(k + "-on").addEventListener("change", e => setLayer(k, e.target.checked)));
+document.getElementById("ov-toggle").addEventListener("click", e => {
+  const b = e.currentTarget, open = b.getAttribute("aria-expanded") !== "true";
+  b.setAttribute("aria-expanded", String(open)); document.getElementById("ov-content").hidden = !open;
+});
+if (matchMedia("(max-width: 860px)").matches) { document.getElementById("ov-toggle").setAttribute("aria-expanded", "false"); document.getElementById("ov-content").hidden = true; }
+document.getElementById("fl-type").addEventListener("change", e => { FL.type = e.target.value; refreshFlood(); refreshLines(); });
+function rampCss(stops, pos) { return `linear-gradient(90deg, ${stops.map(([v, c]) => `${c} ${(pos(v) * 100).toFixed(1)}%`).join(", ")})`; }
+function renderFlLegend() {
+  const r = FLOOD_RAMP, pos = v => (v - r.min) / (r.max - r.min);
+  document.getElementById("fl-ramp").style.background = rampCss(r.stops, pos);
+  document.getElementById("fl-ticks").innerHTML = r.ticks.map((t, j) => `<span style="left:${pos(t) * 100}%">${fmtN(t)}${j === r.ticks.length - 1 ? " m" : ""}</span>`).join("");
+  const sc = SCEN.find(s => s.key === state.scen);
+  document.getElementById("fl-sub").textContent = `${state.year} · ${sc.label}${state.scen === "ssp126" ? " (approché par RCP4.5)" : ""}`;
+}
+function renderReLegend() {
+  document.getElementById("re-ramp").style.background = rampCss(isDark() ? RELIEF.dark : RELIEF.light, reliefPos);
+  document.getElementById("re-ticks").innerHTML = RELIEF.ticks.map((t, j) => `<span style="left:${reliefPos(t) * 100}%">${fmtN(t)}${j === RELIEF.ticks.length - 1 ? " m" : ""}</span>`).join("");
+}
+function refreshFlood() { renderFlLegend(); if (FL.on && M_FLOOD) floodLayer.redraw(); }
+const onThemeLayers = () => { LUT_RE = reliefLUT(); renderReLegend(); if (WA.on) styleWater(); if (RE.on) reliefLayer.redraw(); renderRadius(); };
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", onThemeLayers);
+new MutationObserver(onThemeLayers).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+let radiusCircle = null;
+function renderRadius() {
+  if (radiusCircle) { map.removeLayer(radiusCircle); radiusCircle = null; }
+  if (state.hz !== "flood" || state.sel == null) return;
+  const n = NETWORKS[state.sel];
+  radiusCircle = L.circle([n.la, n.lo], { radius: R_KM * 1000, color: tok("--ink"), weight: 1.5, dashArray: "5 5", fill: false, interactive: false }).addTo(map);
+}
+
+/* Portefeuille et fiche : inondation */
+function renderKpisFlood(vis) {
+  const mean = a => a.reduce((s, x) => s + x, 0) / (a.length || 1);
+  const now = vis.map(i => cur(i)), base = vis.map(i => M[state.scen][2026][i]);
+  const sNow = mean(now.map(m => m.score)), sBase = mean(base.map(m => m.score));
+  const high = now.filter(m => cls("score", m.score) >= 3).length, highBase = base.filter(m => cls("score", m.score) >= 3).length;
+  const inZone = now.filter(m => m.pdepth >= 0.1).length, extNow = mean(now.map(m => m.ext)), extRef = mean(vis.map(i => REF[i].ext));
+  const yr = state.year;
+  document.getElementById("kpis").innerHTML = `
+    <div class="kpi"><span class="k-label">Score inondation moyen</span><span class="k-val num">${fmtN(sNow)}<small> /100</small></span>
+      <span class="k-delta">${yr > 2026 ? `<span class="${sNow - sBase > 0.05 ? "delta-up" : ""}">${signed(sNow - sBase, 1)}</span> vs 2026` : "point de départ"}</span></div>
+    <div class="kpi"><span class="k-label">Réseaux en risque élevé ou très élevé</span><span class="k-val num">${high}<small> / ${vis.length}</small></span>
+      <span class="k-delta">${yr > 2026 ? `${signed(high - highBase)} vs 2026` : "point de départ"}</span></div>
+    <div class="kpi"><span class="k-label">Réseaux dont le point est en zone inondable</span><span class="k-val num">${inZone}<small> / ${vis.length}</small></span>
+      <span class="k-delta">surface inondable moy. ${fmtN(extNow, 1)} % (réf. ${fmtN(extRef, 1)} %)</span></div>`;
+}
+const VIG_FLOOD = {
+  metro: "Stations et tunnels : entrées d’eau possibles par les accès, trémies et puits de ventilation ; vérifier pompes d’exhaure et batardeaux.",
+  rail: "Voies, sous-stations électriques et postes de signalisation en point bas : sensibles à la submersion.",
+  bus: "Dépôts et ateliers : vérifier leur implantation hors zone inondable et prévoir la mise à l’abri de la flotte et des bornes de recharge.",
+  coast: "Submersion marine : lignes, terminus et dépôts littoraux exposés lors des tempêtes, en hausse avec le niveau de la mer.",
+  service: "Continuité de service : préparer itinéraires de déviation et information voyageurs pour les épisodes de crue.",
+  high: "Le point du réseau est en hauteur par rapport aux zones inondables ; les dépôts et terminus en fond de vallée restent à vérifier.",
+};
+function renderDrawerFlood(i) {
+  const n = NETWORKS[i], m = cur(i), m26 = M[state.scen][2026][i], r = REF[i];
+  const k = cls("score", m.score), scen = SCEN.find(s => s.key === state.scen);
+  document.getElementById("d-head").innerHTML = `<p class="eyebrow">${esc(n.pays)} · ${esc(MODE_LABEL[n.p])}</p><h3>${esc(n.ci)}</h3><p>${esc(n.t)}</p>`;
+  const ch = trajChart(i);
+  const row = (lab, unit, v, dec) => `<tr><td>${lab}<br><small>${unit}</small></td><td>${fmtN(r[v], dec)}</td><td>${fmtN(m26[v], dec)}</td><td><b>${fmtN(m[v], dec)}</b></td><td class="${m[v] - r[v] > 0.05 ? "delta-up" : ""}">${signed(m[v] - r[v], dec)}</td></tr>`;
+  const rows = row("Surface inondable dans 10 km", "% de la surface", "ext", 1) + row("· dont crues fluviales", "%", "extR", 1) + row("· dont submersion marine", "%", "extC", 1)
+    + row("Hauteur d’eau moyenne en zone inondée", "m", "depth", 2) + row("Hauteur d’eau au point du réseau", "m", "pdepth", 2);
+  const dhTxt = isNaN(m.dh) ? "Aucune zone inondable dans le rayon : pas de correction topographique."
+    : m.pdepth >= 0.1 ? "Le point du réseau est lui-même en zone inondable : aucune réduction liée au relief."
+    : m.dh > 2 ? `Le point est ${fmtN(m.dh)} m au-dessus des zones inondables : le score est réduit de ${fmtN((1 - m.f) * 100)} %.`
+    : `Le point est au niveau des zones inondables (${signed(m.dh)} m) : pas de réduction.`;
+  const has = s => n.m.some(x => x.includes(s)), vig = [];
+  if (has("Métro")) vig.push(VIG_FLOOD.metro);
+  if (has("Tramway") || has("Ferroviaire")) vig.push(VIG_FLOOD.rail);
+  if (has("Bus") || has("TAD")) vig.push(VIG_FLOOD.bus);
+  if (m.extC >= 0.1) vig.push(VIG_FLOOD.coast);
+  if (m.ext >= 3) vig.push(VIG_FLOOD.service);
+  if (m.dh > 10 && m.pdepth < 0.1) vig.push(VIG_FLOOD.high);
+  const href = n.pg ? `https://www.ratpdev.com/fr/${encodeURIComponent(n.pg)}/` : "https://www.ratpdev.com/fr/nos-reseaux/";
+  document.getElementById("d-body").innerHTML = `
+    <section class="sec score-row">
+      <div class="score-big c${k + 1}">${fmtN(m.score)}</div>
+      <div class="score-txt"><b>Risque inondation ${CLASSES[k].toLowerCase()}</b>
+        <span>${state.year} · ${scen.label} (${scen.desc})<br>${state.year > 2026 ? `<span class="${m.score - m26.score > 0.05 ? "delta-up" : ""}">${signed(m.score - m26.score, 1)} pt</span> depuis 2026 · ` : ""}référence 2010 : ${fmtN(r.score)}</span></div>
+    </section>
+    <section class="sec">
+      <h4>Trajectoire · ${esc(IND[state.ind].label)}</h4>
+      <div class="chart-box" id="traj">${ch.html}</div>
+      ${state.scen === "ssp126" ? `<p class="note">SSP1-2.6 est approché par le scénario RCP4.5 d’Aqueduct.</p>` : ""}
+    </section>
+    <section class="sec">
+      <h4>Exposition · crue centennale</h4>
+      <table class="ind-table"><thead><tr><th></th><th>2010</th><th>2026</th><th>${state.year}</th><th>Δ réf.</th></tr></thead><tbody>${rows}</tbody></table>
+    </section>
+    <section class="sec">
+      <h4>Topographie</h4>
+      <dl class="facts"><dt>Altitude du point</dt><dd class="num">${fmtN(m.pe)} m</dd>
+        <dt>Altitude médiane des zones inondables</dt><dd class="num">${isNaN(m.fe) ? "–" : fmtN(m.fe) + " m"}</dd>
+        <dt>Hauteur relative</dt><dd class="num">${isNaN(m.dh) ? "–" : signed(m.dh) + " m"}</dd></dl>
+      <p class="note">${dhTxt}</p>
+    </section>
+    <section class="sec">
+      <h4>Composition du score</h4>
+      <div class="contrib">
+        <div class="contrib-row"><span>Surface inondable <small style="color:var(--muted)">× 50 %</small></span><span class="bar"><i style="width:${m.sExt}%"></i></span><span>${fmtN(0.5 * m.sExt)}</span></div>
+        <div class="contrib-row"><span>Hauteur d’eau <small style="color:var(--muted)">× 50 %</small></span><span class="bar"><i style="width:${m.sInt}%"></i></span><span>${fmtN(0.5 * m.sInt)}</span></div>
+        <div class="contrib-row"><span>Facteur relief</span><span class="bar"><i style="width:${m.f * 100}%"></i></span><span>× ${fmtN(m.f, 2)}</span></div>
+      </div>
+      <p class="note">Aléa ${fmtN(m.hzd)} × facteur relief ${fmtN(m.f, 2)} = score ${fmtN(m.score)}.</p>
+    </section>
+    ${vig.length ? `<section class="sec"><h4>Points de vigilance</h4><ul class="vig">${vig.map(v => `<li>${esc(v)}</li>`).join("")}</ul></section>` : ""}
+    <section class="sec">
+      <h4>Réseau</h4>
+      <dl class="facts"><dt>Client</dt><dd>${esc(n.cl)}</dd><dt>Modes</dt><dd>${esc(n.m.join(", "))}</dd><dt>Chiffres</dt><dd>${esc(n.kf.join(" · "))}</dd></dl>
+      <p style="margin:10px 0 0"><a href="${href}" target="_blank" rel="noopener">${n.pg ? "Fiche réseau sur ratpdev.com" : "Voir sur ratpdev.com"} ↗</a></p>
+    </section>`;
+  bindTraj(document.getElementById("traj"), ch);
+  appendLines(i);
+}
+async function copyFlood(btn, vis) {
+  const head = ["reseau", "ville", "pays", "mode_principal", "scenario", "annee", "score", "classe", "surface_inondable_pct", "dont_fluvial_pct", "dont_submersion_pct", "hauteur_moyenne_m", "hauteur_au_point_m", "altitude_point_m", "altitude_zone_inondable_m", "hauteur_relative_m", "facteur_relief", "score_2026", "score_reference_2010"];
+  const f1 = x => isNaN(x) ? "" : x.toFixed(2);
+  const lines = [head.join(";")].concat(vis.map(i => {
+    const n = NETWORKS[i], m = cur(i);
+    return [n.t, n.ci, n.pays, MODE_LABEL[n.p], state.scen, state.year, m.score.toFixed(1), CLASSES[cls("score", m.score)], f1(m.ext), f1(m.extR), f1(m.extC), f1(m.depth), f1(m.pdepth), f1(m.pe), f1(m.fe), f1(m.dh), f1(m.f), M[state.scen][2026][i].score.toFixed(1), REF[i].score.toFixed(1)]
+      .map(x => `"${String(x).replace(/"/g, '""')}"`).join(";");
+  }));
+  try { await navigator.clipboard.writeText(lines.join("\n")); btn.textContent = `Copié (${vis.length} lignes)`; }
+  catch { btn.textContent = "Copie refusée par le navigateur"; }
+  setTimeout(() => btn.textContent = "Copier le tableau (CSV)", 2500);
+}
+renderFlLegend(); renderReLegend();
+
+/* ---------- Plans de réseau (France, GTFS) et tronçons exposés ---------- */
+const LN = { on: true, hl: true, minZoom: 8 };
+let NETL = null;
+const NETL_BY = {};
+const linesReady = (async () => {
+  const bin = Uint8Array.from(atob(LINES_GZ), c => c.charCodeAt(0));
+  const txt = await new Response(new Blob([bin]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
+  const raw = JSON.parse(txt);
+  NETL = raw.nets.map(n => {
+    let k = 0;
+    const routes = n.r.map(r => ({
+      n: r.n, l: r.l, c: r.c ? (r.c.startsWith("rgb") || r.c.startsWith("#") ? r.c : "#" + r.c) : null,
+      shapes: r.s.map(enc => {
+        const m = enc.length / 2, ll = new Array(m), seg = new Float32Array(Math.max(0, m - 1));
+        let a = 0, b = 0;
+        for (let j = 0; j < m; j++) { a += enc[2 * j]; b += enc[2 * j + 1]; ll[j] = [a / 1e5, b / 1e5]; }
+        for (let j = 1; j < m; j++) { const [la0, lo0] = ll[j - 1], [la1, lo1] = ll[j]; seg[j - 1] = Math.hypot((la1 - la0) * 111.2, (lo1 - lo0) * 111.2 * Math.cos(la0 * Math.PI / 180)); }
+        const sh = { ll, seg, k0: k }; k += m; return sh;
+      }),
+    }));
+    const fl = new Uint8Array(k * 10);
+    for (const row of n.fl) fl.set(row.slice(1), row[0] * 10);
+    const o = { i: n.i, t: n.t, d: n.d, routes, fl, nv: k };
+    NETL_BY[n.i] = o;
+    return o;
+  });
+})();
+const LF = { river: [0, 1, 2, 3, 4], coast: [5, 6, 7, 8, 9] };
+function vtxDepth(net, k, rcp, year, type) {
+  const base = k * 10, off = rcp === "rcp4p5" ? 0 : 2, t30 = (year - 2010) / 20, t50 = (year - 2030) / 20;
+  const val = idx => { const h = net.fl[base + idx[0]], a = net.fl[base + idx[1 + off]], b = net.fl[base + idx[2 + off]]; return Math.max(0, year <= 2030 ? h + (a - h) * t30 : a + (b - a) * t50) / 25; };
+  const r = type !== "coast" ? val(LF.river) : 0, c = type !== "river" ? val(LF.coast) : 0;
+  return Math.max(r, c);
+}
+function vtxHeat(lat, lon, f) {
+  const t = sample(f, lat, lon); if (isNaN(t)) return NaN;
+  if (!demReady) return t;
+  const z = elevAt(lat, lon), zr = globElev(lat, lon);
+  return isNaN(z) || isNaN(zr) ? t : t - 0.0065 * (Math.max(0, z) - Math.max(0, zr));
+}
+/* classe d'un sommet : -1 = non exposé, 1..4 = exposé (croissant) ; renvoie aussi la valeur */
+function vertexClasses(net, forceAbs) {
+  const n = net.nv, cls = new Int8Array(n), val = new Float32Array(n);
+  if (state.hz === "flood") {
+    const rcp = SCEN_RCP[state.scen];
+    for (let k = 0; k < n; k++) { const d = vtxDepth(net, k, rcp, state.year, FL.type); val[k] = d; cls[k] = d < 0.1 ? -1 : d < 0.5 ? 1 : d < 1 ? 2 : d < 2 ? 3 : 4; }
+  } else {
+    const f = field("txx", "abs", state.scen, state.year);
+    let k = 0;
+    for (const r of net.routes) for (const s of r.shapes) for (const [la, lo] of s.ll) { val[k++] = f ? vtxHeat(la, lo, f) : NaN; }
+    const sorted = Array.from(val).filter(v => !isNaN(v)).sort((a, b) => a - b);
+    const q = p => sorted.length ? sorted[Math.round(p * (sorted.length - 1))] : NaN;
+    const med = q(0.5), rel = useRel && !forceAbs;
+    for (k = 0; k < n; k++) {
+      const t = val[k];
+      if (isNaN(t)) { cls[k] = -1; continue; }
+      if (rel) { const d = t - med; cls[k] = d < 0.3 ? -1 : d < 0.7 ? 2 : d < 1.2 ? 3 : 4; }
+      else cls[k] = HEAT_CUTS.findLastIndex(c => t >= c) + 1 || -1;
+    }
+    return { cls, val, med, p10: q(0.1), p90: q(0.9) };
+  }
+  return { cls, val };
+}
+/* seuils absolus (°C, jour le plus chaud) : classe 1 dès 32, 2 dès 35, 3 dès 38, 4 dès 41 */
+const HEAT_CUTS = [32, 35, 38, 41];
+let useRel = false;
+const lineRenderer = L.canvas({ padding: 0.3, pane: "lines" });
+map.createPane("lines"); map.getPane("lines").style.zIndex = 420;
+const linesBase = L.layerGroup(), linesRisk = L.layerGroup();
+/* même rampe ordinale « risque » pour les deux aléas : contraste avec les zones inondables bleues et la carte des températures */
+function riskColor(k) { return `var(--r${k + 1})`; }
+function riskColorResolved(k) { const c = riskColor(k); return c.startsWith("var(") ? tok(c.slice(4, -1)) : c; }
+function fmtRisk(v, vc) {
+  if (state.hz === "flood") return `${fmtN(v, 1)} m d’eau (crue centennale)`;
+  const d = v - vc.med;
+  return `${fmtN(v, 1)} °C au jour le plus chaud` + (useRel ? `<br>${d >= 0 ? "+" : "−"}${fmtN(Math.abs(d), 1)} °C par rapport à la médiane du réseau (${fmtN(vc.med, 1)} °C)` : "");
+}
+function buildLines() {
+  linesBase.clearLayers(); linesRisk.clearLayers();
+  if (!NETL || !LN.on) return;
+  const grey = tok("--muted"), halo = tok("--card"), halos = [], runs = [];
+  for (const net of NETL) {
+    const vc = LN.hl ? vertexClasses(net) : null;
+    for (const r of net.routes) for (const s of r.shapes) {
+      const line = L.polyline(s.ll, { renderer: lineRenderer, pane: "lines", color: LN.hl ? grey : (r.c || grey), weight: LN.hl ? 1.3 : 2.2, opacity: LN.hl ? 0.55 : 0.85, interactive: !LN.hl });
+      if (!LN.hl) line.bindTooltip(`<b>Ligne ${esc(r.n)}</b>${r.l ? " · " + esc(r.l) : ""}<br>${esc(net.t)}`, { sticky: true });
+      linesBase.addLayer(line);
+      if (!vc) continue;
+      let run = null, runK = 0, runMax = 0;
+      const flush = () => {
+        if (run && run.length > 1) {
+          const w = runK >= 3 ? 5 : runK === 2 ? 3.5 : 2.6;
+          halos.push(L.polyline(run, { renderer: lineRenderer, pane: "lines", color: halo, weight: w + 2.5, opacity: 0.85, lineCap: "round", interactive: false }));
+          const pl = L.polyline(run, { renderer: lineRenderer, pane: "lines", color: riskColorResolved(runK), weight: w, opacity: 0.95, lineCap: "round" });
+          pl.bindTooltip(`<b>Ligne ${esc(r.n)}</b> · ${esc(net.t)}<br>${fmtRisk(runMax, vc)}`, { sticky: true });
+          runs.push(pl);
+        }
+        run = null;
+      };
+      for (let j = 0; j < s.ll.length - 1; j++) {
+        const ka = vc.cls[s.k0 + j], kb = vc.cls[s.k0 + j + 1], k = Math.max(ka, kb);
+        if (k < 1) { flush(); continue; }
+        const v = Math.max(vc.val[s.k0 + j] || 0, vc.val[s.k0 + j + 1] || 0);
+        if (run && k === runK) { run.push(s.ll[j + 1]); runMax = Math.max(runMax, v); }
+        else { flush(); run = [s.ll[j], s.ll[j + 1]]; runK = k; runMax = v; }
+      }
+      flush();
+    }
+  }
+  for (const h of halos) linesRisk.addLayer(h);
+  for (const r of runs) linesRisk.addLayer(r);
+}
+function syncLinesVisibility() {
+  const show = LN.on && map.getZoom() >= LN.minZoom;
+  for (const g of [linesBase, linesRisk]) { if (show && !map.hasLayer(g)) g.addTo(map); if (!show && map.hasLayer(g)) map.removeLayer(g); }
+  const note = document.getElementById("ln-zoom"); if (note) note.hidden = !LN.on || map.getZoom() >= LN.minZoom;
+}
+function refreshLines() { renderLnLegend(); if (!LN.on) return; linesReady.then(() => { buildLines(); syncLinesVisibility(); }); }
+map.on("zoomend", syncLinesVisibility);
+function renderLnLegend() {
+  const el = document.getElementById("ln-legend"); if (!el) return;
+  const items = state.hz === "flood"
+    ? [[1, "0,1–0,5 m"], [2, "0,5–1 m"], [3, "1–2 m"], [4, "≥ 2 m"]]
+    : useRel ? [[2, "+0,3 à +0,7 °C"], [3, "+0,7 à +1,2 °C"], [4, "≥ +1,2 °C"]]
+    : [[1, "32–35 °C"], [2, "35–38 °C"], [3, "38–41 °C"], [4, "≥ 41 °C"]];
+  document.getElementById("ln-heat").hidden = state.hz === "flood" || !LN.hl;
+  el.innerHTML = `<span class="ln-k"><i style="background:${tok("--muted")};height:2px"></i>${state.hz !== "flood" && useRel ? "moins de +0,3 °C" : "non exposé"}</span>` +
+    items.map(([k, l]) => `<span class="ln-k"><i style="background:${riskColorResolved(k)};height:${k >= 3 ? 5 : 3}px"></i>${l}</span>`).join("");
+  document.getElementById("ln-sub").textContent = state.hz === "flood"
+    ? `Tronçons en zone inondable · ${state.year} · ${SCEN.find(s => s.key === state.scen).label}`
+    : useRel ? `Écart à la médiane de chaque réseau (relief, gradient régional) · ${state.year} · ${SCEN.find(s => s.key === state.scen).label}`
+    : `Jour le plus chaud, corrigé de l’altitude · ${state.year} · ${SCEN.find(s => s.key === state.scen).label}`;
+}
+document.getElementById("ln-on").addEventListener("change", e => { LN.on = e.target.checked; document.getElementById("ln-body").hidden = !LN.on; if (LN.on) refreshLines(); else syncLinesVisibility(); });
+document.getElementById("ln-hl").addEventListener("change", e => { LN.hl = e.target.checked; refreshLines(); });
+document.getElementById("ln-heat").addEventListener("change", e => { useRel = e.target.value === "rel"; refreshLines(); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => refreshLines());
+new MutationObserver(() => refreshLines()).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+/* Fiche réseau : lignes exposées */
+function appendLines(i) {
+  const net = NETL_BY[i], body = document.getElementById("d-body");
+  if (!net) {
+    if (NETWORKS[i].pays === "France" && NETL) body.insertAdjacentHTML("beforeend", `<section class="sec"><h4>Plan du réseau</h4><p class="note">Pas de tracés GTFS publiés en open data pour ce réseau (exploitation d’autocars, ligne en projet ou données sans tracés).</p></section>`);
+    return;
+  }
+  const vc = vertexClasses(net, true), flood = state.hz === "flood";
+  let tot = 0, exp = 0;
+  const rows = net.routes.map(r => {
+    let len = 0, ex = 0, mx = flood ? 0 : -Infinity;
+    for (const s of r.shapes) for (let j = 0; j < s.seg.length; j++) {
+      const k = Math.max(vc.cls[s.k0 + j], vc.cls[s.k0 + j + 1]), v = Math.max(vc.val[s.k0 + j] || 0, vc.val[s.k0 + j + 1] || 0);
+      len += s.seg[j];
+      if (k >= (flood ? 1 : 2)) ex += s.seg[j];
+      if (v > mx) mx = v;
+    }
+    tot += len; exp += ex;
+    return { r, len, ex, mx };
+  }).sort((a, b) => b.ex - a.ex || b.mx - a.mx);
+  const shown = rows.filter(x => x.ex > 0.05).slice(0, 10);
+  const lab = flood ? "en zone inondable" : "à 35 °C ou plus";
+  const table = shown.length ? `<table class="ind-table"><thead><tr><th>Ligne</th><th>km exposés</th><th>km tracés</th><th>${flood ? "Hauteur max." : "Tmax"}</th></tr></thead><tbody>${shown.map(x => `<tr><td><button type="button" class="ln-row" data-r="${esc(x.r.n)}"><i class="ln-dot" style="background:${x.r.c || tok("--muted")}"></i>${esc(x.r.n)}</button></td><td><b>${fmtN(x.ex, 1)}</b></td><td>${fmtN(x.len, 1)}</td><td>${flood ? fmtN(x.mx, 1) + " m" : fmtN(x.mx, 1) + " °C"}</td></tr>`).join("")}</tbody></table>` : `<p class="note">Aucun tronçon ${lab} pour ce scénario et cette année.</p>`;
+  body.insertAdjacentHTML("beforeend", `<section class="sec"><h4>Lignes exposées · plan GTFS</h4>
+    <p class="note" style="margin:0 0 8px">${fmtN(exp, 1)} km de tracés ${lab} sur ${fmtN(tot, 0)} km (${fmtN(tot ? exp / tot * 100 : 0, 1)} %), ${net.routes.length} lignes.${flood ? "" : ` Jour le plus chaud sur le réseau : ${fmtN(vc.p10, 1)} à ${fmtN(vc.p90, 1)} °C (10 % à 90 % des tracés)${vc.p90 - vc.p10 < 0.6 ? ", aléa homogène à cette résolution" : ""}.`} Tracés cumulés par sens et variantes, d’après ${esc(net.t)}${net.d ? ` (données du ${net.d.slice(6, 8)}/${net.d.slice(4, 6)}/${net.d.slice(0, 4)})` : ""}.</p>
+    ${table}
+    ${!LN.on ? `<p class="note"><button type="button" class="link-btn" id="ln-show">Afficher le plan du réseau sur la carte</button></p>` : ""}</section>`);
+  body.querySelectorAll(".ln-row").forEach(b => b.addEventListener("click", () => {
+    const r = net.routes.find(x => x.n === b.dataset.r); if (!r) return;
+    if (!LN.on) { document.getElementById("ln-on").click(); }
+    const bb = L.latLngBounds(r.shapes.flatMap(s => s.ll));
+    fitTo(bb, 14);
+  }));
+  const sh = document.getElementById("ln-show");
+  if (sh) sh.addEventListener("click", () => { document.getElementById("ln-on").click(); const n = NETWORKS[i]; map.setView([n.la, n.lo], Math.max(map.getZoom(), 11)); });
+}
+linesReady.then(() => { if (state.sel != null) renderDrawer(); renderLnLegend(); });
+
+linesReady.then(() => refreshLines());
+
+function clusterIcon(c) {
+  const ms = c.getAllChildMarkers();
+  const counts = [0, 0, 0, 0, 0];
+  ms.forEach(mk => counts[cls(state.ind, indVal(cur(mk.options.idx)))]++);
+  let acc = 0;
+  const stops = counts.map((n, k) => {
+    if (!n) return null;
+    const a = acc / ms.length * 100; acc += n;
+    return `var(--r${k + 1}) ${a.toFixed(2)}% ${(acc / ms.length * 100).toFixed(2)}%`;
+  }).filter(Boolean);
+  const size = ms.length < 5 ? 34 : ms.length < 15 ? 40 : 48;
+  const title = `${ms.length} réseaux : ` + counts.map((n, k) => n ? `${n} ${CLASSES[k].toLowerCase()}` : null).filter(Boolean).join(", ");
+  return L.divIcon({ className: "cluster-wrap", html: `<div class="cluster" style="background:conic-gradient(${stops.join(",")})" title="${esc(title)}"><span>${ms.length}</span></div>`, iconSize: [size, size] });
+}
+const cluster = L.markerClusterGroup({
+  showCoverageOnHover: false, spiderfyOnMaxZoom: true,
+  maxClusterRadius: z => (z < 4 ? 44 : z < 7 ? 36 : 26),
+  iconCreateFunction: clusterIcon, spiderLegPolylineOptions: { weight: 1.5, color: "#7b807d", opacity: 0.7 },
+}).addTo(map);
+
+const markers = NETWORKS.map((n, i) => {
+  const mk = L.marker([n.la, n.lo], { idx: i, riseOnHover: true, keyboard: true });
+  mk.bindTooltip("", { direction: "top", offset: [0, -13] });
+  mk.on("click", () => openDrawer(i));
+  mk.on("add", () => { const el = mk.getElement(); if (el) el.setAttribute("role", "button"); });
+  return mk;
+});
+function iconFor(i) {
+  const m = cur(i), x = indVal(m), k = cls(state.ind, x);
+  const txt = fmtN(x, x >= 10 || state.ind === "score" ? 0 : IND[state.ind].dec);
+  return L.divIcon({
+    className: "pt-wrap" + (state.sel === i ? " is-active" : ""),
+    html: `<span class="pt c${k + 1}">${txt}</span><span class="pt-label">${esc(NETWORKS[i].ci.split(" – ")[0])}</span>`,
+    iconSize: [26, 26], iconAnchor: [13, 13],
+  });
+}
+function updateMarkers(vis) {
+  markers.forEach((mk, i) => {
+    mk.setIcon(iconFor(i));
+    const m = cur(i), n = NETWORKS[i];
+    mk.setTooltipContent(`<b>${esc(n.ci)}</b> · ${esc(n.pays)}<br>${esc(IND[state.ind].label)} : ${fmtInd(state.ind, indVal(m))} ${IND[state.ind].unit} · ${CLASSES[cls(state.ind, indVal(m))]}`);
+    const el = mk.getElement(); if (el) el.setAttribute("aria-label", `${n.ci} : ${CLASSES[cls(state.ind, indVal(m))]}`);
+  });
+  const want = new Set(vis);
+  const have = new Set(cluster.getLayers().map(mk => mk.options.idx));
+  const same = want.size === have.size && [...want].every(i => have.has(i));
+  if (!same) { cluster.clearLayers(); cluster.addLayers(vis.map(i => markers[i])); }
+  else cluster.refreshClusters();
+}
+
+/* ---------- Filtres ---------- */
+function visible() {
+  const q = norm(state.q).split(/\s+/).filter(Boolean);
+  return NETWORKS.map((n, i) => i).filter(i => {
+    const n = NETWORKS[i];
+    if (state.pays && n.pays !== state.pays) return false;
+    if (state.mode && n.p !== state.mode) return false;
+    if (q.length) { const hay = norm([n.ci, n.t, n.cl, n.pays].join(" ")); if (!q.every(w => hay.includes(w))) return false; }
+    return true;
+  });
+}
+
+/* ---------- Panneau portefeuille ---------- */
+const svgNS = "http://www.w3.org/2000/svg";
+function renderKpis(vis) {
+  if (state.hz === "flood") return renderKpisFlood(vis);
+  const mean = a => a.reduce((s, x) => s + x, 0) / (a.length || 1);
+  const now = vis.map(i => cur(i)), base = vis.map(i => M[state.scen][2026][i]);
+  const sNow = mean(now.map(m => m.score)), sBase = mean(base.map(m => m.score));
+  const high = now.filter(m => cls("score", m.score) >= 3).length, highBase = base.filter(m => cls("score", m.score) >= 3).length;
+  const d35 = mean(vis.map(i => cur(i).hd35 - REF[i].hd35));
+  const yr = state.year;
+  document.getElementById("kpis").innerHTML = `
+    <div class="kpi"><span class="k-label">Score chaleur moyen</span><span class="k-val num">${fmtN(sNow)}<small> /100</small></span>
+      <span class="k-delta">${yr > 2026 ? `<span class="delta-up">${signed(sNow - sBase, 1)}</span> vs 2026` : "point de départ"}</span></div>
+    <div class="kpi"><span class="k-label">Réseaux en risque élevé ou très élevé</span><span class="k-val num">${high}<small> / ${vis.length}</small></span>
+      <span class="k-delta">${yr > 2026 ? `${signed(high - highBase)} vs 2026` : "point de départ"}</span></div>
+    <div class="kpi"><span class="k-label">Jours ≥ 35 °C en plus par réseau</span><span class="k-val num">${signed(d35, 1)}<small> j/an</small></span>
+      <span class="k-delta">moyenne vs 1995–2014</span></div>`;
+}
+function classCounts(vis, scen, year, ind = state.ind) {
+  const c = [0, 0, 0, 0, 0];
+  vis.forEach(i => c[cls(ind, indVal(M[scen][year][i], ind))]++);
+  return c;
+}
+function renderDistrib(vis) {
+  const c = classCounts(vis, state.scen, state.year);
+  const tot = vis.length || 1;
+  document.getElementById("distrib-title").textContent = `Répartition par classe · ${state.year}`;
+  document.getElementById("distrib").innerHTML = c.map((n, k) => n ? `<div class="c${k + 1}" style="flex:${n / tot}" title="${CLASSES[k]} : ${n} réseau${n > 1 ? "x" : ""}">${n}</div>` : "").join("");
+  const cuts = IND[state.ind].cuts;
+  const fc = v => v % 1 ? fmtN(v, 2).replace(/0$/, "") : fmtN(v);
+  document.getElementById("class-legend").innerHTML = CLASSES.map((l, k) => `<span><i class="sw c${k + 1}"></i>${l} <span class="num" style="color:var(--muted)">${k === 0 ? `< ${fc(cuts[0])}` : k === 4 ? `≥ ${fc(cuts[3])}` : `${fc(cuts[k - 1])}–${fc(cuts[k])}`}</span></span>`).join("");
+}
+function renderEvo(vis) {
+  const box = document.getElementById("evo");
+  const W0 = 340, H0 = 150, pl = 22, pr = 4, pt = 8, pb = 20;
+  const iw = W0 - pl - pr, ih = H0 - pt - pb, n = vis.length || 1;
+  const bw = iw / YEARS.length, gap = 4;
+  const cols = YEARS.map(y => classCounts(vis, state.scen, y));
+  const yScale = v => pt + ih - v / n * ih;
+  let s = `<svg viewBox="0 0 ${W0} ${H0}" role="img" aria-label="Nombre de réseaux par classe de risque de 2026 à 2036, scénario ${SCEN.find(x => x.key === state.scen).label}">`;
+  for (const t of [0, 0.5, 1]) { const v = Math.round(n * t); s += `<line x1="${pl}" x2="${W0 - pr}" y1="${yScale(v)}" y2="${yScale(v)}" stroke="${tok("--line")}" stroke-width="1"/><text class="chart-label" x="${pl - 4}" y="${yScale(v) + 3.5}" text-anchor="end">${v}</text>`; }
+  cols.forEach((c, j) => {
+    const x = pl + j * bw + gap / 2, w = bw - gap; let acc = 0;
+    c.forEach((cnt, k) => {
+      if (!cnt) return;
+      const y0 = yScale(acc), y1 = yScale(acc + cnt); acc += cnt;
+      s += `<rect x="${x}" y="${y1}" width="${w}" height="${Math.max(0, y0 - y1 - 2)}" rx="${k === c.findLastIndex(v => v > 0) ? 3 : 1}" fill="var(--r${k + 1})"/>`;
+    });
+    const isCur = YEARS[j] === state.year;
+    if (j % 2 === 0 || isCur) s += `<text class="${isCur ? "cur" : ""}" x="${x + w / 2}" y="${H0 - 6}" text-anchor="middle" font-size="10.5" fill="${isCur ? tok("--ink") : tok("--muted")}" font-weight="${isCur ? 700 : 500}">${YEARS[j]}</text>`;
+    if (isCur) s += `<rect x="${x - 2}" y="${pt - 3}" width="${w + 4}" height="${ih + 5}" fill="none" stroke="${tok("--ink")}" stroke-width="1" rx="4" opacity=".55"/>`;
+    s += `<rect class="hit" data-j="${j}" x="${pl + j * bw}" y="${pt}" width="${bw}" height="${ih}" fill="transparent"/>`;
+  });
+  s += `</svg><div class="tip" id="evo-tip"></div>`;
+  box.innerHTML = s;
+  const tip = box.querySelector("#evo-tip");
+  box.querySelectorAll(".hit").forEach(r => {
+    r.addEventListener("mouseenter", () => {
+      const j = +r.dataset.j, c = cols[j];
+      tip.innerHTML = `<b>${YEARS[j]}</b>` + c.map((v, k) => v ? `<div class="row-t"><i class="sw c${k + 1}"></i>${CLASSES[k]} : <b>${v}</b></div>` : "").reverse().join("");
+      tip.style.display = "block";
+      const bx = box.getBoundingClientRect(), rb = r.getBoundingClientRect();
+      const left = Math.min(rb.left - bx.left + rb.width / 2 + 8, bx.width - tip.offsetWidth);
+      tip.style.left = `${Math.max(0, left)}px`; tip.style.top = `0px`;
+    });
+    r.addEventListener("mouseleave", () => tip.style.display = "none");
+    r.addEventListener("click", () => setYear(YEARS[+r.dataset.j]));
+  });
+}
+function renderRank(vis) {
+  const rows = vis.map(i => ({ i, m: cur(i), d: indVal(cur(i)) - indVal(M[state.scen][2026][i]) })).sort((a, b) => indVal(b.m) - indVal(a.m));
+  const maxV = state.ind === "score" ? 100 : Math.max(1, ...NETWORKS.map((_, i) => indVal(M.ssp585[2036][i])));
+  document.getElementById("rank-title").textContent = `Classement · ${IND[state.ind].label.split(" (")[0]}`;
+  document.getElementById("rank").innerHTML = rows.length ? rows.map(({ i, m, d }) => {
+    const n = NETWORKS[i], x = indVal(m), k = cls(state.ind, x);
+    return `<li><button type="button" data-i="${i}" class="${state.sel === i ? "is-active" : ""}">
+      <span class="who"><b>${esc(n.ci)}</b><span>${esc(n.pays)} · ${esc(MODE_LABEL[n.p])}</span></span>
+      <span class="bar" aria-hidden="true"><i class="c${k + 1}" style="width:${Math.min(100, x / maxV * 100)}%"></i></span>
+      <span class="v">${fmtInd(state.ind, x)}<small>${state.year > 2026 ? signed(d, IND[state.ind].dec) : CLASSES[k]}</small></span></button></li>`;
+  }).join("") : `<li style="padding:12px 0;color:var(--muted)">Aucun réseau ne correspond aux filtres.</li>`;
+}
+document.getElementById("rank").addEventListener("click", e => { const b = e.target.closest("button[data-i]"); if (b) openDrawer(+b.dataset.i, true); });
+
+function renderLegend() {
+  const ind = IND[state.ind], c = ind.cuts;
+  document.getElementById("legend-sub").textContent = `${state.year} · ${SCEN.find(s => s.key === state.scen).label} · ${ind.unit}`;
+  document.getElementById("legend-scale").innerHTML = CLASSES.map((_, k) => `<div class="c${k + 1}"></div>`).join("");
+  const fc = v => v % 1 ? fmtN(v, 2).replace(/0$/, "") : fmtN(v);
+  document.getElementById("legend-ticks").innerHTML = CLASSES.map((l, k) => `<span>${l}<br><span class="num" style="color:var(--muted)">${k === 0 ? `< ${fc(c[0])}` : k === 4 ? `≥ ${fc(c[3])}` : `${fc(c[k - 1])}–${fc(c[k])}`}</span></span>`).join("");
+}
+
+/* ---------- Fiche réseau ---------- */
+const drawer = document.getElementById("drawer");
+const VIG = {
+  rail: "Voie et caténaires : dilatation, risque de déformation des rails et échauffement des équipements de signalisation lors des pics de chaleur.",
+  metro: "Stations et tunnels : ventilation, climatisation des rames et des locaux techniques à dimensionner pour des pics plus fréquents.",
+  bus: "Flotte routière : climatisation plus sollicitée, autonomie réduite des bus électriques et charge accrue des dépôts.",
+  staff: "Personnel : stress thermique des conducteurs et agents de maintenance ; les nuits tropicales limitent la récupération.",
+  cable: "Câble : surveillance de l’échauffement des moteurs et des équipements électriques en station.",
+};
+function vigilance(n, m) {
+  const out = [];
+  const has = k => n.m.some(x => x.includes(k));
+  if (has("Tramway") || has("Ferroviaire")) out.push(VIG.rail);
+  if (has("Métro")) out.push(VIG.metro);
+  if (has("Bus") || has("TAD")) out.push(VIG.bus);
+  if (has("câble")) out.push(VIG.cable);
+  if (m.tr >= 40 || m.hd35 >= 10 || m.hi35 >= 5) out.push(VIG.staff);
+  return out;
+}
+function trajChart(i) {
+  const ind = state.ind;
+  const W0 = 388, H0 = 190, pl = 34, pr = 72, pt = 12, pb = 22;
+  const iw = W0 - pl - pr, ih = H0 - pt - pb;
+  const series = SCEN.map(s => ({ s, v: YEARS.map(y => indVal(M[s.key][y][i], ind)) }));
+  const refV = ind === "score" ? REF[i].score : REF[i][ind];
+  const all = series.flatMap(x => x.v).concat(refV);
+  let lo = Math.min(...all), hi = Math.max(...all);
+  if (ind === "score") { lo = Math.max(0, Math.floor((lo - 5) / 10) * 10); hi = Math.min(100, Math.ceil((hi + 5) / 10) * 10); }
+  else if (ind === "txx") { lo = Math.floor(lo - 1); hi = Math.ceil(hi + 1); }
+  else { lo = 0; hi = Math.max(1, hi * 1.12); }
+  const niceStep = r => { const p = Math.pow(10, Math.floor(Math.log10(r / 3))); return [1, 2, 2.5, 5, 10].map(m => m * p).find(st => r / st <= 4) || p * 10; };
+  const st = niceStep(hi - lo); hi = Math.ceil(hi / st) * st; lo = Math.floor(lo / st) * st;
+  const X = y => pl + (y - 2026) / 10 * iw, Y = v => pt + ih - (v - lo) / (hi - lo) * ih;
+  let s = `<svg viewBox="0 0 ${W0} ${H0}" role="img" aria-label="Trajectoire ${esc(IND[ind].label)} de 2026 à 2036 selon trois scénarios">`;
+  for (let v = lo; v <= hi + 1e-9; v += st) s += `<line x1="${pl}" x2="${pl + iw}" y1="${Y(v)}" y2="${Y(v)}" stroke="${tok("--line")}"/><text class="chart-label" x="${pl - 5}" y="${Y(v) + 3.5}" text-anchor="end">${fmtN(v, st < 1 ? 1 : 0)}</text>`;
+  [2026, 2028, 2030, 2032, 2034, 2036].forEach(y => s += `<text class="chart-label" x="${X(y)}" y="${H0 - 6}" text-anchor="middle">${y}</text>`);
+  if (refV >= lo && refV <= hi) s += `<line x1="${pl}" x2="${pl + iw}" y1="${Y(refV)}" y2="${Y(refV)}" stroke="${tok("--muted")}" stroke-dasharray="3 3"/><text class="chart-label" x="${pl + 4}" y="${Y(refV) - 4}">${state.hz === "flood" ? "Réf. 2010" : "Réf. 1995–2014"} : ${fmtInd(ind, refV)}</text>`;
+  s += `<line x1="${X(state.year)}" x2="${X(state.year)}" y1="${pt}" y2="${pt + ih}" stroke="${tok("--ink")}" stroke-width="1" opacity=".35"/>`;
+  // incertitude p10–p90 en 2030 (SSP2-4.5) pour hd35 / tr
+  if (state.hz === "heat" && (ind === "hd35" || ind === "tr")) {
+    const p10 = C[`${ind}|ssp245|p10|2020-2039`][i], p90 = C[`${ind}|ssp245|p90|2020-2039`][i];
+    s += `<line x1="${X(2030)}" x2="${X(2030)}" y1="${Y(Math.min(hi, p90))}" y2="${Y(Math.max(lo, p10))}" stroke="var(--s2)" stroke-width="5" stroke-linecap="round" opacity=".18"/>`;
+  }
+  const ends = [];
+  series.forEach(({ s: sc, v }) => {
+    const sel = sc.key === state.scen;
+    s += `<polyline fill="none" stroke="var(${sc.color})" stroke-width="${sel ? 2.5 : 1.5}" stroke-linejoin="round" stroke-linecap="round" opacity="${sel ? 1 : 0.7}" points="${v.map((x, j) => `${X(YEARS[j]).toFixed(1)},${Y(x).toFixed(1)}`).join(" ")}"/>`;
+    const yi = YEARS.indexOf(state.year);
+    if (sel) s += `<circle cx="${X(state.year)}" cy="${Y(v[yi])}" r="4" fill="var(${sc.color})" stroke="${tok("--card")}" stroke-width="2"/>`;
+    ends.push({ y: Y(v[10]), label: sc.label, val: v[10], color: sc.color, sel });
+  });
+  ends.sort((a, b) => a.y - b.y);
+  for (let k = 1; k < ends.length; k++) if (ends[k].y - ends[k - 1].y < 12) ends[k].y = ends[k - 1].y + 12;
+  ends.forEach(e => s += `<text x="${pl + iw + 6}" y="${e.y + 3.5}" font-size="10.5" font-weight="${e.sel ? 700 : 500}" fill="${tok("--ink-2")}"><tspan fill="var(${e.color})">●</tspan> ${e.label} ${fmtInd(ind, e.val)}</text>`);
+  s += `<rect class="hit" x="${pl}" y="${pt}" width="${iw}" height="${ih}" fill="transparent"/>`;
+  s += `<line class="xh" x1="0" x2="0" y1="${pt}" y2="${pt + ih}" stroke="${tok("--ink")}" opacity="0"/></svg><div class="tip"></div>`;
+  return { html: s, series, X, pl, iw };
+}
+function bindTraj(box, ch) {
+  const svg = box.querySelector("svg"), tip = box.querySelector(".tip"), xh = box.querySelector(".xh");
+  box.querySelector(".hit").addEventListener("mousemove", e => {
+    const r = svg.getBoundingClientRect(), sx = (e.clientX - r.left) / r.width * 388;
+    const j = Math.max(0, Math.min(10, Math.round((sx - ch.pl) / ch.iw * 10)));
+    const x = ch.X(YEARS[j]);
+    xh.setAttribute("x1", x); xh.setAttribute("x2", x); xh.setAttribute("opacity", ".4");
+    tip.innerHTML = `<b>${YEARS[j]}</b>` + ch.series.slice().reverse().map(({ s, v }) => `<div class="row-t"><i class="sw" style="background:var(${s.color})"></i>${s.label} : <b>${fmtInd(state.ind, v[j])}</b></div>`).join("");
+    tip.style.display = "block";
+    const px = x / 388 * r.width;
+    tip.style.left = `${Math.min(px + 10, r.width - tip.offsetWidth)}px`; tip.style.top = "0px";
+  });
+  box.querySelector(".hit").addEventListener("mouseleave", () => { tip.style.display = "none"; xh.setAttribute("opacity", "0"); });
+}
+function renderDrawer() {
+  const i = state.sel; if (i == null) return;
+  if (state.hz === "flood") return renderDrawerFlood(i);
+  const n = NETWORKS[i], m = cur(i), m26 = M[state.scen][2026][i], r = REF[i];
+  const k = cls("score", m.score), scen = SCEN.find(s => s.key === state.scen);
+  document.getElementById("d-head").innerHTML = `<p class="eyebrow">${esc(n.pays)} · ${esc(MODE_LABEL[n.p])}</p><h3>${esc(n.ci)}</h3><p>${esc(n.t)}</p>`;
+  const ch = trajChart(i);
+  const fT = TG["tas|base"] ? [field("tas", "abs", state.scen, 2005), field("tas", "abs", state.scen, 2026), field("tas", "abs", state.scen, state.year)] : null;
+  const tasRow = fT ? (() => { const [a, b, c2] = fT.map(f => sample(f, n.la, n.lo)); return `<tr><td>Température moyenne annuelle<br><small>°C</small></td><td>${fmtN(a, 1)}</td><td>${fmtN(b, 1)}</td><td><b>${fmtN(c2, 1)}</b></td><td class="${c2 - a > 0.05 ? "delta-up" : ""}">${signed(c2 - a, 1)}</td></tr>`; })() : "";
+  const rows = tasRow + VARS.map(v => {
+    const d = m[v] - r[v];
+    return `<tr><td>${esc(IND[v].label)}<br><small>${IND[v].unit}</small></td><td>${fmtInd(v, r[v])}</td><td>${fmtInd(v, m26[v])}</td><td><b>${fmtInd(v, m[v])}</b></td><td class="${d > 0.05 ? "delta-up" : ""}">${signed(d, IND[v].dec)}</td></tr>`;
+  }).join("");
+  const contrib = VARS.map(v => `<div class="contrib-row"><span>${esc(IND[v].label.split(" (")[0])} <small style="color:var(--muted)">× ${fmtN(W[v] * 100)} %</small></span><span class="bar"><i style="width:${m.sub[v]}%"></i></span><span>${fmtN(W[v] * m.sub[v])}</span></div>`).join("");
+  const vig = vigilance(n, m);
+  const href = n.pg ? `https://www.ratpdev.com/fr/${encodeURIComponent(n.pg)}/` : "https://www.ratpdev.com/fr/nos-reseaux/";
+  document.getElementById("d-body").innerHTML = `
+    <section class="sec score-row">
+      <div class="score-big c${k + 1}">${fmtN(m.score)}</div>
+      <div class="score-txt"><b>Risque chaleur ${CLASSES[k].toLowerCase()}</b>
+        <span>${state.year} · ${scen.label} (${scen.desc})<br>${state.year > 2026 ? `<span class="${m.score - m26.score > 0.05 ? "delta-up" : ""}">${signed(m.score - m26.score, 1)} pt</span> depuis 2026 · ` : ""}référence 1995–2014 : ${fmtN(r.score)}</span></div>
+    </section>
+    <section class="sec">
+      <h4>Trajectoire · ${esc(IND[state.ind].label)}</h4>
+      <div class="chart-box" id="traj">${ch.html}</div>
+      ${(state.ind === "hd35" || state.ind === "tr") ? `<p class="note">Barre claire en 2030 : fourchette entre modèles (p10–p90, SSP2-4.5).</p>` : ""}
+    </section>
+    <section class="sec">
+      <h4>Indicateurs</h4>
+      <table class="ind-table"><thead><tr><th></th><th>1995–2014</th><th>2026</th><th>${state.year}</th><th>Δ réf.</th></tr></thead><tbody>${rows}</tbody></table>
+      <p class="note">Fourchette entre modèles en 2030 (p10–p90, SSP2-4.5) : jours ≥ 35 °C ${fmtN(C[`hd35|ssp245|p10|2020-2039`][i])}–${fmtN(C[`hd35|ssp245|p90|2020-2039`][i])} ; nuits tropicales ${fmtN(C[`tr|ssp245|p10|2020-2039`][i])}–${fmtN(C[`tr|ssp245|p90|2020-2039`][i])}.</p>
+    </section>
+    <section class="sec">
+      <h4>Composition du score</h4>
+      <div class="contrib">${contrib}</div>
+      <p class="note">Chaque indicateur est ramené à une note de 0 à 100, puis pondéré.</p>
+    </section>
+    ${vig.length ? `<section class="sec"><h4>Points de vigilance</h4><ul class="vig">${vig.map(v => `<li>${esc(v)}</li>`).join("")}</ul></section>` : ""}
+    <section class="sec">
+      <h4>Réseau</h4>
+      <dl class="facts"><dt>Client</dt><dd>${esc(n.cl)}</dd><dt>Modes</dt><dd>${esc(n.m.join(", "))}</dd><dt>Chiffres</dt><dd>${esc(n.kf.join(" · "))}</dd></dl>
+      <p style="margin:10px 0 0"><a href="${href}" target="_blank" rel="noopener">${n.pg ? "Fiche réseau sur ratpdev.com" : "Voir sur ratpdev.com"} ↗</a></p>
+    </section>`;
+  bindTraj(document.getElementById("traj"), ch);
+  appendLines(i);
+}
+function openDrawer(i, fly = false) {
+  state.sel = i; setTimeout(renderRadius, 0);
+  drawer.classList.add("open"); drawer.setAttribute("aria-hidden", "false"); drawer.parentElement.classList.add("drawer-open");
+  renderDrawer(); renderAll(false);
+  if (fly) {
+    const mk = markers[i];
+    cluster.zoomToShowLayer(mk, () => {
+      const z = state.hz === "flood" ? Math.max(map.getZoom(), 10) : map.getZoom();
+      const target = map.project(mk.getLatLng(), z).add([drawer.offsetWidth / 2, 0]);
+      if (z !== map.getZoom()) map.setView(map.unproject(target, z), z, { animate: !reduceMotion });
+      else map.panTo(map.unproject(target, z), { animate: !reduceMotion });
+    });
+  }
+}
+function closeDrawer() { state.sel = null; setTimeout(renderRadius, 0); drawer.parentElement.classList.remove("drawer-open"); drawer.classList.remove("open"); drawer.setAttribute("aria-hidden", "true"); renderAll(false); }
+document.getElementById("d-close").addEventListener("click", closeDrawer);
+document.addEventListener("keydown", e => { if (e.key === "Escape" && state.sel != null) closeDrawer(); });
+
+/* ---------- Commandes ---------- */
+document.getElementById("hazards").innerHTML = HAZARDS.map(h => h.on
+  ? `<button type="button" data-h="${h.key}" aria-pressed="${h.key === state.hz}">${h.label}</button>`
+  : `<button type="button" aria-pressed="false" aria-disabled="true" title="${h.label} : prochaine étape">${h.label}</button>`).join("") + `<span class="seg-note">bientôt</span>`;
+document.getElementById("hazards").addEventListener("click", e => {
+  const b = e.target.closest("button[data-h]"); if (!b || b.dataset.h === state.hz) return;
+  if (b.dataset.h === "flood" && !M_FLOOD) { b.textContent = "Inondation…"; floodReady.then(() => { b.textContent = "Inondation"; b.click(); }); return; }
+  setHazard(b.dataset.h);
+});
+function setHazard(h) {
+  state.hz = h; state.ind = "score";
+  IND = h === "flood" ? IND_FLOOD : IND_HEAT; M = h === "flood" ? M_FLOOD : M_HEAT; REF = h === "flood" ? REF_FLOOD : REF_HEAT;
+  document.querySelectorAll("#hazards button[data-h]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.h === h)));
+  indEl.innerHTML = Object.entries(IND).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join("");
+  document.getElementById("pf-title").textContent = `Portefeuille · risque ${h === "flood" ? "inondation" : "chaleur"}`;
+  document.getElementById("map").setAttribute("aria-label", `Carte du risque ${h === "flood" ? "inondation" : "chaleur"}`);
+  setLayer("ov", h === "heat"); setLayer("fl", h === "flood"); setLayer("wa", h === "flood"); setLayer("re", h === "flood");
+  renderAll(); renderRadius(); refreshLines();
+}
+const scenEl = document.getElementById("scenarios");
+scenEl.innerHTML = SCEN.map(s => `<button type="button" data-s="${s.key}" title="${s.desc}" aria-pressed="${s.key === state.scen}">${s.label}</button>`).join("");
+scenEl.addEventListener("click", e => { const b = e.target.closest("button[data-s]"); if (!b) return; state.scen = b.dataset.s; scenEl.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); renderAll(); refreshOverlay(); refreshFlood(); refreshLines(); });
+const yearEl = document.getElementById("year"), yearOut = document.getElementById("year-out");
+function setYear(y) { state.year = y; yearEl.value = y; yearOut.textContent = y; renderAll(); refreshOverlay(); refreshFlood(); refreshLines(); }
+yearEl.addEventListener("input", () => setYear(+yearEl.value));
+let playTimer = null;
+const playBtn = document.getElementById("play");
+const ICON_PLAY = '<svg viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></svg>', ICON_PAUSE = '<svg viewBox="0 0 16 16"><path d="M3.5 2.5h3v11h-3zM9.5 2.5h3v11h-3z"/></svg>';
+function stopPlay() { clearInterval(playTimer); playTimer = null; playBtn.innerHTML = ICON_PLAY; playBtn.setAttribute("aria-label", "Animer de 2026 à 2036"); }
+playBtn.addEventListener("click", () => {
+  if (playTimer) return stopPlay();
+  playBtn.innerHTML = ICON_PAUSE; playBtn.setAttribute("aria-label", "Mettre en pause");
+  if (state.year >= 2036) setYear(2026);
+  playTimer = setInterval(() => { if (state.year >= 2036) return stopPlay(); setYear(state.year + 1); }, 700);
+});
+const indEl = document.getElementById("ind");
+indEl.innerHTML = Object.entries(IND).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join("");
+indEl.addEventListener("change", () => { state.ind = indEl.value; renderAll(); });
+
+const paysCount = {}; NETWORKS.forEach(n => paysCount[n.pays] = (paysCount[n.pays] || 0) + 1);
+const paysOrder = Object.keys(paysCount).sort((a, b) => paysCount[b] - paysCount[a] || a.localeCompare(b, "fr"));
+document.getElementById("f-pays").innerHTML = `<option value="">Tous (${paysOrder.length})</option>` + paysOrder.map(p => `<option value="${esc(p)}">${esc(p)} (${paysCount[p]})</option>`).join("");
+const modeCount = {}; NETWORKS.forEach(n => modeCount[n.p] = (modeCount[n.p] || 0) + 1);
+document.getElementById("f-mode").innerHTML = `<option value="">Tous</option>` + Object.keys(MODE_LABEL).filter(k => modeCount[k]).map(k => `<option value="${k}">${MODE_LABEL[k]} (${modeCount[k]})</option>`).join("");
+document.getElementById("f-pays").addEventListener("change", e => {
+  state.pays = e.target.value; renderAll();
+  const vis = visible(); if (vis.length) fitTo(L.latLngBounds(vis.map(i => [NETWORKS[i].la, NETWORKS[i].lo])), state.pays ? 8 : 4);
+});
+document.getElementById("f-mode").addEventListener("change", e => { state.mode = e.target.value; renderAll(); });
+let qT; document.getElementById("q").addEventListener("input", e => { clearTimeout(qT); qT = setTimeout(() => { state.q = e.target.value.trim(); renderAll(); }, 120); });
+document.getElementById("zones").innerHTML = ZONES.map((z, k) => `<button type="button" data-z="${k}">${z.label}</button>`).join("");
+document.getElementById("zones").addEventListener("click", e => { const b = e.target.closest("button[data-z]"); if (b) fitTo(L.latLngBounds(ZONES[+b.dataset.z].b)); });
+function fitTo(b, maxZoom = 9) { const wide = innerWidth > 860, o = wide ? { paddingTopLeft: [300, 40], paddingBottomRight: [30, 30], maxZoom } : { padding: [36, 36], maxZoom }; reduceMotion ? map.fitBounds(b, o) : map.flyToBounds(b, { ...o, duration: 0.8 }); }
+
+document.getElementById("copy").addEventListener("click", async e => {
+  const btn = e.currentTarget, vis = visible();
+  if (state.hz === "flood") return copyFlood(btn, vis);
+  const head = ["reseau", "ville", "pays", "mode_principal", "scenario", "annee", "score", "classe", "jours_35C", "nuits_tropicales", "jours_chaleur_humide", "tmax_annuelle_C", "score_2026", "score_reference_1995_2014"];
+  const lines = [head.join(";")].concat(vis.map(i => {
+    const n = NETWORKS[i], m = cur(i);
+    return [n.t, n.ci, n.pays, MODE_LABEL[n.p], state.scen, state.year, m.score.toFixed(1), CLASSES[cls("score", m.score)], m.hd35.toFixed(1), m.tr.toFixed(1), m.hi35.toFixed(1), m.txx.toFixed(1), M[state.scen][2026][i].score.toFixed(1), REF[i].score.toFixed(1)]
+      .map(x => `"${String(x).replace(/"/g, '""')}"`).join(";");
+  }));
+  try { await navigator.clipboard.writeText(lines.join("\n")); btn.textContent = `Copié (${vis.length} lignes)`; }
+  catch { btn.textContent = "Copie refusée par le navigateur"; }
+  setTimeout(() => btn.textContent = "Copier le tableau (CSV)", 2500);
+});
+
+document.getElementById("method").innerHTML = `
+  <h3 style="margin:8px 0 0;font:600 13px var(--font-body);color:var(--ink)">Chaleur</h3>
+  <p><b>Données climatiques</b> : projections CMIP6 de la Banque mondiale (Climate Change Knowledge Portal), descendues à 0,25° (~25 km) et corrigées des biais, médiane de l’ensemble multi-modèles. Valeur de la maille la plus proche du point de chaque réseau.</p>
+  <p><b>Années</b> : interpolation linéaire entre les moyennes 1995–2014, 2020–2039 et 2040–2059. Sur 10 ans, les scénarios divergent encore peu : l’écart se creuse surtout après 2040.</p>
+  <table><thead><tr><th>Indicateur</th><th>Poids</th><th>Note 100 atteinte à</th></tr></thead><tbody>
+    <tr><td>Jours ≥ 35 °C</td><td>35 %</td><td>180 j/an</td></tr>
+    <tr><td>Température max. annuelle</td><td>30 %</td><td>50 °C</td></tr>
+    <tr><td>Nuits tropicales ≥ 20 °C</td><td>20 %</td><td>300 nuits/an</td></tr>
+    <tr><td>Chaleur humide (indice ≥ 35 °C)</td><td>15 %</td><td>150 j/an</td></tr>
+  </tbody></table>
+  <p><b>Classes du score</b> : très faible &lt; 20, faible 20–40, modéré 40–60, élevé 60–80, très élevé ≥ 80. Échelle absolue, commune à tous les pays.</p>
+  <p><b>Calque températures</b> : même source, grille ramenée à 0,5° (~50 km), de 60° S à 85° N. Valeur de référence 1995–2014 plus l’écart projeté, interpolé pour l’année choisie.</p>
+  <p><b>Limites</b> : il s’agit d’un aléa (exposition climatique du territoire), pas encore d’un risque pondéré par la vulnérabilité des actifs ; pas d’îlot de chaleur urbain ; un point par réseau.</p>
+  <h3 style="margin:14px 0 0;font:600 13px var(--font-body);color:var(--ink)">Inondation</h3>
+  <p><b>Aléa</b> : WRI Aqueduct Floods v2, hauteur d’eau pour la crue centennale (période de retour 100 ans), maille ~1 km. Crues fluviales : médiane de 5 modèles climatiques ; submersion marine : élévation médiane du niveau de la mer, subsidence incluse. Référence 2010, projections 2030 et 2050 (RCP4.5 pour SSP1-2.6 et SSP2-4.5, RCP8.5 pour SSP5-8.5), interpolées pour l’année choisie.</p>
+  <table><thead><tr><th>Composante</th><th>Poids</th><th>Note 100 atteinte à</th></tr></thead><tbody>
+    <tr><td>Surface inondable dans un rayon de 10 km</td><td>50 %</td><td>50 % de la surface</td></tr>
+    <tr><td>Hauteur d’eau moyenne en zone inondée</td><td>50 %</td><td>5 m</td></tr>
+  </tbody></table>
+  <p><b>Correction topographique</b> : on compare l’altitude du point du réseau (MNT ~30 m) à l’altitude médiane des zones inondées autour. Jusqu’à 2 m au-dessus : pas de correction ; au-delà, le score baisse progressivement jusqu’à −60 % à 30 m au-dessus. Si le point lui-même est en zone inondable, aucune réduction.</p>
+  <h3 style="margin:14px 0 0;font:600 13px var(--font-body);color:var(--ink)">Plans de réseau</h3>
+  <p><b>Tracés</b> : fichiers GTFS publiés sur transport.data.gouv.fr (conversion GeoJSON) pour 23 réseaux urbains, Grand Lyon open data pour le métro, les funiculaires et les tramways TCL, Île-de-France Mobilités pour Orlyval. Variantes et sens quasi identiques fusionnés, tracés simplifiés à ~10 m. Les réseaux d’autocars interurbains (lignes régionales) et le téléphérique du Salève ne sont pas cartographiés. Pour Txik Txak et Libéo, seules les lignes autour de l’agglomération sont retenues.</p>
+  <p><b>Inondation par tronçon</b> : hauteur d’eau de la crue centennale (Aqueduct, maille ~1 km) au droit de chaque point du tracé, espacés de 250 m au plus ; un tronçon est exposé dès 0,1 m.</p>
+  <p><b>Chaleur par tronçon</b> : température du jour le plus chaud de l’année (grille 0,5°) corrigée de l’altitude du tracé (−0,65 °C par 100 m). Deux lectures. <i>Seuils de température</i> : classes 32–35, 35–38, 38–41 et ≥ 41 °C, comparables d’un réseau à l’autre ; un tronçon compte comme exposé dans la fiche à partir de 35 °C. <i>Points chauds de chaque réseau</i> : écart à la médiane du réseau, qui fait ressortir les fonds de vallée et les zones basses (≥ +0,3 °C). À cette maille, la chaleur varie peu à l’intérieur d’une agglomération : l’îlot de chaleur urbain (centres denses, zones d’activités) n’est pas pris en compte. Les mailles côtières, en partie sur la mer, sous-estiment les maxima.</p>
+  <p><b>Lecture des évolutions</b> : la référence fluviale 2010 repose sur un climat observé, les projections sur des modèles climatiques ; l’écart à la référence mêle donc changement climatique et différences de modèles. Les évolutions 2026–2036, entre projections, sont plus fiables. Le signal fluvial reste faible d’ici 2036 ; la submersion marine progresse régulièrement avec le niveau de la mer.</p>
+  <p><b>Limites</b> : les modèles ne tiennent pas compte des digues et protections existantes, ce qui surestime l’aléa dans les zones protégées ; maille de 1 km ; ruissellement urbain non couvert ; un point et un rayon de 10 km par réseau.</p>
+  <p>Sources : <a href="https://transport.data.gouv.fr/" target="_blank" rel="noopener">transport.data.gouv.fr</a> · <a href="https://data.grandlyon.com/" target="_blank" rel="noopener">data.grandlyon.com</a> · <a href="https://data.iledefrance-mobilites.fr/" target="_blank" rel="noopener">IDFM</a> · <a href="https://climateknowledgeportal.worldbank.org/" target="_blank" rel="noopener">World Bank CCKP</a> (CC BY 4.0) · <a href="https://www.wri.org/data/aqueduct-floods-hazard-maps" target="_blank" rel="noopener">WRI Aqueduct Floods</a> (CC BY 4.0) · <a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">AWS Terrain Tiles</a> · <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a> · <a href="https://www.ratpdev.com/fr/nos-reseaux/" target="_blank" rel="noopener">ratpdev.com</a>.</p>`;
+
+/* ---------- Rendu ---------- */
+function renderAll(withDrawer = true) {
+  const vis = visible();
+  const sc = SCEN.find(s => s.key === state.scen);
+  document.getElementById("ctx").textContent = `${vis.length} réseau${vis.length > 1 ? "x" : ""} · ${state.year} · ${sc.label}, ${sc.desc}`;
+  renderKpis(vis); renderDistrib(vis); renderEvo(vis); renderRank(vis); renderLegend();
+  updateMarkers(vis);
+  if (withDrawer && state.sel != null) renderDrawer();
+}
+renderAll();
+onZoom();
+renderOvLegend();
+map.fitBounds(ZONES[0].b, innerWidth > 860 ? { paddingTopLeft: [260, 10], paddingBottomRight: [10, 10] } : { padding: [10, 10] });
+</script>
+</body>
+</html>
