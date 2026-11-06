@@ -148,7 +148,7 @@ button, input, select { font: inherit; color: inherit; }
 .link-btn:hover { text-decoration: underline; }
 .rank { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .rank button {
-  width: 100%; display: grid; grid-template-columns: 1fr 92px 46px; align-items: center; gap: 10px;
+  width: 100%; display: grid; grid-template-columns: 1fr 80px 62px; align-items: center; gap: 10px;
   padding: 7px 6px; border: 0; border-bottom: 1px solid var(--line); background: none; text-align: left; cursor: pointer;
 }
 .rank button:hover, .rank button.is-active { background: var(--accent-wash); }
@@ -359,6 +359,11 @@ button, input, select { font: inherit; color: inherit; }
       </section>
       <div class="kpis" id="kpis"></div>
       <section>
+        <h2 id="fin-title">Risque financier · chaleur</h2>
+        <p class="panel-sub" id="fin-sub"></p>
+        <div class="kpis" id="fin-kpis" style="margin-top:8px"></div>
+      </section>
+      <section>
         <h2 id="distrib-title">Répartition par classe</h2>
         <div class="distrib" id="distrib" style="margin-top:8px"></div>
         <div class="class-legend" id="class-legend"></div>
@@ -467,6 +472,7 @@ const TEMP = /*__TEMP__*/;
 const FLOOD = /*__FLOOD__*/;
 const WATER = /*__WATER__*/;
 const LINES_GZ = "/*__LINES__*/";
+const FIN = /*__FINANCE__*/;
 
 /* ---------- Référentiels ---------- */
 const YEARS = Array.from({ length: 11 }, (_, i) => 2026 + i);
@@ -486,6 +492,8 @@ const IND_HEAT = {
   tr: { label: "Nuits tropicales (Tmin ≥ 20 °C)", unit: "nuits/an", cuts: [10, 40, 90, 180], dec: 0 },
   hi35: { label: "Jours de chaleur humide (indice ≥ 35 °C)", unit: "j/an", cuts: [1, 5, 20, 60], dec: 0 },
   txx: { label: "Température max. annuelle", unit: "°C", cuts: [32, 35, 38, 42], dec: 1 },
+  fin: { label: "Risque financier · coût annuel estimé", unit: "k€/an", cuts: [25, 100, 250, 1000], dec: 0, money: true },
+  finp: { label: "Risque financier · en % du budget d’exploitation", unit: "% du budget", cuts: [0.1, 0.25, 0.5, 1], dec: 2 },
 };
 const VARS = ["hd35", "tr", "hi35", "txx"];
 const CLASSES = ["Très faible", "Faible", "Modéré", "Élevé", "Très élevé"];
@@ -522,21 +530,66 @@ function compute(vals) {
   for (const v of VARS) { sub[v] = pw(BP[v], vals[v]); score += W[v] * sub[v]; }
   return { ...vals, sub, score };
 }
+/* Risque financier : coûts en k€ (euros 2026), assiette = budget d'exploitation estimé (FIN[i].b, M€/an) */
+const FIN_HEAT = {
+  energy: { share: 0.10, hd35: 0.25, tr: 0.05 },  // énergie = 10 % du budget ; +25 % un jour ≥ 35 °C, +5 % une nuit tropicale
+  staff: { share: 0.60, hd35: 0.02, hi35: 0.05 }, // personnel = 60 % ; −2 % de productivité un jour ≥ 35 °C, −5 % un jour de chaleur humide
+  maint: { share: 0.15, hd35: { bus: 0.10, tad: 0.10, boat: 0.10, metro: 0.20, tram: 0.30, train: 0.30, cable: 0.30 } }, // maintenance = 15 % ; surcoût un jour ≥ 35 °C
+};
+const FIN_FLOOD = {
+  assets: { bus: 2.5, tad: 1.5, boat: 3, cable: 6, train: 10, tram: 12, metro: 20 }, // valeur des actifs exploités / budget annuel
+  under: 1.5,            // métro (souterrain) : dommages et durée d'interruption majorés de 50 %
+  dd: [[0, 0], [0.5, 0.32], [1, 0.54], [1.5, 0.66], [2, 0.76], [3, 0.88], [4, 0.94], [5, 0.98], [6, 1]], // taux de dommage selon la hauteur d'eau (m)
+  days: [5, 25],          // jours d'interruption : 5 + 25 × taux de dommage
+  reach: 3,               // part du réseau touchée = 3 × part inondable (un tronçon coupé interrompt la ligne)
+  annual: 0.02,           // coût annuel attendu = 2 % des pertes de la crue centennale (protections ~50 ans)
+};
+const finOn = (i, y) => y == null || !FIN[i].from || y >= FIN[i].from;
+function finHeat(i, m, y) {
+  const H = FIN_HEAT, on = finOn(i, y) ? 1 : 0, d = FIN[i].b * 1000 / 365;
+  m.cE = on * d * H.energy.share * (H.energy.hd35 * m.hd35 + H.energy.tr * m.tr);
+  m.cP = on * d * H.staff.share * (H.staff.hd35 * m.hd35 + H.staff.hi35 * m.hi35);
+  m.cM = on * d * H.maint.share * H.maint.hd35[NETWORKS[i].p] * m.hd35;
+  m.fin = m.cE + m.cP + m.cM; m.finp = m.fin / (FIN[i].b * 1000) * 100;
+  return m;
+}
+function finFlood(i, m, y) {
+  const F = FIN_FLOOD, on = finOn(i, y) ? 1 : 0, b = FIN[i].b * 1000, parts = FIN[i].parts || { [NETWORKS[i].p]: 1 };
+  const vul = 1 + (F.under - 1) * (parts.metro || 0), share = m.ext / 100;
+  const dr = Math.min(1, pw(F.dd, m.depth) * vul);
+  m.assets = b * Object.entries(parts).reduce((s, [k, w]) => s + w * F.assets[k], 0);
+  m.d100 = on * m.assets * share * dr * m.f;
+  m.days = share ? (F.days[0] + F.days[1] * dr) * vul : 0;
+  m.aff = share ? Math.min(1, F.reach * share + (m.pdepth >= 0.1 ? 0.2 : 0)) : 0;
+  m.bi100 = on * b / 365 * m.days * m.aff * m.f;
+  m.fin = F.annual * (m.d100 + m.bi100); m.finp = m.fin / b * 100;
+  return m;
+}
 const M_HEAT = {};
-for (const s of SCEN) { M_HEAT[s.key] = {}; for (const y of YEARS) M_HEAT[s.key][y] = NETWORKS.map((_, i) => compute(Object.fromEntries(VARS.map(v => [v, value(v, s.key, y, i)])))); }
-const REF_HEAT = NETWORKS.map((_, i) => compute(Object.fromEntries(VARS.map(v => [v, ref(v, i)]))));
+for (const s of SCEN) { M_HEAT[s.key] = {}; for (const y of YEARS) M_HEAT[s.key][y] = NETWORKS.map((_, i) => finHeat(i, compute(Object.fromEntries(VARS.map(v => [v, value(v, s.key, y, i)]))), y)); }
+const REF_HEAT = NETWORKS.map((_, i) => finHeat(i, compute(Object.fromEntries(VARS.map(v => [v, ref(v, i)]))), null));
 let IND = IND_HEAT, M = M_HEAT, REF = REF_HEAT;
 const IND_FLOOD = {
   score: { label: "Score inondation", unit: "/ 100", cuts: [20, 40, 60, 80], dec: 0 },
   ext: { label: "Surface inondable (rayon 10 km)", unit: "%", cuts: [1, 3, 7, 15], dec: 1 },
   depth: { label: "Hauteur d’eau moyenne en zone inondée", unit: "m", cuts: [0.25, 0.5, 1, 2], dec: 1 },
   pdepth: { label: "Hauteur d’eau au point du réseau", unit: "m", cuts: [0.1, 0.5, 1, 2], dec: 1 },
+  fin: { label: "Risque financier · coût annuel attendu", unit: "k€/an", cuts: [25, 100, 250, 1000], dec: 0, money: true },
+  finp: { label: "Risque financier · en % du budget d’exploitation", unit: "% du budget", cuts: [0.1, 0.25, 0.5, 1], dec: 2 },
 };
 let M_FLOOD = null, REF_FLOOD = null;
 const cls = (ind, x) => IND[ind].cuts.reduce((n, c) => n + (x >= c ? 1 : 0), 0);
 const fmtN = (x, d = 0) => x.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d });
-const fmtInd = (ind, x) => fmtN(x, IND[ind].dec);
 const signed = (x, d = 0) => (x > 0 ? "+" : x < 0 ? "−" : "±") + fmtN(Math.abs(x), d);
+function fmtEur(k) { // k en k€
+  const a = Math.abs(k);
+  if (a >= 999.5) { const m = k / 1000; return fmtN(m, Math.abs(m) >= 99.95 || Number.isInteger(m) ? 0 : 1) + " M€"; }
+  return fmtN(k, a > 0 && a < 9.95 ? 1 : 0) + " k€";
+}
+const signedEur = k => (k > 0.05 ? "+" : k < -0.05 ? "−" : "±") + fmtEur(Math.abs(k));
+const eurHtml = (k, suffix = "") => { const t = fmtEur(k), j = t.lastIndexOf(" "); return `${t.slice(0, j)}<small> ${t.slice(j + 1)}${suffix}</small>`; };
+const fmtInd = (ind, x) => IND[ind].money ? fmtEur(x) : fmtN(x, IND[ind].dec);
+const signedInd = (ind, x) => IND[ind].money ? signedEur(x) : signed(x, IND[ind].dec);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const norm = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -821,8 +874,8 @@ const floodReady = (async () => {
     return { cells, pk: pr >= 0 && pr < FS && pc >= 0 && pc < FS ? pr * FS + pc : -1, pe: FLOOD.pelev[i] };
   });
   M_FLOOD = {};
-  for (const s of SCEN) { M_FLOOD[s.key] = {}; for (const y of YEARS) M_FLOOD[s.key][y] = NETWORKS.map((_, i) => floodMetrics(i, s.key, y)); }
-  REF_FLOOD = NETWORKS.map((_, i) => floodMetrics(i, "ssp245", 2010));
+  for (const s of SCEN) { M_FLOOD[s.key] = {}; for (const y of YEARS) M_FLOOD[s.key][y] = NETWORKS.map((_, i) => finFlood(i, floodMetrics(i, s.key, y), y)); }
+  REF_FLOOD = NETWORKS.map((_, i) => finFlood(i, floodMetrics(i, "ssp245", 2010), null));
   if (state.hz === "flood") { M = M_FLOOD; REF = REF_FLOOD; renderAll(); }
   refreshFlood();
   if (RE.on) reliefLayer.redraw();
@@ -974,6 +1027,46 @@ function renderRadius() {
   radiusCircle = L.circle([n.la, n.lo], { radius: R_KM * 1000, color: tok("--ink"), weight: 1.5, dashArray: "5 5", fill: false, interactive: false }).addTo(map);
 }
 
+/* Risque financier : portefeuille et fiche */
+const finCum = (i, scen = state.scen, year = state.year) => YEARS.reduce((s, y) => y <= year ? s + M[scen][y][i].fin : s, 0);
+function renderFinKpis(vis) {
+  const sum = f => vis.reduce((s, i) => s + f(i), 0), yr = state.year, fl = state.hz === "flood";
+  const now = sum(i => cur(i).fin), base = sum(i => M[state.scen][2026][i].fin), ref = sum(i => finOn(i, yr) ? REF[i].fin : 0);
+  const cum = sum(i => finCum(i)), budget = sum(i => finOn(i, yr) ? FIN[i].b * 1000 : 0);
+  document.getElementById("fin-title").textContent = `Risque financier · ${fl ? "inondation" : "chaleur"}`;
+  document.getElementById("fin-sub").textContent = `Estimation en euros 2026, sur un budget d’exploitation estimé de ${fmtEur(budget)} par an. Hypothèses : « Méthode et sources ».`;
+  const second = fl
+    ? (() => { const d = sum(i => cur(i).d100), b = sum(i => cur(i).bi100);
+        return `<div class="kpi"><span class="k-label">Pertes en cas de crue centennale</span><span class="k-val num">${eurHtml(d + b)}</span>
+          <span class="k-delta">somme des réseaux, dont ${fmtN(d + b ? d / (d + b) * 100 : 0)} % de dommages matériels</span></div>`; })()
+    : `<div class="kpi"><span class="k-label">Surcoût dû au réchauffement</span><span class="k-val num">${signedEur(now - ref).replace(/ (k€|M€)$/, "<small> $1/an</small>")}</span>
+        <span class="k-delta">vs climat 1995–2014</span></div>`;
+  document.getElementById("fin-kpis").innerHTML = `
+    <div class="kpi"><span class="k-label">${fl ? "Coût annuel attendu" : "Coût annuel estimé"}</span><span class="k-val num">${eurHtml(now, "/an")}</span>
+      <span class="k-delta">${fmtN(budget ? now / budget * 100 : 0, 2)} % du budget${yr > 2026 ? ` · <span class="${now - base > 0.5 ? "delta-up" : ""}">${signedEur(now - base)}</span> vs 2026` : ""}</span></div>
+    ${second}
+    <div class="kpi"><span class="k-label">Cumul 2026–${yr}</span><span class="k-val num">${eurHtml(cum)}</span>
+      <span class="k-delta">${SCEN.find(x => x.key === state.scen).label}, euros 2026</span></div>`;
+}
+function finSection(i, m, m26, r) {
+  const f = FIN[i], fl = state.hz === "flood", on = finOn(i, state.year);
+  const facts = `<dl class="facts"><dt>Budget d’exploitation estimé</dt><dd class="num">${fmtEur(f.b * 1000)} par an</dd><dt>Base de l’estimation</dt><dd>${esc(f.base)}</dd>
+    ${fl ? `<dt>Valeur des actifs exploités</dt><dd class="num">${fmtEur(m.assets)}</dd>` : ""}</dl>`;
+  if (!on) return `<section class="sec"><h4>Risque financier · estimation</h4>${facts}<p class="note">Mise en service prévue en ${f.from} : pas de coût avant cette date.</p></section>`;
+  const row = (lab, k, bold) => `<tr><td>${bold ? `<b>${lab}</b>` : lab}</td><td>${fmtEur(r[k])}</td><td>${fmtEur(m26[k])}</td><td><b>${fmtEur(m[k])}</b></td><td class="${m[k] - r[k] > 0.5 ? "delta-up" : ""}">${signedEur(m[k] - r[k])}</td></tr>`;
+  const rows = fl
+    ? row("Dommages matériels<br><small>crue centennale</small>", "d100") + row("Pertes d’exploitation<br><small>crue centennale</small>", "bi100") + row("Coût annuel attendu<br><small>par an</small>", "fin", true)
+    : row("Énergie et climatisation", "cE") + row("Personnel<br><small>productivité, absences</small>", "cP") + row("Maintenance et incidents", "cM") + row("Coût annuel", "fin", true);
+  const note = fl
+    ? (m.d100 + m.bi100 > 0
+      ? `Crue centennale : ${fmtN(m.days)} jours d’interruption sur ${fmtN(m.aff * 100)} % du réseau. Le coût annuel attendu vaut 2 % des pertes de la crue centennale, crues plus fréquentes comprises.`
+      : `Aucune zone inondable dans le rayon de 10 km : pas de coût estimé.`)
+    : `Coûts liés aux jours ≥ 35 °C, aux nuits tropicales et aux jours de chaleur humide de l’année.`;
+  return `<section class="sec"><h4>Risque financier · estimation</h4>${facts}
+    <table class="ind-table" style="margin-top:10px"><thead><tr><th></th><th>${fl ? "2010" : "1995–2014"}</th><th>2026</th><th>${state.year}</th><th>Δ réf.</th></tr></thead><tbody>${rows}</tbody></table>
+    <p class="note">${note} Soit ${fmtN(m.finp, 2)} % du budget en ${state.year} ; cumul 2026–${state.year} : ${fmtEur(finCum(i))}.${f.from ? ` Mise en service prévue en ${f.from} : pas de coût avant.` : ""}</p></section>`;
+}
+
 /* Portefeuille et fiche : inondation */
 function renderKpisFlood(vis) {
   const mean = a => a.reduce((s, x) => s + x, 0) / (a.length || 1);
@@ -1049,6 +1142,7 @@ function renderDrawerFlood(i) {
       </div>
       <p class="note">Aléa ${fmtN(m.hzd)} × facteur relief ${fmtN(m.f, 2)} = score ${fmtN(m.score)}.</p>
     </section>
+    ${finSection(i, m, m26, r)}
     ${vig.length ? `<section class="sec"><h4>Points de vigilance</h4><ul class="vig">${vig.map(v => `<li>${esc(v)}</li>`).join("")}</ul></section>` : ""}
     <section class="sec">
       <h4>Réseau</h4>
@@ -1059,11 +1153,11 @@ function renderDrawerFlood(i) {
   appendLines(i);
 }
 async function copyFlood(btn, vis) {
-  const head = ["reseau", "ville", "pays", "mode_principal", "scenario", "annee", "score", "classe", "surface_inondable_pct", "dont_fluvial_pct", "dont_submersion_pct", "hauteur_moyenne_m", "hauteur_au_point_m", "altitude_point_m", "altitude_zone_inondable_m", "hauteur_relative_m", "facteur_relief", "score_2026", "score_reference_2010"];
+  const head = ["reseau", "ville", "pays", "mode_principal", "scenario", "annee", "score", "classe", "surface_inondable_pct", "dont_fluvial_pct", "dont_submersion_pct", "hauteur_moyenne_m", "hauteur_au_point_m", "altitude_point_m", "altitude_zone_inondable_m", "hauteur_relative_m", "facteur_relief", "score_2026", "score_reference_2010", "budget_estime_MEUR", "valeur_actifs_MEUR", "dommages_crue100_kEUR", "pertes_exploitation_crue100_kEUR", "cout_annuel_attendu_kEUR", "cout_pct_budget", "cumul_2026_annee_kEUR"];
   const f1 = x => isNaN(x) ? "" : x.toFixed(2);
   const lines = [head.join(";")].concat(vis.map(i => {
     const n = NETWORKS[i], m = cur(i);
-    return [n.t, n.ci, n.pays, MODE_LABEL[n.p], state.scen, state.year, m.score.toFixed(1), CLASSES[cls("score", m.score)], f1(m.ext), f1(m.extR), f1(m.extC), f1(m.depth), f1(m.pdepth), f1(m.pe), f1(m.fe), f1(m.dh), f1(m.f), M[state.scen][2026][i].score.toFixed(1), REF[i].score.toFixed(1)]
+    return [n.t, n.ci, n.pays, MODE_LABEL[n.p], state.scen, state.year, m.score.toFixed(1), CLASSES[cls("score", m.score)], f1(m.ext), f1(m.extR), f1(m.extC), f1(m.depth), f1(m.pdepth), f1(m.pe), f1(m.fe), f1(m.dh), f1(m.f), M[state.scen][2026][i].score.toFixed(1), REF[i].score.toFixed(1), f1(FIN[i].b), f1(m.assets / 1000), m.d100.toFixed(0), m.bi100.toFixed(0), m.fin.toFixed(1), m.finp.toFixed(3), finCum(i).toFixed(0)]
       .map(x => `"${String(x).replace(/"/g, '""')}"`).join(";");
   }));
   try { await navigator.clipboard.writeText(lines.join("\n")); btn.textContent = `Copié (${vis.length} lignes)`; }
@@ -1280,7 +1374,9 @@ const markers = NETWORKS.map((n, i) => {
 });
 function iconFor(i) {
   const m = cur(i), x = indVal(m), k = cls(state.ind, x);
-  const txt = fmtN(x, x >= 10 || state.ind === "score" ? 0 : IND[state.ind].dec);
+  const txt = IND[state.ind].money
+    ? (x >= 999.5 ? fmtN(x / 1000, x >= 9950 ? 0 : 1) + "M" : fmtN(x))   // k€ ; « M » = M€ (pastille étroite)
+    : fmtN(x, x >= 10 || state.ind === "score" ? 0 : IND[state.ind].dec);
   return L.divIcon({
     className: "pt-wrap" + (state.sel === i ? " is-active" : ""),
     html: `<span class="pt c${k + 1}">${txt}</span><span class="pt-label">${esc(NETWORKS[i].ci.split(" – ")[0])}</span>`,
@@ -1391,7 +1487,7 @@ function renderRank(vis) {
     return `<li><button type="button" data-i="${i}" class="${state.sel === i ? "is-active" : ""}">
       <span class="who"><b>${esc(n.ci)}</b><span>${esc(n.pays)} · ${esc(MODE_LABEL[n.p])}</span></span>
       <span class="bar" aria-hidden="true"><i class="c${k + 1}" style="width:${Math.min(100, x / maxV * 100)}%"></i></span>
-      <span class="v">${fmtInd(state.ind, x)}<small>${state.year > 2026 ? signed(d, IND[state.ind].dec) : CLASSES[k]}</small></span></button></li>`;
+      <span class="v">${fmtInd(state.ind, x)}<small>${state.year > 2026 ? signedInd(state.ind, d) : CLASSES[k]}</small></span></button></li>`;
   }).join("") : `<li style="padding:12px 0;color:var(--muted)">Aucun réseau ne correspond aux filtres.</li>`;
 }
 document.getElementById("rank").addEventListener("click", e => { const b = e.target.closest("button[data-i]"); if (b) openDrawer(+b.dataset.i, true); });
@@ -1425,7 +1521,7 @@ function vigilance(n, m) {
 }
 function trajChart(i) {
   const ind = state.ind;
-  const W0 = 388, H0 = 190, pl = 34, pr = 72, pt = 12, pb = 22;
+  const money = IND[ind].money, W0 = 388, H0 = 190, pl = money ? 46 : 34, pr = money ? 92 : 72, pt = 12, pb = 22;
   const iw = W0 - pl - pr, ih = H0 - pt - pb;
   const series = SCEN.map(s => ({ s, v: YEARS.map(y => indVal(M[s.key][y][i], ind)) }));
   const refV = ind === "score" ? REF[i].score : REF[i][ind];
@@ -1438,7 +1534,7 @@ function trajChart(i) {
   const st = niceStep(hi - lo); hi = Math.ceil(hi / st) * st; lo = Math.floor(lo / st) * st;
   const X = y => pl + (y - 2026) / 10 * iw, Y = v => pt + ih - (v - lo) / (hi - lo) * ih;
   let s = `<svg viewBox="0 0 ${W0} ${H0}" role="img" aria-label="Trajectoire ${esc(IND[ind].label)} de 2026 à 2036 selon trois scénarios">`;
-  for (let v = lo; v <= hi + 1e-9; v += st) s += `<line x1="${pl}" x2="${pl + iw}" y1="${Y(v)}" y2="${Y(v)}" stroke="${tok("--line")}"/><text class="chart-label" x="${pl - 5}" y="${Y(v) + 3.5}" text-anchor="end">${fmtN(v, st < 1 ? 1 : 0)}</text>`;
+  for (let v = lo; v <= hi + 1e-9; v += st) s += `<line x1="${pl}" x2="${pl + iw}" y1="${Y(v)}" y2="${Y(v)}" stroke="${tok("--line")}"/><text class="chart-label" x="${pl - 5}" y="${Y(v) + 3.5}" text-anchor="end">${money ? fmtEur(v) : fmtN(v, st < 1 ? 1 : 0)}</text>`;
   [2026, 2028, 2030, 2032, 2034, 2036].forEach(y => s += `<text class="chart-label" x="${X(y)}" y="${H0 - 6}" text-anchor="middle">${y}</text>`);
   if (refV >= lo && refV <= hi) s += `<line x1="${pl}" x2="${pl + iw}" y1="${Y(refV)}" y2="${Y(refV)}" stroke="${tok("--muted")}" stroke-dasharray="3 3"/><text class="chart-label" x="${pl + 4}" y="${Y(refV) - 4}">${state.hz === "flood" ? "Réf. 2010" : "Réf. 1995–2014"} : ${fmtInd(ind, refV)}</text>`;
   s += `<line x1="${X(state.year)}" x2="${X(state.year)}" y1="${pt}" y2="${pt + ih}" stroke="${tok("--ink")}" stroke-width="1" opacity=".35"/>`;
@@ -1513,6 +1609,7 @@ function renderDrawer() {
       <div class="contrib">${contrib}</div>
       <p class="note">Chaque indicateur est ramené à une note de 0 à 100, puis pondéré.</p>
     </section>
+    ${finSection(i, m, m26, r)}
     ${vig.length ? `<section class="sec"><h4>Points de vigilance</h4><ul class="vig">${vig.map(v => `<li>${esc(v)}</li>`).join("")}</ul></section>` : ""}
     <section class="sec">
       <h4>Réseau</h4>
@@ -1597,10 +1694,10 @@ function fitTo(b, maxZoom = 9) { const wide = innerWidth > 860, o = wide ? { pad
 document.getElementById("copy").addEventListener("click", async e => {
   const btn = e.currentTarget, vis = visible();
   if (state.hz === "flood") return copyFlood(btn, vis);
-  const head = ["reseau", "ville", "pays", "mode_principal", "scenario", "annee", "score", "classe", "jours_35C", "nuits_tropicales", "jours_chaleur_humide", "tmax_annuelle_C", "score_2026", "score_reference_1995_2014"];
+  const head = ["reseau", "ville", "pays", "mode_principal", "scenario", "annee", "score", "classe", "jours_35C", "nuits_tropicales", "jours_chaleur_humide", "tmax_annuelle_C", "score_2026", "score_reference_1995_2014", "budget_estime_MEUR", "cout_chaleur_kEUR_an", "dont_energie_kEUR", "dont_personnel_kEUR", "dont_maintenance_kEUR", "cout_pct_budget", "surcout_vs_reference_kEUR", "cumul_2026_annee_kEUR"];
   const lines = [head.join(";")].concat(vis.map(i => {
     const n = NETWORKS[i], m = cur(i);
-    return [n.t, n.ci, n.pays, MODE_LABEL[n.p], state.scen, state.year, m.score.toFixed(1), CLASSES[cls("score", m.score)], m.hd35.toFixed(1), m.tr.toFixed(1), m.hi35.toFixed(1), m.txx.toFixed(1), M[state.scen][2026][i].score.toFixed(1), REF[i].score.toFixed(1)]
+    return [n.t, n.ci, n.pays, MODE_LABEL[n.p], state.scen, state.year, m.score.toFixed(1), CLASSES[cls("score", m.score)], m.hd35.toFixed(1), m.tr.toFixed(1), m.hi35.toFixed(1), m.txx.toFixed(1), M[state.scen][2026][i].score.toFixed(1), REF[i].score.toFixed(1), FIN[i].b.toFixed(2), m.fin.toFixed(1), m.cE.toFixed(1), m.cP.toFixed(1), m.cM.toFixed(1), m.finp.toFixed(3), (finOn(i, state.year) ? m.fin - REF[i].fin : 0).toFixed(1), finCum(i).toFixed(0)]
       .map(x => `"${String(x).replace(/"/g, '""')}"`).join(";");
   }));
   try { await navigator.clipboard.writeText(lines.join("\n")); btn.textContent = `Copié (${vis.length} lignes)`; }
@@ -1628,6 +1725,24 @@ document.getElementById("method").innerHTML = `
     <tr><td>Hauteur d’eau moyenne en zone inondée</td><td>50 %</td><td>5 m</td></tr>
   </tbody></table>
   <p><b>Correction topographique</b> : on compare l’altitude du point du réseau (MNT ~30 m) à l’altitude médiane des zones inondées autour. Jusqu’à 2 m au-dessus : pas de correction ; au-delà, le score baisse progressivement jusqu’à −60 % à 30 m au-dessus. Si le point lui-même est en zone inondable, aucune réduction.</p>
+  <h3 style="margin:14px 0 0;font:600 13px var(--font-body);color:var(--ink)">Risque financier</h3>
+  <p><b>Principe</b> : ordre de grandeur des coûts que chaque aléa fait peser sur l’exploitation, pour l’année et le scénario choisis, en euros 2026. Les coûts portent sur le réseau dans son ensemble (exploitant et autorité organisatrice), sans tenir compte du partage contractuel des risques ni des assurances.</p>
+  <p><b>Assiette</b> : budget d’exploitation annuel estimé de chaque réseau (coût complet), à partir des chiffres publiés sur ratpdev.com, par ordre de préférence : effectif × 95 k€ ; flotte × employés par véhicule (bus 2,3, autocar et TAD 1,3) × 95 k€ ; longueur de ligne × coût au km (métro 3,5 M€, tramway 2 M€, train 0,8 M€) ; voyages × 3,5 € ; population desservie × dépense par habitant. Montants corrigés d’un indice de coût du pays (France 1, États-Unis 1,15, Égypte 0,3…). La base retenue est indiquée dans chaque fiche.</p>
+  <p><b>Chaleur</b> : coût de chaque jour de chaleur, exprimé en part du budget journalier.</p>
+  <table><thead><tr><th>Poste</th><th>Part du budget</th><th>Surcoût</th></tr></thead><tbody>
+    <tr><td>Énergie et climatisation</td><td>10 %</td><td>+25 % par jour ≥ 35 °C, +5 % par nuit tropicale</td></tr>
+    <tr><td>Personnel</td><td>60 %</td><td>−2 % de productivité par jour ≥ 35 °C, −5 % par jour de chaleur humide</td></tr>
+    <tr><td>Maintenance et incidents</td><td>15 %</td><td>par jour ≥ 35 °C : +10 % (bus, TAD), +20 % (métro), +30 % (tramway, train, câble)</td></tr>
+  </tbody></table>
+  <p>Le « surcoût dû au réchauffement » compare le coût de l’année au coût qu’aurait le climat 1995–2014.</p>
+  <p><b>Inondation</b> : valeur des actifs exploités (matériel roulant, dépôts, installations fixes) égale au budget annuel × 2,5 (bus), 1,5 (TAD), 6 (câble), 10 (train), 12 (tramway) ou 20 (métro), pondérée par mode pour les réseaux mixtes (Lyon, Doha).</p>
+  <table><thead><tr><th>Composante</th><th>Calcul pour la crue centennale</th></tr></thead><tbody>
+    <tr><td>Dommages matériels</td><td>actifs × part inondable dans 10 km × taux de dommage × facteur relief</td></tr>
+    <tr><td>Pertes d’exploitation</td><td>budget journalier × jours d’interruption (5 + 25 × taux de dommage) × part du réseau touchée (3 × part inondable, car un tronçon coupé interrompt toute la ligne ; +20 points si le point du réseau est inondé) × facteur relief</td></tr>
+    <tr><td>Coût annuel attendu</td><td>2 % des pertes de la crue centennale (dommages + pertes d’exploitation)</td></tr>
+  </tbody></table>
+  <p>Taux de dommage selon la hauteur d’eau, inspiré des courbes du JRC (Huizinga et al., 2017) : 32 % à 0,5 m, 54 % à 1 m, 76 % à 2 m, 100 % à 6 m. Métro : dommages et durée d’interruption majorés de 50 % (tunnels et stations souterraines). La crue centennale a 1 % de chances de survenir chaque année. Sans aucune protection, les crues plus fréquentes porteraient le coût annuel attendu vers 4 % des pertes centennales ; le taux de 2 % suppose que les protections existantes contiennent en moyenne les crues plus fréquentes que la cinquantennale.</p>
+  <p><b>Limites</b> : ordres de grandeur, avec une incertitude d’un facteur 2 à 3 ; protections prises en compte de façon forfaitaire seulement (taux de 2 %), alors que la carte de l’aléa les ignore ; budgets constants, sans inflation ni évolution de l’offre ; les réseaux en projet sont comptés comme en service, sauf mise en service datée sur ratpdev.com (Melbourne, 2035). Pour modifier les budgets : <code>scripts/prepare_finance.py</code> ; pour les coûts unitaires : constantes <code>FIN_HEAT</code> et <code>FIN_FLOOD</code> de la page.</p>
   <h3 style="margin:14px 0 0;font:600 13px var(--font-body);color:var(--ink)">Plans de réseau</h3>
   <p><b>Tracés</b> : fichiers GTFS publiés sur transport.data.gouv.fr (conversion GeoJSON) pour 23 réseaux urbains, Grand Lyon open data pour le métro, les funiculaires et les tramways TCL, Île-de-France Mobilités pour Orlyval. Variantes et sens quasi identiques fusionnés, tracés simplifiés à ~10 m. Les réseaux d’autocars interurbains (lignes régionales) et le téléphérique du Salève ne sont pas cartographiés. Pour Txik Txak et Libéo, seules les lignes autour de l’agglomération sont retenues.</p>
   <p><b>Inondation par tronçon</b> : hauteur d’eau de la crue centennale (Aqueduct, maille ~1 km) au droit de chaque point du tracé, espacés de 250 m au plus ; un tronçon est exposé dès 0,1 m.</p>
@@ -1641,7 +1756,7 @@ function renderAll(withDrawer = true) {
   const vis = visible();
   const sc = SCEN.find(s => s.key === state.scen);
   document.getElementById("ctx").textContent = `${vis.length} réseau${vis.length > 1 ? "x" : ""} · ${state.year} · ${sc.label}, ${sc.desc}`;
-  renderKpis(vis); renderDistrib(vis); renderEvo(vis); renderRank(vis); renderLegend();
+  renderKpis(vis); renderFinKpis(vis); renderDistrib(vis); renderEvo(vis); renderRank(vis); renderLegend();
   updateMarkers(vis);
   if (withDrawer && state.sel != null) renderDrawer();
 }

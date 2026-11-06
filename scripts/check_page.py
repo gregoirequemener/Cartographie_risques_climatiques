@@ -1,7 +1,7 @@
 """Test de fumée : ouvre la page construite dans Chromium et vérifie qu'elle fonctionne.
 
 Contrôles : aucune erreur JavaScript, 90 réseaux chargés, 25 plans de réseau décodés,
-bascule chaleur / inondation, tronçons exposés affichés sur Lyon.
+coûts financiers calculés pour chaque réseau, bascule chaleur / inondation, tronçons exposés affichés sur Lyon.
 
 Prérequis : pip install -r requirements-dev.txt && playwright install chromium
 Usage     : python scripts/check_page.py [--page docs/index.html] [--chrome /chemin/vers/chrome]
@@ -35,9 +35,15 @@ async def run(page_path: Path, chrome: str | None, shot: Path | None) -> int:
             failures.append(f"{n_networks} réseaux au lieu de 90")
         if n_lines != 25:
             failures.append(f"{n_lines} plans de réseau au lieu de 25")
+        bad_fin = await page.evaluate("NETWORKS.filter((_, i) => !(FIN[i].b > 0 && Number.isFinite(M_HEAT.ssp585[2036][i].fin))).length")
+        if bad_fin:
+            failures.append(f"{bad_fin} réseau(x) sans coût financier calculable (chaleur)")
 
         await page.click('#hazards button[data-h="flood"]')
         await page.wait_for_timeout(1500)
+        bad_ff = await page.evaluate("NETWORKS.filter((_, i) => !Number.isFinite(M_FLOOD.ssp585[2036][i].fin)).length")
+        if bad_ff:
+            failures.append(f"{bad_ff} réseau(x) sans coût financier calculable (inondation)")
         await page.click('#hazards button[data-h="heat"]')
         await page.wait_for_timeout(1000)
         await page.evaluate("() => { const n = NETWORKS[74]; map.setView([n.la, n.lo], 12); }")  # Lyon

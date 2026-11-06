@@ -1,6 +1,6 @@
 """Assemble la carte « Risques climatiques des réseaux RATP Dev » en une seule page HTML autonome.
 
-Toutes les données (réseaux, climat, inondation, relief, eau, plans de réseau) sont injectées
+Toutes les données (réseaux, budgets estimés, climat, inondation, relief, eau, plans de réseau) sont injectées
 dans le gabarit src/template.html. Seules les bibliothèques JavaScript (Leaflet, Leaflet.markercluster,
 topojson-client) sont chargées depuis le CDN jsDelivr.
 
@@ -52,6 +52,7 @@ def build() -> str:
     replacements = [
         ("/*__LEAFLET_CSS__*/", css),
         ("/*__DATA__*/", compact(DATA / "networks.json")),
+        ("/*__FINANCE__*/", json.dumps(json.loads(read(DATA / "finance.json"))["networks"], ensure_ascii=False, separators=(",", ":"))),
         ("/*__CLIMATE__*/", compact(DATA / "climate_raw.json")),
         ("/*__GEO__*/", geo),
         ("/*__FLOOD__*/", read(DATA / "flood.json")),

@@ -4,7 +4,7 @@ Carte interactive des risques climatiques physiques (chaleur, inondation) des 90
 
 La page produite est un fichier HTML unique et autonome : toutes les données y sont intégrées et seules les bibliothèques JavaScript (Leaflet, Leaflet.markercluster, topojson-client) viennent du CDN jsDelivr.
 
-**Version 5** : plans de réseau GTFS et tronçons exposés.
+**Version 6** : risque financier (coût annuel estimé) pour la chaleur et l'inondation.
 
 ## Démarrage rapide
 
@@ -32,6 +32,7 @@ src/vendor/               feuilles de style Leaflet 1.9.4 et Leaflet.markerclust
 data/
   references_raw.json     fiches réseaux extraites du site ratpdev.com (« Nos réseaux »)
   networks.json           90 réseaux nettoyés et géolocalisés (généré par scripts/prepare_networks.py)
+  finance.json            budget d'exploitation annuel estimé par réseau (généré par scripts/prepare_finance.py)
   corrections.json        corrections apportées aux fiches source, avec leur motif
   climate_raw.json        indicateurs climatiques par réseau (CCKP, CMIP6 0,25°)
   temp_grids.json         grilles mondiales de température (moyenne annuelle, jour le plus chaud), 0,5°, en PNG
@@ -41,6 +42,7 @@ data/
   geo/                    contours pays, États américains, régions et départements français (TopoJSON)
 scripts/
   prepare_networks.py     data/references_raw.json → data/networks.json + data/corrections.json
+  prepare_finance.py      data/networks.json → data/finance.json (hypothèses de budget par réseau)
   check_page.py           test de fumée de la page construite (Playwright)
 docs/index.html           page construite (servie par GitHub Pages)
 ```
@@ -59,12 +61,18 @@ La méthode complète est détaillée dans la page, rubrique « Méthode et sour
     - par seuils de température (32, 35, 38, 41 °C) ;
     - par écart à la médiane du réseau, pour repérer ses points chauds.
 - **Scénarios** : SSP1-2.6 est approché par RCP4.5 pour l'inondation, car Aqueduct ne fournit que RCP4.5 et RCP8.5.
+- **Risque financier** : ordre de grandeur du coût annuel de chaque aléa, en euros 2026, pour chaque année et chaque scénario.
+  - *Assiette* : budget d'exploitation annuel estimé de chaque réseau, à partir des chiffres publiés (effectif × 95 k€, flotte, km de ligne, voyages ou population), corrigé d'un indice de coût du pays. Détail dans `scripts/prepare_finance.py`.
+  - *Chaleur* : chaque jour ≥ 35 °C, nuit tropicale ou jour de chaleur humide coûte une part du budget journalier (énergie et climatisation, productivité du personnel, maintenance et incidents).
+  - *Inondation* : dommages matériels et pertes d'exploitation de la crue centennale (valeur des actifs × part inondable × taux de dommage selon la hauteur d'eau), ramenés à un coût annuel attendu de 2 % de ces pertes.
+  - Les coûts unitaires sont les constantes `FIN_HEAT` et `FIN_FLOOD` de `src/template.html`.
 
 **Limites** :
 - Les données sont simplifiées : un point et un rayon de 10 km par réseau, avec une maille de 0,25 à 0,5° pour le climat et d'environ 1 km pour l'inondation.
 - Les digues et protections existantes ne sont pas prises en compte.
 - Le ruissellement urbain et l'îlot de chaleur urbain ne sont pas modélisés.
 - Sur la côte, les mailles mélangent terre et mer et sous-estiment les maxima de température.
+- Les montants financiers sont des ordres de grandeur (incertitude d'un facteur 2 à 3) : budgets estimés, coûts unitaires forfaitaires, sans inflation ni partage contractuel des risques.
 
 ## Sources et licences des données
 
@@ -87,6 +95,8 @@ Les jeux sous ODbL imposent de citer la source et de partager à l'identique les
 
 `scripts/prepare_networks.py` régénère la liste des réseaux à partir de `data/references_raw.json`.
 
+`scripts/prepare_finance.py` régénère les budgets estimés (`data/finance.json`) ; à relancer si la liste des réseaux ou les hypothèses de budget changent.
+
 Les autres jeux (`climate_raw`, `temp_grids`, `flood`, `water`, `lines`) ont été extraits une fois des sources ci-dessus et sont versionnés tels quels. Leur extraction n'est pas automatisée dans ce dépôt : la plupart des sources sont des services web ou des rasters volumineux.
 
 ## Historique
@@ -96,3 +106,4 @@ Les autres jeux (`climate_raw`, `temp_grids`, `flood`, `water`, `lines`) ont ét
 - **v3** : calque des températures (moyenne annuelle, jour le plus chaud), variable selon l'année.
 - **v4** : aléa inondation (crue centennale), cours d'eau et lacs, relief, correction topographique.
 - **v5** : plans des réseaux français (GTFS) et tronçons exposés par aléa.
+- **v6** : risque financier (coût annuel estimé, surcoût dû au réchauffement, cumul) pour la chaleur et l'inondation.
