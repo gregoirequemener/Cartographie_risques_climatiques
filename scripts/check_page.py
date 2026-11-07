@@ -2,11 +2,13 @@
 
 Contrôles : aucune erreur JavaScript, 90 réseaux chargés, 25 plans de réseau décodés,
 fond de carte précis décodé, coûts financiers et voyageurs perturbés calculés pour chaque réseau,
-bascule du panneau Portefeuille, version « Alpha V0.mois.jour.n » affichée, bascule chaleur / inondation, tronçons exposés affichés sur Lyon.
+bascule du panneau Portefeuille, version « Alpha V0.aa.mois.jour.n » affichée, polices de la charte chargées,
+aucune requête réseau (page autonome), bascule chaleur / inondation (classes du jaune au rouge, puis en bleus),
+tronçons exposés affichés sur Lyon.
 
 Prérequis : pip install -r requirements-dev.txt && playwright install chromium
 Usage     : python scripts/check_page.py [--page docs/index.html] [--chrome /chemin/vers/chrome]
-La page charge Leaflet depuis le CDN jsDelivr : une connexion Internet est nécessaire.
+La page est autonome : aucune connexion Internet n'est nécessaire.
 """
 from __future__ import annotations
 
@@ -28,6 +30,8 @@ async def run(page_path: Path, chrome: str | None, shot: Path | None) -> int:
         page = await browser.new_page(viewport={"width": 1440, "height": 900})
         errors: list[str] = []
         page.on("pageerror", lambda e: errors.append(str(e)))
+        remote: list[str] = []  # la page doit tout contenir : aucune requête hors du fichier
+        page.on("request", lambda r: remote.append(r.url) if r.url.startswith(("http:", "https:")) else None)
         await page.goto(page_path.resolve().as_uri())
         await page.wait_for_function("typeof NETL !== 'undefined' && NETL !== null", timeout=60_000)
 
@@ -36,8 +40,14 @@ async def run(page_path: Path, chrome: str | None, shot: Path | None) -> int:
         if n_land < 1000:
             failures.append(f"fond de carte incomplet : {n_land} polygones de terre")
         version = await page.evaluate("document.getElementById('version').textContent.trim()")
-        if not re.fullmatch(r"Alpha V0\.(1[0-2]|[1-9])\.([1-9]|[12]\d|3[01])\.[1-9]\d*", version):
-            failures.append(f"version mal formée : {version!r} (attendu « Alpha V0.mois.jour.n »)")
+        if not re.fullmatch(r"Alpha V0\.\d{2}\.(1[0-2]|[1-9])\.([1-9]|[12]\d|3[01])\.[1-9]\d*", version):
+            failures.append(f"version mal formée : {version!r} (attendu « Alpha V0.aa.mois.jour.n »)")
+        # Montserrat (titres) doit être chargée ; Carlito n'est utilisée qu'à défaut de Parisine Office et de Calibri
+        fonts = await page.evaluate("document.fonts.ready.then(() => [...document.fonts].map(f => [f.family.replace(/\"/g, ''), f.status]))")
+        if ["Montserrat", "loaded"] not in fonts:
+            failures.append(f"police Montserrat non chargée : {fonts}")
+        if not any(f == "Carlito" for f, _ in fonts):
+            failures.append("police Carlito non intégrée à la page")
         n_networks = await page.evaluate("NETWORKS.length")
         n_lines = await page.evaluate("NETL.length")
         if n_networks != 90:
@@ -61,8 +71,12 @@ async def run(page_path: Path, chrome: str | None, shot: Path | None) -> int:
         if not (hidden and shown and w1 > w0):
             failures.append(f"bascule du panneau : masqué={hidden}, réaffiché={shown}, largeur carte {w0} → {w1} px")
 
+        heat_r5 = await page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--r5').trim()")
         await page.click('#hazards button[data-h="flood"]')
         await page.wait_for_timeout(1500)
+        flood_r5 = await page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--r5').trim()")
+        if heat_r5 == flood_r5:
+            failures.append(f"les classes ne changent pas de couleur avec l'aléa (--r5 = {heat_r5})")
         bad_ff = await page.evaluate("NETWORKS.filter((_, i) => !Number.isFinite(M_FLOOD.ssp585[2036][i].fin) || !Number.isFinite(M_FLOOD.ssp585[2036][i].pax)).length")
         if bad_ff:
             failures.append(f"{bad_ff} réseau(x) sans coût ou voyageurs perturbés calculables (inondation)")
@@ -78,6 +92,7 @@ async def run(page_path: Path, chrome: str | None, shot: Path | None) -> int:
         await browser.close()
 
     failures += [f"erreur JavaScript : {e}" for e in errors]
+    failures += [f"requête réseau : {u}" for u in remote]
     print(f"{version} · réseaux : {n_networks} · plans de réseau : {n_lines} · tronçons exposés affichés (Lyon, chaleur) : {n_risk}")
     for f in failures:
         print("ÉCHEC :", f)

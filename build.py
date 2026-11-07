@@ -1,12 +1,17 @@
 """Assemble la carte « Risques climatiques des réseaux RATP Dev » en une seule page HTML autonome.
 
 Toutes les données (réseaux, budgets et fréquentation estimés, climat, inondation, relief, fond de carte précis,
-plans de réseau) et les bibliothèques JavaScript (Leaflet, Leaflet.markercluster, topojson-client, copiées dans
-src/vendor/) sont intégrées au gabarit src/template.html : la page fonctionne hors ligne. Seules les polices
-Google Fonts viennent d'Internet (polices du système à défaut).
+plans de réseau), les bibliothèques JavaScript (Leaflet, Leaflet.markercluster, topojson-client) et les polices de
+la charte graphique RATP Dev (Montserrat ; Carlito, substitut de Calibri) sont copiées dans src/vendor/ et intégrées
+au gabarit src/template.html : la page fonctionne entièrement hors ligne.
 
-Version affichée en haut de la page : « Alpha V0.mois.jour.n ».
-  - mois.jour : date de la dernière mise à jour du code de l'application (src/, data/, scripts/, build.py) ;
+Logo : le fichier officiel du logotype RATP Dev déposé dans src/logo/ (SVG ou PNG, tel que fourni par la
+bibliothèque de logotypes) s'affiche en haut à gauche, dans son cartouche blanc. Sans fichier, rien n'est affiché :
+le logotype n'est jamais redessiné.
+
+Version affichée en haut de la page : « Alpha V0.aa.mois.jour.n ».
+  - aa.mois.jour : date de la dernière mise à jour du code de l'application (src/, data/, scripts/, build.py),
+    l'année sur deux chiffres (26 pour 2026) ;
   - n : numéro de la mise à jour ce jour-là (1, 2, 3…). Il augmente d'un cran chaque fois que la page officielle
     (docs/index.html) est reconstruite après une modification du code ; reconstruire sans modification ne change
     rien. Le dernier état est noté dans version.json.
@@ -41,6 +46,18 @@ LIBS = [
     ("leaflet.markercluster.js", "Leaflet.markercluster 1.5.3 · MIT · https://github.com/Leaflet/Leaflet.markercluster"),
     ("topojson-client.min.js", "topojson-client 3.1.0 · ISC · https://github.com/topojson/topojson-client"),
 ]
+
+# Polices de la charte (sous-ensemble latin de Google Fonts, SIL Open Font License 1.1) : (famille, fichier, style, graisse)
+FONTS = [
+    ("Montserrat", "montserrat-latin.woff2", "normal", "400 800"),
+    ("Carlito", "carlito-latin-400.woff2", "normal", "400"),
+    ("Carlito", "carlito-latin-700.woff2", "normal", "700"),
+    ("Carlito", "carlito-latin-400-italic.woff2", "italic", "400"),
+]
+FONT_RANGE = ("U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, "
+              "U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD")
+LOGO_DIR = SRC / "logo"
+LOGO_TYPES = {".svg": "image/svg+xml", ".png": "image/png", ".webp": "image/webp", ".jpg": "image/jpeg", ".jpeg": "image/jpeg"}
 
 
 def read(path: Path) -> str:
@@ -101,7 +118,7 @@ def last_update() -> date:
 
 
 def version(record: bool) -> tuple[str, str]:
-    """Libellé « Alpha V0.mois.jour.n » et texte de l'infobulle.
+    """Libellé « Alpha V0.aa.mois.jour.n » (aa : année sur deux chiffres) et texte de l'infobulle.
 
     n repart à 1 chaque nouveau jour de mise à jour et augmente d'un cran à chaque modification du code.
     Avec record=True (page officielle), le nouvel état est enregistré dans version.json.
@@ -119,7 +136,7 @@ def version(record: bool) -> tuple[str, str]:
         if prev and prev > d:
             d = prev  # une version ne recule jamais
         n = int(state.get("n", 0)) + 1 if prev == d else 1
-    label = f"Alpha V0.{d.month}.{d.day}.{n}"
+    label = f"Alpha V0.{d.year % 100:02d}.{d.month}.{d.day}.{n}"
     if record and state.get("empreinte") != fp:
         VERSION_FILE.write_text(json.dumps({"version": label, "date": d.isoformat(), "n": n, "empreinte": fp},
                                            ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
@@ -132,6 +149,26 @@ def inline_script(path: Path, label: str) -> str:
     if "</script" in js.lower():
         raise SystemExit(f"{path.name} contient « </script », qui fermerait la balise : intégration impossible")
     return f"<script>/*! {label} */\n{js}\n</script>"
+
+
+def font_faces() -> str:
+    """Règles @font-face des polices de la charte, fichiers intégrés à la page (aucun appel réseau)."""
+    rules = ["/*! Polices : Montserrat (The Montserrat Project Authors) et Carlito (The Carlito Project Authors), "
+             "SIL Open Font License 1.1 · licences dans src/vendor/fonts/ */"]
+    for family, name, style, weight in FONTS:
+        b64 = base64.b64encode((SRC / "vendor/fonts" / name).read_bytes()).decode()
+        rules.append(f'@font-face{{font-family:"{family}";font-style:{style};font-weight:{weight};font-display:swap;'
+                     f'src:url(data:font/woff2;base64,{b64}) format("woff2");unicode-range:{FONT_RANGE}}}')
+    return "\n".join(rules)
+
+
+def logo() -> str:
+    """Logotype officiel déposé dans src/logo/, intégré tel quel ; chaîne vide s'il n'y en a pas."""
+    files = sorted(f for f in LOGO_DIR.glob("*") if f.suffix.lower() in LOGO_TYPES) if LOGO_DIR.is_dir() else []
+    if not files:
+        return ""
+    data = base64.b64encode(files[0].read_bytes()).decode()
+    return f'<span class="logo-box"><img class="logo" src="data:{LOGO_TYPES[files[0].suffix.lower()]};base64,{data}" alt="RATP Dev"></span>'
 
 
 def build(label: str, title: str) -> str:
@@ -151,6 +188,8 @@ def build(label: str, title: str) -> str:
         ("<!--__VERSION__-->", label),
         ("__VERSION_TITLE__", title),
         ("/*__LEAFLET_CSS__*/", css),
+        ("/*__FONTS__*/", font_faces()),
+        ("<!--__LOGO__-->", logo()),
         ("/*__DATA__*/", compact(DATA / "networks.json")),
         ("/*__FINANCE__*/", json.dumps(json.loads(read(DATA / "finance.json"))["networks"], ensure_ascii=False, separators=(",", ":"))),
         ("/*__RIDERSHIP__*/", json.dumps(json.loads(read(DATA / "ridership.json"))["networks"], ensure_ascii=False, separators=(",", ":"))),
