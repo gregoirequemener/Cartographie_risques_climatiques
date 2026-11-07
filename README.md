@@ -2,11 +2,11 @@
 
 # Risques climatiques des réseaux RATP Dev
 
-Carte interactive des risques climatiques physiques (chaleur, inondation) des 90 réseaux exploités par RATP Dev, horizon 2026–2036, sous trois scénarios climatiques (SSP1-2.6, SSP2-4.5, SSP5-8.5). Pour les réseaux français dont les tracés sont publiés en open data, la carte affiche aussi le plan des lignes et les tronçons exposés à chaque aléa.
+Carte interactive des risques climatiques physiques (chaleur, inondation) des 90 réseaux exploités par RATP Dev et des réseaux visés par un appel d'offres en cours (« prospects »), horizon 2026–2036, sous trois scénarios climatiques (SSP1-2.6, SSP2-4.5, SSP5-8.5). Pour les réseaux français dont les tracés sont publiés en open data, la carte affiche aussi le plan des lignes et les tronçons exposés à chaque aléa.
 
-La page produite est un fichier HTML unique et autonome : les données et les bibliothèques JavaScript (Leaflet, Leaflet.markercluster, topojson-client) y sont intégrées, elle fonctionne donc hors ligne. Seules les polices viennent de Google Fonts (polices du système à défaut).
+La page produite est un fichier HTML unique et autonome : les données, les bibliothèques JavaScript (Leaflet, Leaflet.markercluster, topojson-client) et les polices y sont intégrées, elle fonctionne donc entièrement hors ligne.
 
-**Version 9** : optimisation (démarrage, fluidité, mémoire), fonctionnement hors ligne, numéro de mise à jour dans la version.
+**Version 11** : prospects en appel d'offres, avec la même analyse que les filiales ; vue détaillée (tous les points et les noms) après un clic sur une zone ; plans de réseau affichés à la demande ; liens utiles dans chaque fiche (plans climat et d'adaptation, PPRI, cartes d'aléas).
 
 ## Démarrage rapide
 
@@ -19,8 +19,8 @@ open docs/index.html            # ou double-clic sur le fichier
 
 ## Version
 
-La version affichée en haut de la page, à droite de l'année, suit la forme **Alpha V0.mois.jour.n** :
-- *mois.jour* : date de la dernière mise à jour du code (`src/`, `data/`, `scripts/`, `build.py`) ;
+La version affichée en haut de la page, à droite de l'année, suit la forme **Alpha V0.aa.mois.jour.n** (par exemple *Alpha V0.26.11.7.1*) :
+- *aa.mois.jour* : date de la dernière mise à jour du code (`src/`, `data/`, `scripts/`, `build.py`), l'année sur deux chiffres (26 pour 2026) ;
 - *n* : numéro de la mise à jour ce jour-là. Il augmente d'un cran chaque fois que `docs/index.html` est reconstruit après une modification du code, et repart à 1 le jour suivant.
 
 `build.py` compare une empreinte du code à celle notée dans `version.json` : reconstruire sans rien changer garde la même version. Une construction d'essai (`python build.py --out autre.html`) affiche la version suivante sans l'enregistrer. `version.json` est à versionner avec le reste, pour que la numérotation suive le dépôt.
@@ -35,7 +35,17 @@ python scripts/check_page.py --chrome "/Applications/Google Chrome.app/Contents/
 # ou, sans Chrome installé : playwright install chromium && python scripts/check_page.py
 ```
 
-Le test vérifie l'absence d'erreur JavaScript, les 90 réseaux, les 25 plans de réseau, le fond de carte précis, les coûts et voyageurs perturbés de chaque réseau, la bascule du panneau, le format de la version et les tronçons exposés affichés sur Lyon.
+Le test vérifie l'absence d'erreur JavaScript et de requête réseau, les 90 filiales actives et les prospects, la cohérence des données et des liens utiles, les plans de réseau masqués par défaut, les regroupements au zoom manuel, la vue détaillée après un clic sur une zone, les 25 plans de réseau, le fond de carte précis, les coûts et voyageurs perturbés de chaque réseau, la bascule du panneau, le format de la version, les polices de la charte, le changement de couleurs entre chaleur et inondation et les tronçons exposés affichés sur Lyon.
+
+## Charte graphique
+
+La page applique la charte graphique RATP Dev 2026, adaptée à un outil interne de visualisation de données :
+- **couleurs de l'interface** : Menthe en couleur dominante (bandeau de marque coupé en biais, choix actifs), Bleu institutionnel par touches (titres, texte posé sur le Menthe), Sapin pour les liens et commandes (le Menthe n'est pas assez contrasté sur fond blanc pour du texte), gris de la palette pour le reste. Pas de Vert jade, que la charte exclut quand le Menthe domine ;
+- **typographies** : Montserrat pour les titres et libellés ; pour le texte, Parisine Office si elle est installée, sinon Calibri, sinon Carlito (équivalent libre de Calibri, intégré à la page). La taille du texte est harmonisée entre ces polices (`font-size-adjust`) ;
+- **couleurs des données** : les codes usuels sont conservés, construits sur la palette. Chaleur du jaune au rouge (Or, Orange clair, Orange foncé, puis deux rouges plus sombres pour les classes les plus élevées) ; inondation et eau en bleus (Ciel → Bleu institutionnel, cours d'eau en Turquoise) ; scénarios en Turquoise, Praline et Framboise. Les cinq classes de risque restent distinguables pour les principales formes de daltonisme, en mode clair comme en mode sombre ;
+- **logotype** : déposer le fichier officiel (SVG de préférence) dans `src/logo/` ; il s'affiche en haut à gauche, dans un cartouche blanc. Sans fichier, aucun logotype n'est affiché : il n'est jamais redessiné.
+
+Les filets (cadres blancs) et le logotype groupe RATP ne sont pas utilisés : la charte les réserve aux communications externes.
 
 ## Structure
 
@@ -44,10 +54,13 @@ build.py                  assemble src/template.html + data/ + src/vendor/ → d
 version.json              dernière version enregistrée (date, numéro du jour, empreinte du code)
 lancer.command            construit puis ouvre la page (double-clic dans le Finder)
 src/template.html         page : mise en page, styles, logique de la carte (Leaflet)
-src/vendor/               Leaflet 1.9.4, Leaflet.markercluster 1.5.3, topojson-client 3.1.0 (scripts et styles, licences dans LICENCES.md)
+src/vendor/               Leaflet 1.9.4, Leaflet.markercluster 1.5.3, topojson-client 3.1.0, polices Montserrat et Carlito (licences dans LICENCES.md)
+src/logo/                 emplacement du logotype officiel RATP Dev (voir LISEZMOI.md)
 data/
   references_raw.json     fiches réseaux extraites du site ratpdev.com (« Nos réseaux »)
-  networks.json           90 réseaux nettoyés et géolocalisés (généré par scripts/prepare_networks.py)
+  networks.json           90 réseaux exploités, puis les prospects (scripts/prepare_networks.py, puis prepare_prospects.py)
+  prospects.json          appels d'offres en cours, tenus à la main : périmètre, équipe, étape, sources, budget et fréquentation
+  links.json              liens utiles de chaque fiche, tous testés (généré par scripts/prepare_links.py)
   finance.json            budget d'exploitation annuel estimé par réseau (généré par scripts/prepare_finance.py)
   ridership.json          fréquentation annuelle estimée par réseau (généré par scripts/prepare_ridership.py)
   corrections.json        corrections apportées aux fiches source, avec leur motif
@@ -62,7 +75,9 @@ scripts/
   prepare_networks.py     data/references_raw.json → data/networks.json + data/corrections.json
   prepare_finance.py      data/networks.json → data/finance.json (hypothèses de budget par réseau)
   prepare_ridership.py    data/networks.json + finance.json → data/ridership.json (fréquentation par réseau)
+  prepare_prospects.py    data/prospects.json → climat, inondation, relief, budget et fréquentation de chaque prospect
   prepare_basemap.py      fond de carte précis (IGN BD TOPO, Natural Earth 10m) → data/basemap.json.gz
+  prepare_links.py        plans de prévention, plans climat, cartes d'aléas → data/links.json
   check_page.py           test de fumée de la page construite (Playwright)
 docs/index.html           page construite (servie par GitHub Pages)
 ```
@@ -115,7 +130,12 @@ La méthode complète est détaillée dans la page, rubrique « Méthode et sour
 |---|---|---|
 | Fiches réseaux | [ratpdev.com — Nos réseaux](https://www.ratpdev.com/fr/nos-reseaux/) | contenu RATP Dev |
 | Climat (CMIP6) | [Banque mondiale, Climate Change Knowledge Portal](https://climateknowledgeportal.worldbank.org/) | CC BY 4.0 |
-| Inondation | [WRI Aqueduct Floods v2](https://www.wri.org/data/aqueduct-floods-hazard-maps) | CC BY 4.0 |
+| Inondation | [WRI Aqueduct Floods v2](https://www.wri.org/data/aqueduct-floods-hazard-maps) ; fichiers sur [aqueduct.wridata.org](https://aqueduct.wridata.org/AqueductFloods20/index.html) depuis la fermeture de l'ancien emplacement S3 en juillet 2026 | CC BY 4.0 |
+| Prospects | Sources publiques citées dans `data/prospects.json` et dans chaque fiche | selon la source |
+| Plans de prévention, risques des communes | [Géorisques](https://www.georisques.gouv.fr/) (API GASPAR) | Licence Ouverte |
+| Plans climat français | ADEME, [Territoires & Climat](https://www.territoires-climat.ademe.fr/opendata) | données ouvertes |
+| Aléas naturels hors de France | [ThinkHazard!](https://thinkhazard.org/) (GFDRR, Banque mondiale) | lien uniquement |
+| Zones inondables aux États-Unis | [FEMA, National Flood Hazard Layer](https://www.fema.gov/flood-maps/national-flood-hazard-layer) | lien uniquement |
 | Relief | [AWS Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) | attribution des sources (SRTM, etc.) |
 | Cours d'eau, lacs, pays | [Natural Earth](https://www.naturalearthdata.com/) via [world-atlas](https://github.com/topojson/world-atlas), et Natural Earth 1:10 M autour des réseaux étrangers | domaine public |
 | Trait de côte, cours d'eau et lacs autour des réseaux français | IGN, [BD TOPO](https://geoservices.ign.fr/bdtopo) via la [Géoplateforme](https://data.geopf.fr/) (WFS) | Licence Ouverte |
@@ -131,11 +151,15 @@ Les jeux sous ODbL imposent de citer la source et de partager à l'identique les
 
 `scripts/prepare_networks.py` régénère la liste des réseaux à partir de `data/references_raw.json`.
 
+**Ajouter ou retirer un prospect** : modifier `data/prospects.json` (le format est décrit en tête de `scripts/prepare_prospects.py`), puis lancer dans cet ordre `prepare_prospects.py`, `prepare_basemap.py`, `prepare_links.py` et `build.py`. Les prospects sont ajoutés après les 90 réseaux exploités, sans modifier ceux-ci. `python scripts/prepare_prospects.py --verifier` recalcule des réseaux existants pour contrôler que la recette redonne bien les valeurs en place. Après `prepare_networks.py`, `prepare_finance.py` ou `prepare_ridership.py`, relancer `prepare_prospects.py`, qui rajoute les prospects à la fin de ces fichiers.
+
+**Liens utiles** : `scripts/prepare_links.py` teste chaque adresse et écarte celles qui ne répondent pas. Les plans d'adaptation propres à un réseau sont dans son tableau `CURATED`.
+
 `scripts/prepare_finance.py` régénère les budgets estimés (`data/finance.json`), puis `scripts/prepare_ridership.py` la fréquentation (`data/ridership.json`) ; à relancer, dans cet ordre, si la liste des réseaux ou les hypothèses changent.
 
 `scripts/prepare_basemap.py` régénère le fond de carte (`data/basemap.json.gz`) ; à relancer si des réseaux ou des tracés sont ajoutés. Il télécharge les données IGN et Natural Earth et demande `shapely` et `geopandas` (`pip install -r requirements-dev.txt`).
 
-Les autres jeux (`climate_raw`, `temp_grids`, `flood`, `water`, `lines`) ont été extraits une fois des sources ci-dessus et sont versionnés tels quels. Leur extraction n'est pas automatisée dans ce dépôt : la plupart des sources sont des services web ou des rasters volumineux.
+Les autres jeux (`temp_grids`, `water`, `lines`, ainsi que `climate_raw` et `flood` pour les 90 réseaux exploités) ont été extraits une fois des sources ci-dessus et sont versionnés tels quels. Leur extraction n'est pas automatisée dans ce dépôt : la plupart des sources sont des services web ou des rasters volumineux.
 
 ## Historique
 
@@ -148,3 +172,5 @@ Les autres jeux (`climate_raw`, `temp_grids`, `flood`, `water`, `lines`) ont ét
 - **v7** : fond de carte précis autour des réseaux (côtes, fleuves et lacs de la BD TOPO en France, Natural Earth 1:10 M ailleurs).
 - **v8** : voyageurs perturbés par aléa (fréquentation estimée par réseau, portefeuille, fiches, classement et export).
 - **v9** : optimisation (page prête en 0,5 s au lieu de 0,8 s, changement d'année 2 à 3 fois plus rapide, déplacements sans à-coups, mémoire −40 % au démarrage), bibliothèques intégrées (fonctionnement hors ligne), export CSV téléchargé si la copie est refusée, version « Alpha V0.mois.jour.n ».
+- **v10** : charte graphique RATP Dev (Menthe, Bleu institutionnel, gris de la palette, Montserrat et Parisine Office / Calibri, bandeau de marque, emplacement du logotype), couleurs des données sur la palette avec les codes usuels (chaleur du jaune au rouge, eau en bleus), polices intégrées (plus aucun appel à Internet), version « Alpha V0.aa.mois.jour.n ».
+- **v11** : prospects en appel d'offres (Boston, Melbourne, Dublin), analysés comme les filiales et distingués par la couleur Framboise et une forme carrée ; regroupements inchangés au zoom manuel, tous les points et noms après un clic sur une zone ou le choix d'un pays ; plans de réseau affichés à la demande ; liens utiles dans chaque fiche.

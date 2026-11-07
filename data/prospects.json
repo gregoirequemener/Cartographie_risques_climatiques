@@ -1,0 +1,80 @@
+[
+ {
+  "t": "Exploiter les trains de banlieue de Boston (MBTA Commuter Rail)",
+  "nom": "Trains de Boston (MBTA)",
+  "zone": "États-Unis",
+  "pays": "États-Unis",
+  "ci": "Boston",
+  "cl": "Massachusetts Bay Transportation Authority (MBTA)",
+  "s": "Appel d'offres pour l'exploitation et la maintenance des trains de banlieue de la région de Boston, confiées à Keolis depuis 2014. Le contrat actuel prend fin le 30 juin 2027.",
+  "m": ["Ferroviaire"],
+  "p": "train",
+  "la": 42.3522,
+  "lo": -71.0552,
+  "kf": ["29,7 M de voyages en 2025", "Contrat de 9 ans, plus 5 ans en option"],
+  "ao": {
+   "equipe": "Mass Regional Rail : Alternate Concepts, TransitAmerica Services et RATP Développement",
+   "concurrents": "Keolis–Alstom ; Transdev–Transport UK",
+   "etape": "Trois équipes présélectionnées. Offres finales remises à l'automne 2026, choix de l'exploitant attendu fin 2026.",
+   "debut": "Juillet 2027",
+   "sources": [
+    {"l": "WBUR, 6 janvier 2026 : les trois équipes présélectionnées", "u": "https://www.wbur.org/news/2026/01/06/mbta-shortlist-three-commuter-rail-operators-rfp-boston-keolis"},
+    {"l": "Boston Globe, 28 septembre 2026 : remise des offres finales", "u": "https://www.bostonglobe.com/2026/09/28/metro/mbta-commuter-rail-contract-keolis/"}
+   ]
+  },
+  "budget": ["reel", 350, "contrat actuel : environ 5 Md$ sur 13 ans (WBUR), soit 385 M$/an, environ 350 M€ (1 $ ≈ 0,91 €)"],
+  "freq": ["pub", 29.7, "29,7 M de voyages en 2025"]
+ },
+ {
+  "t": "Exploiter les trains métropolitains de Melbourne (contrat MR5)",
+  "nom": "Trains de Melbourne (MR5)",
+  "zone": "Australie",
+  "pays": "Australie",
+  "ci": "Melbourne",
+  "cl": "Department of Transport and Planning, État de Victoria",
+  "s": "Appel d'offres pour l'exploitation et la maintenance du réseau de trains métropolitains de Melbourne, aujourd'hui exploité par Metro Trains Melbourne. RATP Dev est déjà présent à Melbourne sur la Suburban Rail Loop.",
+  "m": ["Ferroviaire"],
+  "p": "train",
+  "la": -37.8183,
+  "lo": 144.9671,
+  "kf": ["1 000 km de voies, plus de 220 gares", "Plus de 2 000 circulations par jour", "Près de 7 000 employés", "Contrat de 15 ans maximum"],
+  "ao": {
+   "equipe": "SoJourney : RATP Dev, John Holland et Downer",
+   "concurrents": "Go Places Melbourne (Go-Ahead, Acciona Rail, Tokyo Metro) ; Metro Transit Victoria (MTR, CRRC, DT Infrastructure)",
+   "etape": "Trois équipes présélectionnées en février 2026, phase d'appel à propositions. Attribution prévue en 2027.",
+   "debut": "Fin 2027",
+   "sources": [
+    {"l": "Gouvernement de l'État de Victoria : Melbourne train refranchising", "u": "https://www.vic.gov.au/melbourne-train-refranchising"},
+    {"l": "Railway Gazette, 27 février 2026 : présélection", "u": "https://www.railwaygazette.com/suburban-and-commuter-rail/three-shortlisted-to-provide-melbourne-with-a-world-class-operator-for-a-world-class-network/70519.article"}
+   ]
+  },
+  "budget": ["emp", 7000, "près de 7 000 employés"],
+  "freq": ["pub", 182.5, "182,5 M de voyages en 2023-2024"]
+ },
+ {
+  "t": "Concevoir, exploiter et maintenir le futur métro de Dublin (MetroLink)",
+  "nom": "MetroLink (Dublin)",
+  "zone": "Irlande",
+  "pays": "Irlande",
+  "ci": "Dublin",
+  "cl": "Transport Infrastructure Ireland (TII)",
+  "s": "Partenariat public-privé pour la fourniture des trains et des systèmes, l'exploitation et la maintenance de la première ligne de métro de Dublin, entre Swords et Charlemont, en souterrain sur l'essentiel du parcours.",
+  "m": ["Métro et métro automatique"],
+  "p": "metro",
+  "la": 53.3498,
+  "lo": -6.2603,
+  "kf": ["Environ 19 km, 16 stations", "Environ 53 M de voyages par an attendus", "Contrat d'un montant maximal de 7,3 Md€"],
+  "ao": {
+   "equipe": "Groupement FCC, Meridiam, John Laing, RATP Dev et Alstom (accord de septembre 2025)",
+   "etape": "Avis d'appel à candidatures publié le 1er mai 2026 ; trois candidats doivent être retenus. Attribution du contrat d'exploitation prévue en 2028.",
+   "debut": "Ouverture visée vers 2035 (pas de date officielle)",
+   "sources": [
+    {"l": "Irish Times, 1er mai 2026 : lancement de l'appel à candidatures", "u": "https://www.irishtimes.com/ireland/dublin/2026/05/01/invitation-issued-to-bid-for-73bn-metrolink-contract/"},
+    {"l": "Alstom, 2 septembre 2025 : constitution du groupement", "u": "https://www.alstom.com/sites/alstom.com/files/2025/09/02/20250902_PR_Ireland_Joint_Memorandum_MetroLink_EN.pdf"}
+   ]
+  },
+  "budget": ["km", 19, "metro"],
+  "from": 2035,
+  "freq": ["pub", 53, "environ 53 M de voyages par an attendus (estimation TII)"]
+ }
+]

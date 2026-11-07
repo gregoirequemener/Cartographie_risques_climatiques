@@ -143,7 +143,8 @@ def estimate(n: dict, basis: tuple) -> tuple[float, str]:
 
 
 def main() -> None:
-    networks = json.loads((DATA / "networks.json").read_text(encoding="utf-8"))
+    # Réseaux exploités seulement : les prospects sont ajoutés ensuite par scripts/prepare_prospects.py (à relancer)
+    networks = [n for n in json.loads((DATA / "networks.json").read_text(encoding="utf-8")) if n.get("st") != "prospect"]
     missing = [n["id"] for n in networks if n["id"] not in BASIS]
     if missing:
         raise SystemExit(f"Base d'estimation manquante pour les réseaux : {missing}")

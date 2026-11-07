@@ -4,69 +4,96 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Risques climatiques des réseaux RATP Dev</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/*__FONTS__*/
+</style>
 <style>
 /*__LEAFLET_CSS__*/
 </style>
 <style>
-/* Layout : barre de pilotage (aléa, scénario, année) en haut ; portefeuille à gauche ; carte au centre ; fiche réseau en tiroir à droite. */
+/* Layout : barre de pilotage (aléa, scénario, année) en haut ; portefeuille à gauche ; carte au centre ; fiche réseau en tiroir à droite.
+   Charte graphique RATP Dev (2026) :
+   - Menthe, couleur dominante, en aplat (bandeau de marque, choix actifs) ; Bleu institutionnel par touches (titres,
+     texte sur Menthe) ; Sapin pour les liens et commandes (lisible sur blanc) ; gris de la palette pour le reste ;
+   - Montserrat pour les titres, Parisine Office pour le texte (à défaut Calibri, ou Carlito, son équivalent libre) ;
+   - les données gardent les codes de couleur usuels, construits sur la palette : la chaleur du jaune au rouge
+     (Or, Orange clair, Orange foncé, rouges), l'eau en bleus (Ciel → Bleu institutionnel). */
 :root {
   color-scheme: light;
-  --paper: #f3f4f1;
+  --paper: #ededed;      /* gris 7 % */
   --card: #ffffff;
-  --ink: #16201c;
-  --ink-2: #4b5651;
-  --muted: #76807b;
-  --line: #dde2de;
-  --accent: #0e7666;
-  --accent-wash: #e2f1ed;
+  --ink: #262626;        /* gris 85 % */
+  --ink-2: #595959;      /* gris 65 % */
+  --muted: #6b6b6b;
+  --line: #e0e0e0;       /* gris 12 % */
+  --brand: #64c3b9;      /* Menthe */
+  --on-brand: #0a0082;   /* Bleu institutionnel */
+  --title: #0a0082;
+  --accent: #007d69;     /* Sapin */
+  --accent-wash: #e3f4f1;
   --sea: #dce6ea;
   --land: #f8f8f4;
   --coast: #b7c2c0;
-  --border: #c3c9c4;
-  --admin: #d6dbd6;
+  --border: #c4c4c4;
+  --admin: #d6d6d6;
   --ring: #ffffff;
-  --r1: #e49a62; --r2: #d8743c; --r3: #c2531f; --r4: #9b3a12; --r5: #69240a;
-  --on-r1: #1a0d05; --on-r2: #1a0d05; --on-r3: #ffffff; --on-r4: #ffffff; --on-r5: #ffffff;
-  --s1: #2a78d6; --s2: #1baf7a; --s3: #eb6834;
-  --up: #b4421a;
-  --water: #2f7fc8; --water-fill: #a9cdf0;
-  --shadow: 0 1px 2px rgba(16, 24, 20, .18), 0 4px 14px rgba(16, 24, 20, .10);
-  --font-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
-  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --halo: #ffffff;
+  /* classes de risque, chaleur : Or éclairci, Orange clair, Orange foncé, rouge, bordeaux */
+  --r1: #f8e27d; --r2: #f0aa00; --r3: #d75a19; --r4: #b3261e; --r5: #6b1611;
+  --on-r1: #262626; --on-r2: #262626; --on-r3: #ffffff; --on-r4: #ffffff; --on-r5: #ffffff;
+  --up: #b3261e;
+  /* scénarios : Turquoise, Praline, Framboise */
+  --s1: #00a0be; --s2: #af5a05; --s3: #d72864;
+  --water: #00a0be; --water-fill: #c4e9fb;
+  --prospect: #d72864;   /* Framboise : réseaux en appel d'offres */
+  --shadow: 0 1px 2px rgba(20, 20, 20, .18), 0 4px 14px rgba(20, 20, 20, .10);
+  --font-display: "Montserrat", Arial, system-ui, sans-serif;
+  --font-body: "Parisine Office", Calibri, Carlito, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+/* classes de risque, inondation : Ciel, bleus, Bleu institutionnel */
+:root[data-hz="flood"] {
+  --r1: #afe1fa; --r2: #62b6e8; --r3: #2a86cc; --r4: #1b4fa6; --r5: #0a0082;
+  --on-r1: #262626; --on-r2: #262626; --on-r3: #ffffff; --on-r4: #ffffff; --on-r5: #ffffff;
+  --up: #1b4fa6;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --paper: #141918; --card: #1c2220; --ink: #edf1ee; --ink-2: #b6c0bb; --muted: #87918c; --line: #2c3431;
-    --accent: #43c3ad; --accent-wash: #193631;
-    --sea: #0e1416; --land: #232826; --coast: #3d4744; --border: #47514c; --admin: #343c39; --ring: #141918;
-    --r1: #a0391a; --r2: #c24f22; --r3: #de6e38; --r4: #f09460; --r5: #fbbf91;
-    --on-r1: #ffffff; --on-r2: #ffffff; --on-r3: #1a0d05; --on-r4: #1a0d05; --on-r5: #1a0d05;
-    --s1: #3987e5; --s2: #199e70; --s3: #d95926;
-    --up: #f09460;
-    --water: #5ea6e6; --water-fill: #1f3d5c;
+    --paper: #161616; --card: #1f1f1f; --ink: #ededed; --ink-2: #bdbdbd; --muted: #8f8f8f; --line: #333333;
+    --title: #ededed; --accent: #64c3b9; --accent-wash: #1d3633;
+    --sea: #0e1416; --land: #232826; --coast: #3d4744; --border: #4d4d4d; --admin: #3a3a3a; --ring: #e6e6e6; --halo: #d9d9d9;
+    --r1: #f8e27d; --r2: #f0aa00; --r3: #da5f20; --r4: #c42a23; --r5: #922018;
+    --on-r1: #262626; --on-r2: #262626; --on-r3: #ffffff; --on-r4: #ffffff; --on-r5: #ffffff;
+    --up: #f2896b;
+    --s1: #00a0be; --s2: #f0aa00; --s3: #d72864;
+    --water: #2fb3cf; --water-fill: #143e4a; --prospect: #f0659a;
     --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 6px 18px rgba(0, 0, 0, .35);
+  }
+  :root:not([data-theme="light"])[data-hz="flood"] {
+    --r1: #afe1fa; --r2: #62b6e8; --r3: #2f8ad3; --r4: #2b5cc4; --r5: #3a2db8;
+    --up: #7cc3ee;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --paper: #141918; --card: #1c2220; --ink: #edf1ee; --ink-2: #b6c0bb; --muted: #87918c; --line: #2c3431;
-  --accent: #43c3ad; --accent-wash: #193631;
-  --sea: #0e1416; --land: #232826; --coast: #3d4744; --border: #47514c; --admin: #343c39; --ring: #141918;
-  --r1: #a0391a; --r2: #c24f22; --r3: #de6e38; --r4: #f09460; --r5: #fbbf91;
-  --on-r1: #ffffff; --on-r2: #ffffff; --on-r3: #1a0d05; --on-r4: #1a0d05; --on-r5: #1a0d05;
-  --s1: #3987e5; --s2: #199e70; --s3: #d95926;
-  --up: #f09460;
-  --water: #5ea6e6; --water-fill: #1f3d5c;
+  --paper: #161616; --card: #1f1f1f; --ink: #ededed; --ink-2: #bdbdbd; --muted: #8f8f8f; --line: #333333;
+  --title: #ededed; --accent: #64c3b9; --accent-wash: #1d3633;
+  --sea: #0e1416; --land: #232826; --coast: #3d4744; --border: #4d4d4d; --admin: #3a3a3a; --ring: #e6e6e6; --halo: #d9d9d9;
+  --r1: #f8e27d; --r2: #f0aa00; --r3: #da5f20; --r4: #c42a23; --r5: #922018;
+  --on-r1: #262626; --on-r2: #262626; --on-r3: #ffffff; --on-r4: #ffffff; --on-r5: #ffffff;
+  --up: #f2896b;
+  --s1: #00a0be; --s2: #f0aa00; --s3: #d72864;
+  --water: #2fb3cf; --water-fill: #143e4a; --prospect: #f0659a;
   --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 6px 18px rgba(0, 0, 0, .35);
+}
+:root[data-theme="dark"][data-hz="flood"] {
+  --r1: #afe1fa; --r2: #62b6e8; --r3: #2f8ad3; --r4: #2b5cc4; --r5: #3a2db8;
+  --up: #7cc3ee;
 }
 
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
-body { background: var(--paper); color: var(--ink); font: 400 14px/1.45 var(--font-body); -webkit-font-smoothing: antialiased; }
+body { background: var(--paper); color: var(--ink); font: 400 14px/1.45 var(--font-body); font-size-adjust: 0.5; -webkit-font-smoothing: antialiased; }
 button, input, select { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .num { font-variant-numeric: tabular-nums; }
@@ -81,23 +108,23 @@ button, input, select { font: inherit; color: inherit; }
   border-bottom: 1px solid var(--line);
   z-index: 900;
 }
-.brand { display: flex; flex-direction: column; }
-.brand b { font: 700 16px/1.1 var(--font-display); letter-spacing: -.01em; }
-.brand span { font-size: 11.5px; color: var(--muted); }
+.brand { display: flex; flex-direction: column; color: var(--on-brand); }
+.brand b { font: 700 16px/1.15 var(--font-display); letter-spacing: -.01em; }
+.brand span { font-size: 12px; }
 .ctl { display: flex; align-items: center; gap: 8px; }
-.ctl-label { font: 600 11px/1 var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ctl-label { font: 700 10.5px/1 var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--paper); }
 .seg button {
-  border: 0; background: none; padding: 6px 10px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--ink-2);
+  border: 0; background: none; padding: 6px 10px; cursor: pointer; font-size: 13.5px; font-weight: 400; color: var(--ink-2);
   border-right: 1px solid var(--line);
 }
 .seg button:last-child { border-right: 0; }
-.seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent); }
+.seg button[aria-pressed="true"] { background: var(--brand); color: var(--on-brand); }
 .seg button[aria-disabled="true"] { color: var(--muted); cursor: not-allowed; }
 .seg-note { align-self: center; padding: 0 9px; font-size: 11px; color: var(--muted); }
 .seg button[aria-disabled="true"] { opacity: .6; }
 .year { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; flex: 1 1 auto; }
-.year output { font: 700 20px/1 var(--font-display); min-width: 48px; font-variant-numeric: tabular-nums; }
+.year output { font: 700 20px/1 var(--font-display); min-width: 54px; font-variant-numeric: tabular-nums; color: var(--title); }
 /* Curseur souple : compté à 80 px pour le passage à la ligne de la barre, étiré jusqu'à 128 px s'il y a la place */
 .year input[type="range"] { width: 80px; flex: 1 1 auto; min-width: 60px; max-width: 128px; accent-color: var(--accent); }
 .version {
@@ -110,7 +137,14 @@ button, input, select { font: inherit; color: inherit; }
 }
 .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
 .icon-btn svg { width: 14px; height: 14px; fill: currentColor; }
-.lead { display: flex; align-items: center; gap: 8px; }
+.lead {
+  display: flex; align-items: center; gap: 10px; align-self: stretch;
+  margin: -10px 0 -10px -16px; padding: 10px 40px 10px 16px;
+  background: var(--brand); clip-path: polygon(0 0, 100% 0, calc(100% - 24px) 100%, 0 100%);
+}
+.lead .icon-btn { background: var(--card); border-color: transparent; color: var(--ink); }
+.logo-box { display: inline-flex; align-items: center; padding: 5px 8px; background: #ffffff; }
+.logo { display: block; height: 24px; width: auto; }
 #panel-toggle svg { width: 16px; height: 16px; }
 #panel-toggle .pane { opacity: 0; }
 #panel-toggle[aria-expanded="true"] .pane { opacity: .55; }
@@ -121,13 +155,14 @@ button, input, select { font: inherit; color: inherit; }
 
 /* Portefeuille */
 .panel { display: flex; flex-direction: column; gap: 16px; min-height: 0; overflow-y: auto; padding: 16px; border-right: 1px solid var(--line); }
-.panel h2 { margin: 0; font: 600 12px/1.2 var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
+.panel h2 { margin: 0; font: 700 11.5px/1.25 var(--font-display); letter-spacing: .05em; text-transform: uppercase; color: var(--title); }
 .panel-sub { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+.scope { margin: 7px 0 2px; }
 .kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .kpi.wide { grid-column: 1 / -1; }
 .kpi { padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .kpi .k-label { font-size: 11.5px; color: var(--ink-2); line-height: 1.25; }
-.kpi .k-val { font: 700 22px/1.1 var(--font-display); }
+.kpi .k-val { font: 700 21px/1.15 var(--font-display); }
 .kpi .k-val small { font: 500 12px var(--font-body); color: var(--muted); }
 .kpi .k-delta { font-size: 11.5px; color: var(--muted); overflow-wrap: anywhere; }
 .delta-up { color: var(--up); font-weight: 600; }
@@ -215,7 +250,7 @@ button, input, select { font: inherit; color: inherit; }
 .ramp-ticks span:first-child { transform: none; }
 .ramp-ticks span:last-child { transform: translateX(-100%); }
 .ov-probe { color: var(--ink-2); font-size: 11.5px; min-height: 1.35em; padding-top: 6px; border-top: 1px solid var(--line); }
-.ov-title { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; font: 600 11px/1.2 var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ov-title { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; font: 700 10.5px/1.2 var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--title); }
 .ov-title[aria-expanded="false"] span { transform: rotate(-90deg); }
 .ov-content { display: flex; flex-direction: column; gap: 8px; }
 .ov-content[hidden] { display: none; }
@@ -243,10 +278,12 @@ button, input, select { font: inherit; color: inherit; }
 .pt {
   display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
   border: 2px solid var(--ring); box-shadow: var(--shadow);
-  font: 700 10.5px/1 var(--font-display); font-variant-numeric: tabular-nums;
-  transition: transform .12s;
+  font: 700 10px/1 var(--font-display); font-variant-numeric: tabular-nums;
+  transform: translate(var(--dx, 0px), var(--dy, 0px)); transition: transform .12s;
 }
-.pt-wrap:hover .pt, .pt-wrap.is-active .pt { transform: scale(1.22); }
+.pt-wrap:hover .pt, .pt-wrap.is-active .pt { transform: translate(var(--dx, 0px), var(--dy, 0px)) scale(1.22); }
+.pt.prospect { border-radius: 8px; border: 3px solid var(--prospect); box-shadow: 0 0 0 1.5px var(--ring), var(--shadow); }
+.pt-lead { position: absolute; left: 13px; top: 13px; height: 1.5px; background: var(--ink-2); opacity: .75; transform-origin: 0 50%; pointer-events: none; display: none; }
 .pt-wrap.is-active .pt { box-shadow: 0 0 0 3px var(--ink), var(--shadow); }
 .c1 { background: var(--r1); color: var(--on-r1); } .c2 { background: var(--r2); color: var(--on-r2); }
 .c3 { background: var(--r3); color: var(--on-r3); } .c4 { background: var(--r4); color: var(--on-r4); }
@@ -257,6 +294,13 @@ button, input, select { font: inherit; color: inherit; }
   text-shadow: 0 0 3px var(--land), 0 0 3px var(--land), 0 0 2px var(--land); pointer-events: none;
 }
 .show-labels .pt-label { display: block; }
+/* Vue détaillée (clic sur une zone) : chaque nom a sa place calculée */
+.pt-label.placed {
+  left: 0; top: 0; transform: none; display: none; padding: 0 4px; border-radius: 3px; text-shadow: none;
+  font: 700 11.5px/1.4 var(--font-body); background: color-mix(in srgb, var(--card) 84%, transparent);
+}
+.pt-label.placed.on { display: block; }
+.pt-label.prospect { color: var(--prospect); }
 .cluster-wrap { background: none; border: 0; }
 .cluster { width: 100%; height: 100%; border-radius: 50%; padding: 4px; box-shadow: var(--shadow); }
 .cluster span { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; background: var(--card); color: var(--ink); font: 700 13px/1 var(--font-display); font-variant-numeric: tabular-nums; }
@@ -276,8 +320,11 @@ button, input, select { font: inherit; color: inherit; }
 .legend-ticks { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; font-size: 10.5px; color: var(--ink-2); }
 .legend-ticks span { text-align: center; line-height: 1.2; }
 .legend-key { display: flex; align-items: center; gap: 6px; padding-top: 6px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--ink-2); }
-.legend-key .pt { width: 20px; height: 20px; font-size: 9px; border-width: 1.5px; box-shadow: none; }
-.legend-key .ring { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 3px solid var(--r2); background: var(--card); font: 700 9px/1 var(--font-display); margin-left: 6px; }
+.legend-key .pt { width: 20px; height: 20px; font-size: 9px; border-width: 1.5px; box-shadow: none; transform: none; }
+.legend-key .pt.prospect { border-width: 2px; border-radius: 6px; }
+.legend-key { flex-wrap: wrap; gap: 6px 12px; }
+.lk { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.legend-key .ring { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 3px solid var(--r2); background: var(--card); font: 700 9px/1 var(--font-display); }
 .ind-select { padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); font-size: 12.5px; }
 
 /* Fiche réseau */
@@ -293,12 +340,12 @@ button, input, select { font: inherit; color: inherit; }
 .map-wrap .leaflet-right { transition: right .22s ease; }
 .drawer-head { display: flex; gap: 10px; align-items: flex-start; padding: 16px 16px 12px; border-bottom: 1px solid var(--line); }
 .drawer-head .t { flex: 1; min-width: 0; }
-.drawer-head .eyebrow { margin: 0; font: 600 11px/1.2 var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
-.drawer-head h3 { margin: 4px 0 2px; font: 700 18px/1.15 var(--font-display); text-wrap: balance; }
+.drawer-head .eyebrow { margin: 0; font: 700 10.5px/1.2 var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+.drawer-head h3 { margin: 4px 0 2px; font: 700 18px/1.2 var(--font-display); text-wrap: balance; color: var(--title); }
 .drawer-head p { margin: 0; color: var(--ink-2); font-size: 12.5px; }
 .close { flex: none; width: 30px; height: 30px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); cursor: pointer; font-size: 16px; line-height: 1; }
 .drawer-body { overflow-y: auto; padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 18px; }
-.sec h4 { margin: 0 0 8px; font: 600 12px/1.2 var(--font-body); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-2); }
+.sec h4 { margin: 0 0 8px; font: 700 11.5px/1.25 var(--font-display); letter-spacing: .05em; text-transform: uppercase; color: var(--title); }
 .score-row { display: flex; align-items: center; gap: 14px; }
 .score-big { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 14px; font: 700 26px/1 var(--font-display); font-variant-numeric: tabular-nums; flex: none; }
 .score-txt b { display: block; font: 700 16px/1.2 var(--font-display); }
@@ -319,6 +366,9 @@ button, input, select { font: inherit; color: inherit; }
 .facts dt { color: var(--muted); }
 .facts dd { margin: 0; }
 .drawer a { color: var(--accent); font-weight: 600; }
+.links { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; font-size: 13px; }
+.links small { display: block; color: var(--muted); font-weight: 400; font-size: 11.5px; }
+.ao-tag { display: inline-block; padding: 1px 6px; border-radius: 3px; background: var(--prospect); color: #ffffff; font: 700 10.5px/1.5 var(--font-display); letter-spacing: .03em; }
 .chart-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--ink-2); margin-top: 4px; }
 .chart-legend span { display: inline-flex; align-items: center; gap: 5px; }
 .chart-legend i { width: 14px; height: 2px; display: inline-block; }
@@ -340,6 +390,7 @@ button, input, select { font: inherit; color: inherit; }
   .legend-ticks, .legend-key { display: none; }
   .kpi .k-val { font-size: 19px; }
 }
+@media (max-width: 520px) { .lead:has(.logo-box) .brand span { display: none; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
@@ -347,6 +398,7 @@ button, input, select { font: inherit; color: inherit; }
 <div class="app">
   <header class="topbar">
     <div class="lead">
+      <!--__LOGO__--><!-- logotype officiel (src/logo/) : premier élément en haut à gauche, comme le veut la charte -->
       <button class="icon-btn" id="panel-toggle" type="button" aria-controls="panel" aria-expanded="true" aria-label="Masquer le panneau Portefeuille" title="Masquer le panneau Portefeuille">
         <svg viewBox="0 0 16 16" aria-hidden="true"><rect class="pane" x="2" y="3" width="4.5" height="10" rx="1"/><rect x="1.5" y="2.5" width="13" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M6.5 3v10" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
       </button>
@@ -373,6 +425,7 @@ button, input, select { font: inherit; color: inherit; }
     <aside class="panel" id="panel" aria-label="Portefeuille">
       <section>
         <h2 id="pf-title">Portefeuille · risque chaleur</h2>
+        <div class="seg scope" id="scope" role="group" aria-label="Périmètre du portefeuille"></div>
         <p class="panel-sub" id="ctx"></p>
       </section>
       <div class="kpis" id="kpis"></div>
@@ -450,8 +503,11 @@ button, input, select { font: inherit; color: inherit; }
           </div>
         </section>
         <section class="ov-sec">
-          <label class="switch" for="ln-on"><span>Plans de réseau (France)</span><input type="checkbox" id="ln-on" role="switch" checked></label>
-          <div class="ov-body" id="ln-body">
+          <label class="switch" for="pr-on"><span>Prospects (appels d’offres)</span><input type="checkbox" id="pr-on" role="switch" checked></label>
+        </section>
+        <section class="ov-sec">
+          <label class="switch" for="ln-on"><span>Plans de réseau (France)</span><input type="checkbox" id="ln-on" role="switch"></label>
+          <div class="ov-body" id="ln-body" hidden>
             <label class="chk" for="ln-hl"><input type="checkbox" id="ln-hl" checked> Mettre en évidence les tronçons exposés</label>
             <select id="ln-heat" aria-label="Lecture de la chaleur par tronçon" hidden><option value="abs">Seuils de température</option><option value="rel">Points chauds de chaque réseau</option></select>
             <div class="ov-sub" id="ln-sub"></div>
@@ -468,7 +524,7 @@ button, input, select { font: inherit; color: inherit; }
         <div class="legend-sub" id="legend-sub"></div>
         <div class="legend-scale" id="legend-scale"></div>
         <div class="legend-ticks" id="legend-ticks"></div>
-        <div class="legend-key"><span class="pt c3" aria-hidden="true">52</span> valeur du réseau <span class="ring" aria-hidden="true">12</span> regroupement (nb de réseaux)</div>
+        <div class="legend-key"><span class="lk"><span class="pt c3" aria-hidden="true">52</span> valeur du réseau</span><span class="lk"><span class="ring" aria-hidden="true">12</span> regroupement</span><span class="lk"><span class="pt prospect c3" aria-hidden="true">52</span> prospect (appel d’offres)</span></div>
       </div>
       <aside class="drawer" id="drawer" aria-label="Fiche réseau" aria-hidden="true">
         <div class="drawer-head">
@@ -491,6 +547,7 @@ const FLOOD = /*__FLOOD__*/;
 const BASEMAP_GZ = "/*__BASEMAP__*/";
 const LINES_GZ = "/*__LINES__*/";
 const FIN = /*__FINANCE__*/;
+const LINKS = /*__LINKS__*/;
 const RID = /*__RIDERSHIP__*/; // fréquentation estimée par réseau (millions de voyages par an)
 
 /* ---------- Référentiels ---------- */
@@ -644,7 +701,9 @@ const norm = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLow
 const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const state = { hz: "heat", scen: "ssp245", year: 2036, ind: "score", q: "", pays: "", mode: "", sel: null };
+const state = { hz: "heat", scen: "ssp245", year: 2036, ind: "score", q: "", pays: "", mode: "", sel: null, scope: "actifs", showP: true, focus: false };
+const isP = i => NETWORKS[i].st === "prospect";
+const labelOf = i => NETWORKS[i].nom || NETWORKS[i].ci.split(" – ")[0];
 const cur = i => M[state.scen][state.year][i];
 const indVal = (m, ind = state.ind) => ind === "score" ? m.score : m[ind];
 
@@ -740,16 +799,16 @@ function onZoom() {
   map.getContainer().classList.toggle("show-labels", z >= 7);
 }
 map.on("zoomend", onZoom);
-const onTheme = () => { styleBase(); if (typeof LUT !== "undefined") { LUT = buildLUT(rampOf()); styleSea(); refreshOverlay(); } renderAll(); };
+const onTheme = () => { styleBase(); if (typeof LUT !== "undefined") { LUT = buildLUT(rampOf()); styleSea(); refreshOverlay(); } renderAll(); refreshLines(); };
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => onTheme());
 new MutationObserver(() => onTheme()).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
 /* ---------- Calque températures (grille CMIP6 0,5°) ---------- */
 const OV = { on: true, v: "tas", mode: "abs", opacity: 0.8 };
 const RAMPS = {
-  tas: { min: -20, max: 30, stops: [[-20, "#0d366b"], [-10, "#2a78d6"], [-3, "#b7d3f6"], [0, "N"], [5, "#f6c4b8"], [12, "#ec8b74"], [20, "#d9533b"], [26, "#a8321f"], [30, "#6b1b10"]], ticks: [-20, -10, 0, 10, 20, 30] },
-  txx: { min: 15, max: 50, stops: [[15, "#fbe9da"], [25, "#f4bb8f"], [32, "#e49a62"], [37, "#d8743c"], [41, "#c2531f"], [45, "#9b3a12"], [50, "#5a1e08"]], ticks: [15, 25, 35, 45, 50] },
-  anom: { min: -1, max: 3, stops: [[-1, "#2a78d6"], [-0.4, "#b7d3f6"], [0, "N"], [0.5, "#f6c4b8"], [1, "#ec8b74"], [1.6, "#d9533b"], [2.3, "#a8321f"], [3, "#6b1b10"]], ticks: [-1, 0, 1, 2, 3] },
+  tas: { min: -20, max: 30, stops: [[-20, "#0a0082"], [-10, "#2a86cc"], [-3, "#afe1fa"], [0, "N"], [4, "#faedb0"], [9, "#f5d750"], [15, "#f0aa00"], [21, "#d75a19"], [26, "#b3261e"], [30, "#6b1611"]], ticks: [-20, -10, 0, 10, 20, 30] },
+  txx: { min: 15, max: 50, stops: [[15, "#fdf6dc"], [25, "#f8e27d"], [32, "#f0aa00"], [36, "#d75a19"], [40, "#b3261e"], [45, "#6b1611"], [50, "#3a0a08"]], ticks: [15, 25, 35, 45, 50] },
+  anom: { min: -1, max: 3, stops: [[-1, "#2a86cc"], [-0.4, "#afe1fa"], [0, "N"], [0.5, "#faedb0"], [1, "#f5d750"], [1.6, "#f0aa00"], [2.2, "#d75a19"], [2.7, "#b3261e"], [3, "#6b1611"]], ticks: [-1, 0, 1, 2, 3] },
 };
 const OV_LABEL = { tas: "Température moyenne annuelle", txx: "Température du jour le plus chaud" };
 const neutral = () => (document.documentElement.dataset.theme === "dark" || (document.documentElement.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches)) ? "#383835" : "#f0efec";
@@ -995,7 +1054,7 @@ const floodReady = (async () => {
 })();
 
 /* Calque zones inondables */
-const FLOOD_RAMP = { min: 0, max: 6, stops: [[0, "#d6e7f9"], [0.5, "#9cc5f0"], [1, "#629fe3"], [2, "#3277cc"], [3.5, "#1f539c"], [6, "#10346a"]], ticks: [0, 1, 2, 4, 6] };
+const FLOOD_RAMP = { min: 0, max: 6, stops: [[0, "#dcf1fc"], [0.5, "#afe1fa"], [1, "#62b6e8"], [2, "#2a86cc"], [3.5, "#1b4fa6"], [6, "#0a0082"]], ticks: [0, 1, 2, 4, 6] };
 const LUT_FL = buildLUT(FLOOD_RAMP);
 let FD = null;
 function floodField() {
@@ -1242,7 +1301,7 @@ const VIG_FLOOD = {
 function renderDrawerFlood(i) {
   const n = NETWORKS[i], m = cur(i), m26 = M[state.scen][2026][i], r = REF[i];
   const k = cls("score", m.score), scen = SCEN.find(s => s.key === state.scen);
-  document.getElementById("d-head").innerHTML = `<p class="eyebrow">${esc(n.pays)} · ${esc(MODE_LABEL[n.p])}</p><h3>${esc(n.ci)}</h3><p>${esc(n.t)}</p>`;
+  document.getElementById("d-head").innerHTML = `<p class="eyebrow">${isP(i) ? `<span class="ao-tag">PROSPECT</span> ` : ""}${esc(n.pays)} · ${esc(MODE_LABEL[n.p])}</p><h3>${esc(labelOf(i))}</h3><p>${esc(n.t)}</p>`;
   const ch = trajChart(i);
   const row = (lab, unit, v, dec) => `<tr><td>${lab}<br><small>${unit}</small></td><td>${fmtN(r[v], dec)}</td><td>${fmtN(m26[v], dec)}</td><td><b>${fmtN(m[v], dec)}</b></td><td class="${m[v] - r[v] > 0.05 ? "delta-up" : ""}">${signed(m[v] - r[v], dec)}</td></tr>`;
   const rows = row("Surface inondable dans 10 km", "% de la surface", "ext", 1) + row("· dont crues fluviales", "%", "extR", 1) + row("· dont submersion marine", "%", "extC", 1)
@@ -1265,6 +1324,7 @@ function renderDrawerFlood(i) {
       <div class="score-txt"><b>Risque inondation ${CLASSES[k].toLowerCase()}</b>
         <span>${state.year} · ${scen.label} (${scen.desc})<br>${state.year > 2026 ? `<span class="${m.score - m26.score > 0.05 ? "delta-up" : ""}">${signed(m.score - m26.score, 1)} pt</span> depuis 2026 · ` : ""}référence 2010 : ${fmtN(r.score)}</span></div>
     </section>
+    ${aoSection(n)}
     <section class="sec">
       <h4>Trajectoire · ${esc(IND[state.ind].label)}</h4>
       <div class="chart-box" id="traj">${ch.html}</div>
@@ -1293,20 +1353,21 @@ function renderDrawerFlood(i) {
     </section>
     ${finSection(i, m, m26, r)}
     ${vig.length ? `<section class="sec"><h4>Points de vigilance</h4><ul class="vig">${vig.map(v => `<li>${esc(v)}</li>`).join("")}</ul></section>` : ""}
+    ${linksSection(i)}
     <section class="sec">
       <h4>Réseau</h4>
       <dl class="facts"><dt>Client</dt><dd>${esc(n.cl)}</dd><dt>Modes</dt><dd>${esc(n.m.join(", "))}</dd><dt>Chiffres</dt><dd>${esc(n.kf.join(" · "))}</dd></dl>
-      <p style="margin:10px 0 0"><a href="${href}" target="_blank" rel="noopener">${n.pg ? "Fiche réseau sur ratpdev.com" : "Voir sur ratpdev.com"} ↗</a></p>
+      ${isP(i) ? "" : `<p style="margin:10px 0 0"><a href="${href}" target="_blank" rel="noopener">${n.pg ? "Fiche réseau sur ratpdev.com" : "Voir sur ratpdev.com"} ↗</a></p>`}
     </section>`;
   bindTraj(document.getElementById("traj"), ch);
   appendLines(i);
 }
 async function copyFlood(btn, vis) {
-  const head = ["reseau", "ville", "pays", "mode_principal", "scenario", "annee", "score", "classe", "surface_inondable_pct", "dont_fluvial_pct", "dont_submersion_pct", "hauteur_moyenne_m", "hauteur_au_point_m", "altitude_point_m", "altitude_zone_inondable_m", "hauteur_relative_m", "facteur_relief", "score_2026", "score_reference_2010", "budget_estime_MEUR", "valeur_actifs_MEUR", "dommages_crue100_kEUR", "pertes_exploitation_crue100_kEUR", "cout_annuel_attendu_kEUR", "cout_pct_budget", "cumul_2026_annee_kEUR", "frequentation_estimee_M_voyages_an", "voyageurs_perturbes_crue100", "voyageurs_perturbes_an"];
+  const head = ["reseau", "ville", "pays", "statut", "mode_principal", "scenario", "annee", "score", "classe", "surface_inondable_pct", "dont_fluvial_pct", "dont_submersion_pct", "hauteur_moyenne_m", "hauteur_au_point_m", "altitude_point_m", "altitude_zone_inondable_m", "hauteur_relative_m", "facteur_relief", "score_2026", "score_reference_2010", "budget_estime_MEUR", "valeur_actifs_MEUR", "dommages_crue100_kEUR", "pertes_exploitation_crue100_kEUR", "cout_annuel_attendu_kEUR", "cout_pct_budget", "cumul_2026_annee_kEUR", "frequentation_estimee_M_voyages_an", "voyageurs_perturbes_crue100", "voyageurs_perturbes_an"];
   const f1 = x => isNaN(x) ? "" : x.toFixed(2);
   const lines = [head.join(";")].concat(vis.map(i => {
     const n = NETWORKS[i], m = cur(i);
-    return [n.t, n.ci, n.pays, MODE_LABEL[n.p], state.scen, state.year, m.score.toFixed(1), CLASSES[cls("score", m.score)], f1(m.ext), f1(m.extR), f1(m.extC), f1(m.depth), f1(m.pdepth), f1(m.pe), f1(m.fe), f1(m.dh), f1(m.f), M[state.scen][2026][i].score.toFixed(1), REF[i].score.toFixed(1), f1(FIN[i].b), f1(m.assets / 1000), m.d100.toFixed(0), m.bi100.toFixed(0), m.fin.toFixed(1), m.finp.toFixed(3), finCum(i).toFixed(0), RID[i].v, m.pax100.toFixed(0), m.pax.toFixed(0)]
+    return [n.t, n.ci, n.pays, isP(i) ? "Prospect" : "Filiale active", MODE_LABEL[n.p], state.scen, state.year, m.score.toFixed(1), CLASSES[cls("score", m.score)], f1(m.ext), f1(m.extR), f1(m.extC), f1(m.depth), f1(m.pdepth), f1(m.pe), f1(m.fe), f1(m.dh), f1(m.f), M[state.scen][2026][i].score.toFixed(1), REF[i].score.toFixed(1), f1(FIN[i].b), f1(m.assets / 1000), m.d100.toFixed(0), m.bi100.toFixed(0), m.fin.toFixed(1), m.finp.toFixed(3), finCum(i).toFixed(0), RID[i].v, m.pax100.toFixed(0), m.pax.toFixed(0)]
       .map(x => `"${String(x).replace(/"/g, '""')}"`).join(";");
   }));
   await exportCsv(btn, lines.join("\n"), vis.length);
@@ -1328,7 +1389,7 @@ async function exportCsv(btn, csv, n) {
 }
 
 /* ---------- Plans de réseau (France, GTFS) et tronçons exposés ---------- */
-const LN = { on: true, hl: true, minZoom: 8 };
+const LN = { on: false, hl: true, minZoom: 8 }; // plans de réseau : affichés à la demande
 let NETL = null;
 const NETL_BY = {};
 const linesReady = (async () => {
@@ -1418,7 +1479,7 @@ let useRel = false;
 const lineRenderer = L.canvas({ padding: 0.3, pane: "lines" });
 map.createPane("lines"); map.getPane("lines").style.zIndex = 420;
 const linesBase = L.layerGroup(), linesRisk = L.layerGroup();
-/* même rampe ordinale « risque » pour les deux aléas : contraste avec les zones inondables bleues et la carte des températures */
+/* rampe ordinale de l'aléa affiché (jetons --r1…--r5) : du jaune au rouge pour la chaleur, en bleus pour l'inondation */
 function riskColor(k) { return `var(--r${k + 1})`; }
 function riskColorResolved(k) { const c = riskColor(k); return c.startsWith("var(") ? tok(c.slice(4, -1)) : c; }
 function fmtRisk(v, vc) {
@@ -1429,7 +1490,7 @@ function fmtRisk(v, vc) {
 function buildLines(nets) {
   linesBase.clearLayers(); linesRisk.clearLayers();
   if (!LN.on) return;
-  const grey = tok("--muted"), halo = tok("--card"), halos = [], runs = [];
+  const grey = tok("--muted"), halo = tok("--halo"), halos = [], runs = [];
   for (const net of nets) {
     const vc = LN.hl ? vertexClasses(net) : null;
     for (const r of net.routes) for (const s of r.shapes) {
@@ -1535,12 +1596,13 @@ function appendLines(i) {
     fitTo(bb, 14);
   }));
   const sh = document.getElementById("ln-show");
-  if (sh) sh.addEventListener("click", () => { document.getElementById("ln-on").click(); const n = NETWORKS[i]; map.setView([n.la, n.lo], Math.max(map.getZoom(), 11)); });
+  if (sh) sh.addEventListener("click", () => { if (!LN.on) document.getElementById("ln-on").click(); const n = NETWORKS[i]; map.setView([n.la, n.lo], Math.max(map.getZoom(), 11)); });
 }
 linesReady.then(() => { if (state.sel != null) renderDrawer(); renderLnLegend(); });
 
 linesReady.then(() => refreshLines());
 
+const MAX_NAMES = 42; // vue détaillée : au-delà, seuls les noms qui ont la place (continent entier)
 function clusterIcon(c) {
   const ms = c.getAllChildMarkers();
   const counts = [0, 0, 0, 0, 0];
@@ -1561,8 +1623,9 @@ const cluster = L.markerClusterGroup({
   iconCreateFunction: clusterIcon, spiderLegPolylineOptions: { weight: 1.5, color: "#7b807d", opacity: 0.7 },
 }).addTo(map);
 
+const detailLayer = L.layerGroup().addTo(map); // points hors regroupement : les prospects, et tous les réseaux en vue détaillée
 const markers = NETWORKS.map((n, i) => {
-  const mk = L.marker([n.la, n.lo], { idx: i, riseOnHover: true, keyboard: true });
+  const mk = L.marker([n.la, n.lo], { idx: i, riseOnHover: true, keyboard: true, zIndexOffset: isP(i) ? 800 : 0 });
   mk.bindTooltip("", { direction: "top", offset: [0, -13] });
   mk.on("click", () => openDrawer(i));
   mk.on("add", () => { const el = mk.getElement(); if (el) el.setAttribute("role", "button"); });
@@ -1577,7 +1640,7 @@ function iconFor(i) {
     : fmtN(x, x >= 10 || state.ind === "score" ? 0 : IND[state.ind].dec);
   return L.divIcon({
     className: "pt-wrap" + (state.sel === i ? " is-active" : ""),
-    html: `<span class="pt c${k + 1}">${txt}</span><span class="pt-label">${esc(NETWORKS[i].ci.split(" – ")[0])}</span>`,
+    html: `<i class="pt-lead"></i><i class="pt-lead lab"></i><span class="pt c${k + 1}${isP(i) ? " prospect" : ""}">${txt}</span><span class="pt-label${state.focus ? " placed" : ""}${isP(i) ? " prospect" : ""}">${esc(state.focus ? labelOf(i) : NETWORKS[i].ci.split(" – ")[0])}</span>`,
     iconSize: [26, 26], iconAnchor: [13, 13],
   });
 }
@@ -1585,15 +1648,107 @@ function updateMarkers(vis) {
   markers.forEach((mk, i) => {
     mk.setIcon(iconFor(i));
     const m = cur(i), n = NETWORKS[i];
-    mk.setTooltipContent(`<b>${esc(n.ci)}</b> · ${esc(n.pays)}<br>${esc(IND[state.ind].label)} : ${fmtInd(state.ind, indVal(m))} ${IND[state.ind].unit} · ${CLASSES[cls(state.ind, indVal(m))]}`);
+    mk.setTooltipContent(`<b>${esc(labelOf(i))}</b>${isP(i) ? " · prospect" : ""} · ${esc(n.pays)}<br>${esc(IND[state.ind].label)} : ${fmtInd(state.ind, indVal(m))} ${IND[state.ind].unit} · ${CLASSES[cls(state.ind, indVal(m))]}`);
     const el = mk.getElement(); if (el) el.setAttribute("aria-label", `${n.ci} : ${CLASSES[cls(state.ind, indVal(m))]}`);
   });
-  const want = new Set(vis);
+  // Regroupés : les filiales, sauf en vue détaillée. Les prospects restent toujours visibles, hors regroupements.
+  const shown = new Set(vis), free = i => state.focus || isP(i), ops = vis.filter(i => !free(i));
+  markers.forEach((mk, i) => { if (detailLayer.hasLayer(mk) && !(shown.has(i) && free(i))) detailLayer.removeLayer(mk); });
+  const want = new Set(ops);
   const have = new Set(cluster.getLayers().map(mk => mk.options.idx));
   const same = want.size === have.size && [...want].every(i => have.has(i));
-  if (!same) { cluster.clearLayers(); cluster.addLayers(vis.map(i => markers[i])); }
+  if (!same) { cluster.clearLayers(); cluster.addLayers(ops.map(i => markers[i])); }
   else cluster.refreshClusters();
+  vis.forEach(i => { if (free(i) && !detailLayer.hasLayer(markers[i])) detailLayer.addLayer(markers[i]); });
+  layoutPoints();
 }
+
+/* ---------- Placement des points et des noms ----------
+   Vue normale : seuls les prospects sont écartés des points et regroupements qu'ils recouvriraient ; les noms suivent la règle CSS (zoom 7 et plus).
+   Vue détaillée (clic sur une zone) : deux réseaux voisins sont écartés de ce qu'il faut pour rester lisibles (un trait relie alors
+   le point à sa position réelle), et chaque nom cherche une place libre autour de son point. Le calcul se refait à chaque changement de vue. */
+const labelWidth = (() => {
+  const ctx = document.createElement("canvas").getContext("2d"), cache = new Map();
+  return s => { if (!cache.has(s)) { ctx.font = "700 12.5px Carlito, Calibri, sans-serif"; cache.set(s, Math.ceil(ctx.measureText(s).width) + 9); } return cache.get(s); };
+})();
+const area = (a, b) => Math.max(0, Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1)) * Math.max(0, Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1));
+function layoutPoints() {
+  const box = map.getSize(), base = map.getContainer().getBoundingClientRect(), items = [];
+  const rel = r => ({ x1: r.left - base.left, y1: r.top - base.top, x2: r.right - base.left, y2: r.bottom - base.top });
+  markers.forEach((mk, i) => {
+    const el = mk.getElement(); if (!el || !map.hasLayer(mk)) return;
+    const p = map.latLngToContainerPoint(mk.getLatLng());
+    items.push({ i, el, x: p.x, y: p.y, dx: 0, dy: 0, r: isP(i) ? 17 : 14, fixed: !state.focus && !isP(i) });
+  });
+  const clusters = [...map.getContainer().querySelectorAll(".cluster-wrap")].map(el => {
+    const b = rel(el.getBoundingClientRect());
+    return { fixed: true, x: (b.x1 + b.x2) / 2, y: (b.y1 + b.y2) / 2, dx: 0, dy: 0, r: (b.x2 - b.x1) / 2 + 2 };
+  });
+  const bodies = items.concat(clusters);
+  for (let it = 0; it < 60; it++) { // écartement des points qui se chevauchent ; les regroupements ne bougent pas
+    let moved = false;
+    for (let a = 0; a < bodies.length; a++) for (let b = a + 1; b < bodies.length; b++) {
+      const A = bodies[a], B = bodies[b]; if (A.fixed && B.fixed) continue;
+      const vx = B.x + B.dx - A.x - A.dx, vy = B.y + B.dy - A.y - A.dy, d = Math.hypot(vx, vy), min = A.r + B.r;
+      if (d >= min) continue;
+      const push = (min - d) / 2 + 0.05, ang = a * 2.4 + b, ux = d > 0.01 ? vx / d : Math.cos(ang), uy = d > 0.01 ? vy / d : Math.sin(ang);
+      const ka = A.fixed ? 0 : B.fixed ? 2 : 1, kb = B.fixed ? 0 : A.fixed ? 2 : 1;
+      A.dx -= ux * push * ka; A.dy -= uy * push * ka; B.dx += ux * push * kb; B.dy += uy * push * kb; moved = true;
+    }
+    if (!moved) break;
+  }
+  if (state.focus) placeNames(items, bodies, box, rel);
+  for (const t of items) {
+    t.el.style.setProperty("--dx", `${t.dx.toFixed(1)}px`); t.el.style.setProperty("--dy", `${t.dy.toFixed(1)}px`);
+    const [lead, lead2] = t.el.querySelectorAll(".pt-lead"), len = Math.hypot(t.dx, t.dy);
+    lead.style.display = len > 5 ? "block" : "none";
+    if (len > 5) { lead.style.width = `${len.toFixed(1)}px`; lead.style.transform = `rotate(${Math.atan2(t.dy, t.dx).toFixed(3)}rad)`; }
+    lead2.style.display = "none";
+    if (!state.focus) continue;
+    const lab = t.el.querySelector(".pt-label");
+    lab.classList.toggle("on", !!t.label);
+    if (!t.label) continue;
+    lab.style.transform = `translate(${(t.dx + t.label.ox + 13).toFixed(1)}px, ${(t.dy + t.label.oy + 13).toFixed(1)}px)`;
+    if (t.label.g > 2) { // nom éloigné de son point : un trait fin les relie
+      const q = t.label.q, cx = t.x + t.dx, cy = t.y + t.dy, tx = Math.max(q.x1, Math.min(q.x2, cx)) - cx, ty = Math.max(q.y1, Math.min(q.y2, cy)) - cy;
+      lead2.style.display = "block"; lead2.style.width = `${Math.hypot(tx, ty).toFixed(1)}px`;
+      lead2.style.transform = `translate(${t.dx.toFixed(1)}px, ${t.dy.toFixed(1)}px) rotate(${Math.atan2(ty, tx).toFixed(3)}rad)`;
+    }
+  }
+}
+function placeNames(items, bodies, box, rel) {
+  const dots = bodies.map(t => ({ t, x1: t.x + t.dx - t.r, y1: t.y + t.dy - t.r, x2: t.x + t.dx + t.r, y2: t.y + t.dy + t.r }));
+  const panels = [...map.getContainer().parentElement.querySelectorAll(".overlay-panel, .legend, .zones, .leaflet-control-zoom, .leaflet-control-attribution")].map(e => rel(e.getBoundingClientRect()));
+  if (state.sel != null) panels.push({ x1: box.x - Math.min(420, box.x), y1: 0, x2: box.x, y2: box.y }); // fiche ouverte (position finale, sans attendre son animation)
+  // Tous les noms, sauf au-delà de MAX_NAMES réseaux à l'écran : seuls ceux qui ont la place.
+  const onScreen = items.filter(t => t.x >= 0 && t.y >= 0 && t.x <= box.x && t.y <= box.y).length;
+  const placed = [], H = 17, allNames = !!state.pays || onScreen <= MAX_NAMES;
+  for (const t of items) t.crowd = items.reduce((c, o) => c + (Math.abs(o.x + o.dx - t.x - t.dx) < 120 && Math.abs(o.y + o.dy - t.y - t.dy) < 60 ? 1 : 0), 0);
+  const order = [...items].sort((a, b) => (isP(b.i) - isP(a.i)) || (b.crowd - a.crowd) || (a.i - b.i)); // les plus contraints d'abord ; ordre stable d'une année à l'autre
+  for (const t of order) {
+    const w = labelWidth(labelOf(t.i)), cx = t.x + t.dx, cy = t.y + t.dy;
+    t.label = null;
+    if (t.x < -30 || t.y < -30 || t.x > box.x + 30 || t.y > box.y + 30) continue; // point hors de l'écran : pas de nom
+    let best = null, bestScore = Infinity, bestBad = 0;
+    search: for (const g of [2, 15, 28, 44]) {
+      const R = t.r + g, D = R * 0.72;
+      for (const [ox, oy] of [[R, -H / 2], [-R - w, -H / 2], [D, -D - H], [D, D], [-D - w, -D - H], [-D - w, D], [-w / 2, -R - H], [-w / 2, R]]) {
+        const q = { x1: cx + ox, y1: cy + oy, x2: cx + ox + w, y2: cy + oy + H };
+        let bad = q.x1 < 0 || q.y1 < 0 || q.x2 > box.x || q.y2 > box.y ? 1e6 : 0;
+        for (const o of panels) bad += area(q, o) * 10;
+        for (const o of placed) bad += area(q, o) * 4;
+        for (const o of dots) if (o.t !== t) bad += area(q, o) * 4;
+        const score = bad + g * 3;
+        if (score < bestScore) { bestScore = score; bestBad = bad; best = { ox, oy, q, g }; if (!bad) break search; }
+      }
+    }
+    if (!bestBad || allNames || isP(t.i)) { t.label = best; placed.push(best.q); }
+  }
+}
+let layoutRaf = 0;
+const scheduleLayout = () => { if (!layoutRaf) layoutRaf = requestAnimationFrame(() => { layoutRaf = 0; layoutPoints(); }); };
+map.on("moveend zoomend resize", scheduleLayout);
+cluster.on("animationend", scheduleLayout);
 
 /* ---------- Filtres ---------- */
 function visible() {
@@ -1606,6 +1761,9 @@ function visible() {
     return true;
   });
 }
+
+const scoped = list => list.filter(i => isP(i) === (state.scope === "prospects"));
+const mapList = () => visible().filter(i => state.showP || !isP(i)); // réseaux affichés sur la carte
 
 /* ---------- Panneau portefeuille ---------- */
 const svgNS = "http://www.w3.org/2000/svg";
@@ -1684,7 +1842,7 @@ function renderRank(vis) {
   document.getElementById("rank").innerHTML = rows.length ? rows.map(({ i, m, d }) => {
     const n = NETWORKS[i], x = indVal(m), k = cls(state.ind, x);
     return `<li><button type="button" data-i="${i}" class="${state.sel === i ? "is-active" : ""}">
-      <span class="who"><b>${esc(n.ci)}</b><span>${esc(n.pays)} · ${esc(MODE_LABEL[n.p])}</span></span>
+      <span class="who"><b>${esc(labelOf(i))}</b><span>${esc(n.pays)} · ${esc(MODE_LABEL[n.p])}</span></span>
       <span class="bar" aria-hidden="true"><i class="c${k + 1}" style="width:${Math.min(100, x / maxV * 100)}%"></i></span>
       <span class="v">${fmtInd(state.ind, x)}<small>${state.year > 2026 ? signedInd(state.ind, d) : CLASSES[k]}</small></span></button></li>`;
   }).join("") : `<li style="padding:12px 0;color:var(--muted)">Aucun réseau ne correspond aux filtres.</li>`;
@@ -1701,6 +1859,21 @@ function renderLegend() {
 
 /* ---------- Fiche réseau ---------- */
 const drawer = document.getElementById("drawer");
+const LINK_KIND = { plan: "Plan climat ou d’adaptation", ppri: "Plan de prévention et risques réglementaires", carte: "Carte des zones inondables", risque: "Aléas naturels du territoire" };
+function aoSection(n) {
+  if (n.st !== "prospect") return "";
+  const a = n.ao;
+  return `<section class="sec"><h4>Appel d’offres en cours</h4>
+    <dl class="facts"><dt>Équipe</dt><dd>${esc(a.equipe)}</dd>${a.concurrents ? `<dt>Concurrents</dt><dd>${esc(a.concurrents)}</dd>` : ""}<dt>Étape</dt><dd>${esc(a.etape)}</dd><dt>Début visé</dt><dd>${esc(a.debut)}</dd></dl>
+    <ul class="links" style="margin-top:8px">${a.sources.map(s => `<li><a href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.l)} ↗</a></li>`).join("")}</ul>
+    <p class="note">Analyse identique à celle des filiales, calculée sur le périmètre du réseau tel qu’il existe ou est prévu. Informations issues de sources publiques, à valider en interne.</p></section>`;
+}
+function linksSection(i) {
+  const d = LINKS[i]; if (!d) return "";
+  const ppr = d.commune && !d.np ? `<p class="note" style="margin:0 0 8px">Aucun plan de prévention lié à l’eau recensé à ${esc(d.commune)} (base Géorisques).</p>` : "";
+  if (!ppr && !d.l.length) return "";
+  return `<section class="sec"><h4>Liens utiles</h4>${ppr}<ul class="links">${d.l.map(x => `<li><a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.l)} ↗</a><small>${LINK_KIND[x.k]}</small></li>`).join("")}</ul></section>`;
+}
 const VIG = {
   rail: "Voie et caténaires : dilatation, risque de déformation des rails et échauffement des équipements de signalisation lors des pics de chaleur.",
   metro: "Stations et tunnels : ventilation, climatisation des rames et des locaux techniques à dimensionner pour des pics plus fréquents.",
@@ -1776,7 +1949,7 @@ function renderDrawer() {
   if (state.hz === "flood") return renderDrawerFlood(i);
   const n = NETWORKS[i], m = cur(i), m26 = M[state.scen][2026][i], r = REF[i];
   const k = cls("score", m.score), scen = SCEN.find(s => s.key === state.scen);
-  document.getElementById("d-head").innerHTML = `<p class="eyebrow">${esc(n.pays)} · ${esc(MODE_LABEL[n.p])}</p><h3>${esc(n.ci)}</h3><p>${esc(n.t)}</p>`;
+  document.getElementById("d-head").innerHTML = `<p class="eyebrow">${isP(i) ? `<span class="ao-tag">PROSPECT</span> ` : ""}${esc(n.pays)} · ${esc(MODE_LABEL[n.p])}</p><h3>${esc(labelOf(i))}</h3><p>${esc(n.t)}</p>`;
   const ch = trajChart(i);
   const fT = TG["tas|base"] ? [field("tas", "abs", state.scen, 2005), field("tas", "abs", state.scen, 2026), field("tas", "abs", state.scen, state.year)] : null;
   const tasRow = fT ? (() => { const [a, b, c2] = fT.map(f => sample(f, n.la, n.lo)); return `<tr><td>Température moyenne annuelle<br><small>°C</small></td><td>${fmtN(a, 1)}</td><td>${fmtN(b, 1)}</td><td><b>${fmtN(c2, 1)}</b></td><td class="${c2 - a > 0.05 ? "delta-up" : ""}">${signed(c2 - a, 1)}</td></tr>`; })() : "";
@@ -1793,6 +1966,7 @@ function renderDrawer() {
       <div class="score-txt"><b>Risque chaleur ${CLASSES[k].toLowerCase()}</b>
         <span>${state.year} · ${scen.label} (${scen.desc})<br>${state.year > 2026 ? `<span class="${m.score - m26.score > 0.05 ? "delta-up" : ""}">${signed(m.score - m26.score, 1)} pt</span> depuis 2026 · ` : ""}référence 1995–2014 : ${fmtN(r.score)}</span></div>
     </section>
+    ${aoSection(n)}
     <section class="sec">
       <h4>Trajectoire · ${esc(IND[state.ind].label)}</h4>
       <div class="chart-box" id="traj">${ch.html}</div>
@@ -1811,10 +1985,11 @@ function renderDrawer() {
     </section>
     ${finSection(i, m, m26, r)}
     ${vig.length ? `<section class="sec"><h4>Points de vigilance</h4><ul class="vig">${vig.map(v => `<li>${esc(v)}</li>`).join("")}</ul></section>` : ""}
+    ${linksSection(i)}
     <section class="sec">
       <h4>Réseau</h4>
       <dl class="facts"><dt>Client</dt><dd>${esc(n.cl)}</dd><dt>Modes</dt><dd>${esc(n.m.join(", "))}</dd><dt>Chiffres</dt><dd>${esc(n.kf.join(" · "))}</dd></dl>
-      <p style="margin:10px 0 0"><a href="${href}" target="_blank" rel="noopener">${n.pg ? "Fiche réseau sur ratpdev.com" : "Voir sur ratpdev.com"} ↗</a></p>
+      ${isP(i) ? "" : `<p style="margin:10px 0 0"><a href="${href}" target="_blank" rel="noopener">${n.pg ? "Fiche réseau sur ratpdev.com" : "Voir sur ratpdev.com"} ↗</a></p>`}
     </section>`;
   bindTraj(document.getElementById("traj"), ch);
   appendLines(i);
@@ -1833,7 +2008,7 @@ function openDrawer(i, fly = false) {
     });
   }
 }
-function closeDrawer() { state.sel = null; setTimeout(renderRadius, 0); drawer.parentElement.classList.remove("drawer-open"); drawer.classList.remove("open"); drawer.setAttribute("aria-hidden", "true"); renderAll(false); }
+function closeDrawer() { state.sel = null; setTimeout(renderRadius, 0); scheduleLayout(); drawer.parentElement.classList.remove("drawer-open"); drawer.classList.remove("open"); drawer.setAttribute("aria-hidden", "true"); renderAll(false); }
 document.getElementById("d-close").addEventListener("click", closeDrawer);
 document.addEventListener("keydown", e => { if (e.key === "Escape" && state.sel != null) closeDrawer(); });
 
@@ -1848,14 +2023,25 @@ document.getElementById("hazards").addEventListener("click", e => {
 });
 function setHazard(h) {
   state.hz = h; state.ind = "score";
+  if (h === "flood") document.documentElement.dataset.hz = "flood"; else delete document.documentElement.dataset.hz; // classes en bleus / jaune → rouge
   IND = h === "flood" ? IND_FLOOD : IND_HEAT; M = h === "flood" ? M_FLOOD : M_HEAT; REF = h === "flood" ? REF_FLOOD : REF_HEAT;
   document.querySelectorAll("#hazards button[data-h]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.h === h)));
   indEl.innerHTML = Object.entries(IND).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join("");
-  document.getElementById("pf-title").textContent = `Portefeuille · risque ${h === "flood" ? "inondation" : "chaleur"}`;
   document.getElementById("map").setAttribute("aria-label", `Carte du risque ${h === "flood" ? "inondation" : "chaleur"}`);
   setLayer("ov", h === "heat"); setLayer("fl", h === "flood"); setLayer("wa", h === "flood"); setLayer("re", h === "flood");
   renderAll(); renderRadius(); refreshLines();
 }
+const scopeEl = document.getElementById("scope"), nProspects = NETWORKS.filter((_, i) => isP(i)).length;
+const SCOPES = [["actifs", `Filiales actives (${NETWORKS.length - nProspects})`], ["prospects", `Prospects (${nProspects})`]];
+const renderScope = () => { scopeEl.innerHTML = SCOPES.map(([k, l]) => `<button type="button" data-p="${k}" aria-pressed="${k === state.scope}">${l}</button>`).join(""); };
+renderScope();
+scopeEl.addEventListener("click", e => {
+  const b = e.target.closest("button[data-p]"); if (!b || b.dataset.p === state.scope) return;
+  state.scope = b.dataset.p; renderScope();
+  if (state.scope === "prospects" && !state.showP) document.getElementById("pr-on").click(); // le panneau et la carte restent cohérents
+  renderAll();
+});
+document.getElementById("pr-on").addEventListener("change", e => { state.showP = e.target.checked; renderAll(false); });
 const scenEl = document.getElementById("scenarios");
 scenEl.innerHTML = SCEN.map(s => `<button type="button" data-s="${s.key}" title="${s.desc}" aria-pressed="${s.key === state.scen}">${s.label}</button>`).join("");
 scenEl.addEventListener("click", e => { const b = e.target.closest("button[data-s]"); if (!b) return; state.scen = b.dataset.s; scenEl.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); renderAll(); refreshOverlay(); refreshFlood(); refreshLines(); });
@@ -1886,29 +2072,48 @@ document.getElementById("f-pays").innerHTML = `<option value="">Tous (${paysOrde
 const modeCount = {}; NETWORKS.forEach(n => modeCount[n.p] = (modeCount[n.p] || 0) + 1);
 document.getElementById("f-mode").innerHTML = `<option value="">Tous</option>` + Object.keys(MODE_LABEL).filter(k => modeCount[k]).map(k => `<option value="${k}">${MODE_LABEL[k]} (${modeCount[k]})</option>`).join("");
 document.getElementById("f-pays").addEventListener("change", e => {
-  state.pays = e.target.value; renderAll();
-  const vis = visible(); if (vis.length) fitTo(L.latLngBounds(vis.map(i => [NETWORKS[i].la, NETWORKS[i].lo])), state.pays ? 8 : 4);
+  state.pays = e.target.value; leaveFocus(); renderAll();
+  const vis = visible(); if (!vis.length) return;
+  const b = L.latLngBounds(vis.map(i => [NETWORKS[i].la, NETWORKS[i].lo]));
+  if (state.pays) focusOn(`pays:${state.pays}`, b, 8); else fitTo(b, 4);
 });
 document.getElementById("f-mode").addEventListener("change", e => { state.mode = e.target.value; renderAll(); });
 let qT; document.getElementById("q").addEventListener("input", e => { clearTimeout(qT); qT = setTimeout(() => { state.q = e.target.value.trim(); renderAll(); }, 120); });
 document.getElementById("zones").innerHTML = ZONES.map((z, k) => `<button type="button" data-z="${k}">${z.label}</button>`).join("");
-document.getElementById("zones").addEventListener("click", e => { const b = e.target.closest("button[data-z]"); if (b) fitTo(L.latLngBounds(ZONES[+b.dataset.z].b)); });
-function fitTo(b, maxZoom = 9) { const wide = innerWidth > 860, o = wide ? { paddingTopLeft: [300, 40], paddingBottomRight: [30, 30], maxZoom } : { padding: [36, 36], maxZoom }; reduceMotion ? map.fitBounds(b, o) : map.flyToBounds(b, { ...o, duration: 0.8 }); }
+document.getElementById("zones").addEventListener("click", e => {
+  const b = e.target.closest("button[data-z]"); if (!b) return;
+  const k = +b.dataset.z, bounds = L.latLngBounds(ZONES[k].b);
+  if (k) focusOn(`zone:${k}`, bounds); else { leaveFocus(); fitTo(bounds); } // « Monde » : retour à la vue regroupée
+});
+/* Vue détaillée : après un clic sur une zone (ou le choix d'un pays), une fois la carte arrivée, plus aucun regroupement et tous les noms.
+   Elle prend fin avec « Monde », le choix d'une autre zone, ou dès qu'on dézoome. */
+let focusKey = null, focusZoom = 0, focusToken = 0;
+function setFocus(on) { if (state.focus === on) return; state.focus = on; updateMarkers(mapList()); }
+function leaveFocus() { focusToken++; focusKey = null; setFocus(false); }
+function focusOn(key, bounds, maxZoom) {
+  if (key === focusKey) return fitTo(bounds, maxZoom); // déjà détaillée : simple recentrage
+  leaveFocus();
+  const token = focusToken, arrive = () => { if (token !== focusToken) return; focusKey = key; focusZoom = map.getZoom(); setFocus(true); };
+  fitTo(bounds, maxZoom);
+  if (reduceMotion) arrive(); else map.once("moveend", arrive);
+}
+map.on("zoomend", () => { if (state.focus && map.getZoom() < focusZoom - 0.2) leaveFocus(); });
+function fitTo(b, maxZoom = 9) { const wide = innerWidth > 860, o = wide ? { paddingTopLeft: [300, 40], paddingBottomRight: [30, 30], maxZoom } : { padding: [36, 36], maxZoom }; reduceMotion ? map.fitBounds(b, { ...o, animate: false }) : map.flyToBounds(b, { ...o, duration: 0.8 }); }
 
 document.getElementById("copy").addEventListener("click", async e => {
-  const btn = e.currentTarget, vis = visible();
+  const btn = e.currentTarget, vis = scoped(visible());
   if (state.hz === "flood") return copyFlood(btn, vis);
-  const head = ["reseau", "ville", "pays", "mode_principal", "scenario", "annee", "score", "classe", "jours_35C", "nuits_tropicales", "jours_chaleur_humide", "tmax_annuelle_C", "score_2026", "score_reference_1995_2014", "budget_estime_MEUR", "cout_chaleur_kEUR_an", "dont_energie_kEUR", "dont_personnel_kEUR", "dont_maintenance_kEUR", "cout_pct_budget", "surcout_vs_reference_kEUR", "cumul_2026_annee_kEUR", "frequentation_estimee_M_voyages_an", "voyageurs_perturbes_an", "voyageurs_perturbes_pct_voyages"];
+  const head = ["reseau", "ville", "pays", "statut", "mode_principal", "scenario", "annee", "score", "classe", "jours_35C", "nuits_tropicales", "jours_chaleur_humide", "tmax_annuelle_C", "score_2026", "score_reference_1995_2014", "budget_estime_MEUR", "cout_chaleur_kEUR_an", "dont_energie_kEUR", "dont_personnel_kEUR", "dont_maintenance_kEUR", "cout_pct_budget", "surcout_vs_reference_kEUR", "cumul_2026_annee_kEUR", "frequentation_estimee_M_voyages_an", "voyageurs_perturbes_an", "voyageurs_perturbes_pct_voyages"];
   const lines = [head.join(";")].concat(vis.map(i => {
     const n = NETWORKS[i], m = cur(i);
-    return [n.t, n.ci, n.pays, MODE_LABEL[n.p], state.scen, state.year, m.score.toFixed(1), CLASSES[cls("score", m.score)], m.hd35.toFixed(1), m.tr.toFixed(1), m.hi35.toFixed(1), m.txx.toFixed(1), M[state.scen][2026][i].score.toFixed(1), REF[i].score.toFixed(1), FIN[i].b.toFixed(2), m.fin.toFixed(1), m.cE.toFixed(1), m.cP.toFixed(1), m.cM.toFixed(1), m.finp.toFixed(3), (finOn(i, state.year) ? m.fin - REF[i].fin : 0).toFixed(1), finCum(i).toFixed(0), RID[i].v, m.pax.toFixed(0), m.paxp.toFixed(4)]
+    return [n.t, n.ci, n.pays, isP(i) ? "Prospect" : "Filiale active", MODE_LABEL[n.p], state.scen, state.year, m.score.toFixed(1), CLASSES[cls("score", m.score)], m.hd35.toFixed(1), m.tr.toFixed(1), m.hi35.toFixed(1), m.txx.toFixed(1), M[state.scen][2026][i].score.toFixed(1), REF[i].score.toFixed(1), FIN[i].b.toFixed(2), m.fin.toFixed(1), m.cE.toFixed(1), m.cP.toFixed(1), m.cM.toFixed(1), m.finp.toFixed(3), (finOn(i, state.year) ? m.fin - REF[i].fin : 0).toFixed(1), finCum(i).toFixed(0), RID[i].v, m.pax.toFixed(0), m.paxp.toFixed(4)]
       .map(x => `"${String(x).replace(/"/g, '""')}"`).join(";");
   }));
   await exportCsv(btn, lines.join("\n"), vis.length);
 });
 
 document.getElementById("method").innerHTML = `
-  <h3 style="margin:8px 0 0;font:600 13px var(--font-body);color:var(--ink)">Chaleur</h3>
+  <h3 style="margin:8px 0 0;font:700 12.5px var(--font-display);color:var(--title)">Chaleur</h3>
   <p><b>Données climatiques</b> : projections CMIP6 de la Banque mondiale (Climate Change Knowledge Portal), descendues à 0,25° (~25 km) et corrigées des biais, médiane de l’ensemble multi-modèles. Valeur de la maille la plus proche du point de chaque réseau.</p>
   <p><b>Années</b> : interpolation linéaire entre les moyennes 1995–2014, 2020–2039 et 2040–2059. Sur 10 ans, les scénarios divergent encore peu : l’écart se creuse surtout après 2040.</p>
   <table><thead><tr><th>Indicateur</th><th>Poids</th><th>Note 100 atteinte à</th></tr></thead><tbody>
@@ -1920,14 +2125,14 @@ document.getElementById("method").innerHTML = `
   <p><b>Classes du score</b> : très faible &lt; 20, faible 20–40, modéré 40–60, élevé 60–80, très élevé ≥ 80. Échelle absolue, commune à tous les pays.</p>
   <p><b>Calque températures</b> : même source, grille ramenée à 0,5° (~50 km), de 60° S à 85° N. Valeur de référence 1995–2014 plus l’écart projeté, interpolé pour l’année choisie.</p>
   <p><b>Limites</b> : il s’agit d’un aléa (exposition climatique du territoire), pas encore d’un risque pondéré par la vulnérabilité des actifs ; pas d’îlot de chaleur urbain ; un point par réseau.</p>
-  <h3 style="margin:14px 0 0;font:600 13px var(--font-body);color:var(--ink)">Inondation</h3>
+  <h3 style="margin:14px 0 0;font:700 12.5px var(--font-display);color:var(--title)">Inondation</h3>
   <p><b>Aléa</b> : WRI Aqueduct Floods v2, hauteur d’eau pour la crue centennale (période de retour 100 ans), maille ~1 km. Crues fluviales : médiane de 5 modèles climatiques ; submersion marine : élévation médiane du niveau de la mer, subsidence incluse. Référence 2010, projections 2030 et 2050 (RCP4.5 pour SSP1-2.6 et SSP2-4.5, RCP8.5 pour SSP5-8.5), interpolées pour l’année choisie.</p>
   <table><thead><tr><th>Composante</th><th>Poids</th><th>Note 100 atteinte à</th></tr></thead><tbody>
     <tr><td>Surface inondable dans un rayon de 10 km</td><td>50 %</td><td>50 % de la surface</td></tr>
     <tr><td>Hauteur d’eau moyenne en zone inondée</td><td>50 %</td><td>5 m</td></tr>
   </tbody></table>
   <p><b>Correction topographique</b> : on compare l’altitude du point du réseau (MNT ~30 m) à l’altitude médiane des zones inondées autour. Jusqu’à 2 m au-dessus : pas de correction ; au-delà, le score baisse progressivement jusqu’à −60 % à 30 m au-dessus. Si le point lui-même est en zone inondable, aucune réduction.</p>
-  <h3 style="margin:14px 0 0;font:600 13px var(--font-body);color:var(--ink)">Risque financier</h3>
+  <h3 style="margin:14px 0 0;font:700 12.5px var(--font-display);color:var(--title)">Risque financier</h3>
   <p><b>Principe</b> : ordre de grandeur des coûts que chaque aléa fait peser sur l’exploitation, pour l’année et le scénario choisis, en euros 2026. Les coûts portent sur le réseau dans son ensemble (exploitant et autorité organisatrice), sans tenir compte du partage contractuel des risques ni des assurances.</p>
   <p><b>Assiette</b> : budget d’exploitation annuel estimé de chaque réseau (coût complet), à partir des chiffres publiés sur ratpdev.com, par ordre de préférence : effectif × 95 k€ ; flotte × employés par véhicule (bus 2,3, autocar et TAD 1,3) × 95 k€ ; longueur de ligne × coût au km (métro 3,5 M€, tramway 2 M€, train 0,8 M€) ; voyages × 3,5 € ; population desservie × dépense par habitant. Montants corrigés d’un indice de coût du pays (France 1, États-Unis 1,15, Égypte 0,3…). La base retenue est indiquée dans chaque fiche.</p>
   <p><b>Chaleur</b> : coût de chaque jour de chaleur, exprimé en part du budget journalier.</p>
@@ -1945,7 +2150,7 @@ document.getElementById("method").innerHTML = `
   </tbody></table>
   <p>Taux de dommage selon la hauteur d’eau, inspiré des courbes du JRC (Huizinga et al., 2017) : 32 % à 0,5 m, 54 % à 1 m, 76 % à 2 m, 100 % à 6 m. Métro : dommages et durée d’interruption majorés de 50 % (tunnels et stations souterraines). La crue centennale a 1 % de chances de survenir chaque année. Sans aucune protection, les crues plus fréquentes porteraient le coût annuel attendu vers 4 % des pertes centennales ; le taux de 2 % suppose que les protections existantes contiennent en moyenne les crues plus fréquentes que la cinquantennale.</p>
   <p><b>Limites</b> : ordres de grandeur, avec une incertitude d’un facteur 2 à 3 ; protections prises en compte de façon forfaitaire seulement (taux de 2 %), alors que la carte de l’aléa les ignore ; budgets constants, sans inflation ni évolution de l’offre ; les réseaux en projet sont comptés comme en service, sauf mise en service datée sur ratpdev.com (Melbourne, 2035). Pour modifier les budgets : <code>scripts/prepare_finance.py</code> ; pour les coûts unitaires : constantes <code>FIN_HEAT</code> et <code>FIN_FLOOD</code> de la page.</p>
-  <h3 style="margin:14px 0 0;font:600 13px var(--font-body);color:var(--ink)">Voyageurs perturbés</h3>
+  <h3 style="margin:14px 0 0;font:700 12.5px var(--font-display);color:var(--title)">Voyageurs perturbés</h3>
   <p><b>Principe</b> : ordre de grandeur du nombre de voyages retardés, supprimés ou détournés chaque année par l’aléa, pour l’année et le scénario choisis. Le compte se fait en voyages : un voyageur perturbé à l’aller et au retour compte deux fois.</p>
   <p><b>Fréquentation</b> : chiffre publié sur ratpdev.com pour 40 réseaux (par an, ou par jour × 365). Sinon, budget d’exploitation estimé ÷ coût moyen d’un voyage, en coûts France : 1,5 € en métro ou en tramway, 2 € pour un réseau urbain avec tramway, 3,5 € en bus urbain, 6 € en train, 8 € en autocar et pour les bus aux États-Unis, 50 € en transport à la demande. Estimations dédiées pour Riyad, Doha, Manille, Orlyval, AlUla et le transport scolaire de Genève. La base retenue est indiquée dans chaque fiche.</p>
   <p><b>Chaleur</b> : un jour ≥ 35 °C perturbe une part des voyages de la journée (ralentissements sur les voies, pannes de climatisation et d’équipements, absences).</p>
@@ -1958,9 +2163,13 @@ document.getElementById("method").innerHTML = `
   <p>Un réseau déjà habitué aux fortes chaleurs y est adapté (matériel climatisé, voies et équipements dimensionnés pour le climat local) : le taux est divisé par 1 + J / 30, où J est le nombre de jours de forte chaleur par an en 1995–2014 (jours ≥ 35 °C ou jours de chaleur humide, le plus élevé des deux). Le taux est ainsi divisé par 2 pour un réseau qui en connaissait 30, et par 7 environ à Riyad.</p>
   <p><b>Inondation</b> : lors d’une crue centennale, fréquentation journalière × jours d’interruption × part du réseau touchée × facteur relief, avec les hypothèses des pertes d’exploitation du risque financier. Moyenne annuelle : 2 % de ce total, comme pour le coût annuel attendu.</p>
   <p><b>Limites</b> : ordres de grandeur ; fréquentation constante, sans croissance du trafic ; ruissellement urbain et orages non couverts, alors qu’ils perturbent plus souvent l’exploitation que les crues de cours d’eau.</p>
-  <h3 style="margin:14px 0 0;font:600 13px var(--font-body);color:var(--ink)">Fond de carte</h3>
+  <h3 style="margin:14px 0 0;font:700 12.5px var(--font-display);color:var(--title)">Prospects</h3>
+  <p>Réseaux visés par un appel d’offres en cours, pour lesquels une source publique cite RATP Dev comme candidat (liste à compléter dans <code>data/prospects.json</code>). Ils ne comptent pas dans les totaux des filiales actives. Climat, inondation, relief, coût et voyageurs perturbés sont calculés exactement comme pour les filiales, à partir des mêmes sources. Le point représente le centre du réseau : pour un réseau étendu (trains de banlieue), le rayon de 10 km décrit donc le cœur de l’agglomération.</p>
+  <h3 style="margin:14px 0 0;font:700 12.5px var(--font-display);color:var(--title)">Liens utiles</h3>
+  <p>France : plans de prévention recensés sur la commune principale (base GASPAR, Géorisques), document d’information sur les risques (Géorisques), plan climat de l’intercommunalité (ADEME, Territoires &amp; Climat). États-Unis : zones inondables réglementaires (FEMA). Ailleurs : fiche ThinkHazard! du territoire (Banque mondiale). S’y ajoutent les plans d’adaptation repérés pour les principales villes. Toutes les adresses ont été testées lors de la préparation des données, en novembre 2026.</p>
+  <h3 style="margin:14px 0 0;font:700 12.5px var(--font-display);color:var(--title)">Fond de carte</h3>
   <p><b>Trait de côte, cours d’eau et lacs</b> : autour de chaque réseau français (emprise des tracés + 4 km, ou 15 km autour du point), BD TOPO de l’IGN, précise au mètre : contour des communes pour la côte, surfaces hydrographiques permanentes de plus de 1 ha pour les fleuves, rivières larges, lacs et étangs. Autour des réseaux hors de France (20 km), Natural Earth au 1:10 M. Ailleurs, Natural Earth au 1:50 M, suffisant à l’échelle d’un pays mais imprécis de plusieurs kilomètres sur les côtes.</p>
-  <h3 style="margin:14px 0 0;font:600 13px var(--font-body);color:var(--ink)">Plans de réseau</h3>
+  <h3 style="margin:14px 0 0;font:700 12.5px var(--font-display);color:var(--title)">Plans de réseau</h3>
   <p><b>Tracés</b> : fichiers GTFS publiés sur transport.data.gouv.fr (conversion GeoJSON) pour 23 réseaux urbains, Grand Lyon open data pour le métro, les funiculaires et les tramways TCL, Île-de-France Mobilités pour Orlyval. Variantes et sens quasi identiques fusionnés, tracés simplifiés à ~10 m. Les réseaux d’autocars interurbains (lignes régionales) et le téléphérique du Salève ne sont pas cartographiés. Pour Txik Txak et Libéo, seules les lignes autour de l’agglomération sont retenues.</p>
   <p><b>Inondation par tronçon</b> : hauteur d’eau de la crue centennale (Aqueduct, maille ~1 km) au droit de chaque point du tracé, espacés de 250 m au plus ; un tronçon est exposé dès 0,1 m.</p>
   <p><b>Chaleur par tronçon</b> : température du jour le plus chaud de l’année (grille 0,5°) corrigée de l’altitude du tracé (−0,65 °C par 100 m). Deux lectures. <i>Seuils de température</i> : classes 32–35, 35–38, 38–41 et ≥ 41 °C, comparables d’un réseau à l’autre ; un tronçon compte comme exposé dans la fiche à partir de 35 °C. <i>Points chauds de chaque réseau</i> : écart à la médiane du réseau, qui fait ressortir les fonds de vallée et les zones basses (≥ +0,3 °C). À cette maille, la chaleur varie peu à l’intérieur d’une agglomération : l’îlot de chaleur urbain (centres denses, zones d’activités) n’est pas pris en compte. Les mailles côtières, en partie sur la mer, sous-estiment les maxima.</p>
@@ -1970,11 +2179,12 @@ document.getElementById("method").innerHTML = `
 
 /* ---------- Rendu ---------- */
 function renderAll(withDrawer = true) {
-  const vis = visible();
-  const sc = SCEN.find(s => s.key === state.scen);
+  const all = visible(), vis = scoped(all);   // la carte montre les filiales et les prospects ; le panneau, un seul périmètre à la fois
+  const sc = SCEN.find(s => s.key === state.scen), hz = state.hz === "flood" ? "inondation" : "chaleur";
+  document.getElementById("pf-title").textContent = `${state.scope === "prospects" ? "Prospects" : "Portefeuille"} · risque ${hz}`;
   document.getElementById("ctx").textContent = `${vis.length} réseau${vis.length > 1 ? "x" : ""} · ${state.year} · ${sc.label}, ${sc.desc}`;
   renderKpis(vis); renderFinKpis(vis); renderDistrib(vis); renderEvo(vis); renderRank(vis); renderLegend();
-  updateMarkers(vis);
+  updateMarkers(mapList());
   if (withDrawer && state.sel != null) renderDrawer();
 }
 renderAll();

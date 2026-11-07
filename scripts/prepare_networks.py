@@ -45,6 +45,20 @@ PRIMARY_ORDER = [
 
 COUNTRY_FIX = {"Etats-Unis": "États-Unis", "Egypte": "Égypte"}
 
+# Libellé affiché sur la carte quand la ville ne suffit pas : nom commercial du réseau, tel qu'il figure dans sa fiche
+NOMS = {
+    23: "Tucson (bus)", 24: "Tucson (tramway)", 35: "Suburban Rail Loop (Melbourne)", 36: "Metro Western Sydney Airport",
+    37: "Brest · Bibus", 38: "Ligne 15 Sud (Grand Paris)", 39: "Caen · Twisto", 40: "Orlyval", 41: "Angers · Irigo",
+    42: "Bayonne · Txik Txak", 43: "Gare routière de Rennes", 44: "Crépy-en-Valois · RIO 4", 45: "Choisy-au-Bac · Cars Charlot",
+    46: "Cambrai · Dupas Lebeda", 47: "Saintes · BUSS", 48: "Téléphérique du Salève", 49: "Annemasse · TAC", 50: "Narbonne · Citibus",
+    51: "Toulon · Mistral", 52: "Genève · HelvéCie", 54: "Vienne · L’va", 55: "Laon · TUL", 56: "Brive · Libéo",
+    57: "Saint-Pierre-en-Faucigny · Alpbus", 58: "STI Centre", 59: "Quimperlé · TBK", 60: "Quimper · QUB", 61: "Reims · Champagne Mobilités",
+    62: "Châlons-en-Champagne · STDM", 63: "Valenciennes · Finand", 64: "Creil · AXO", 65: "Épernay · Mouvéo", 66: "Charleville-Mézières · TAC",
+    67: "Boulogne-sur-Mer · Marinéo", 68: "Orléans · Cars Dunois", 69: "Aix-les-Bains · Ondéa", 70: "Laval · TUL",
+    71: "La Roche-sur-Yon · Impulsyon", 72: "Bourges · AggloBus", 73: "Lorient Agglomération", 74: "Lyon · TCL",
+    78: "Gautrain (Johannesbourg)", 83: "LFI (Arezzo)", 85: "Autolinee Toscane", 88: "TramCité (Québec)",
+}
+
 applied = []
 out = []
 for i, r in enumerate(raw):
@@ -84,6 +98,7 @@ for i, r in enumerate(raw):
         "lo": round(r["lo"], 5),
         "kf": [k.strip() for k in r["kf"]],
         "pg": r["pg"],
+        **({"nom": NOMS[i]} if i in NOMS else {}),
     })
 
 assert len(out) == 90, len(out)

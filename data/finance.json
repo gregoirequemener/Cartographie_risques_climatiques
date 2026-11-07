@@ -370,6 +370,19 @@
   {
    "b": 108.67,
    "base": "3 lignes, 69 km de métro × 3,5 M€/km × indice pays 0,45"
+  },
+  {
+   "b": 350.0,
+   "base": "contrat actuel : environ 5 Md$ sur 13 ans (WBUR), soit 385 M$/an, environ 350 M€ (1 $ ≈ 0,91 €)"
+  },
+  {
+   "b": 764.75,
+   "base": "près de 7 000 employés × 95 k€ × indice pays 1,15"
+  },
+  {
+   "b": 79.8,
+   "base": "19 km de métro × 3,5 M€/km × indice pays 1,20",
+   "from": 2035
   }
  ]
 }

@@ -360,6 +360,18 @@
   {
    "v": 161.0,
    "base": "budget estimé (108,7 M€) ÷ 1,5 € par voyage (métro, coûts France)"
+  },
+  {
+   "v": 29.7,
+   "base": "29,7 M de voyages en 2025"
+  },
+  {
+   "v": 182.5,
+   "base": "182,5 M de voyages en 2023-2024"
+  },
+  {
+   "v": 53,
+   "base": "environ 53 M de voyages par an attendus (estimation TII)"
   }
  ]
 }

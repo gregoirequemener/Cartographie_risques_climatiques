@@ -1,0 +1,1618 @@
+{
+"_doc": "Liens utiles par réseau, dans l'ordre de networks.json. Généré par scripts/prepare_links.py ; toutes les adresses ont été testées. np : nombre de plans de prévention liés à l'eau sur la commune principale (Géorisques) ; l : k (plan|ppri|carte|risque), l (libellé), u (adresse).",
+"networks": [
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "plan",
+"l": "Stratégie face à la montée des eaux à Charleston (NOAA, U.S. Climate Resilience Toolkit)",
+"u": "https://toolkit.climate.gov/PG_Resource_Charleston"
+},
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-79.9311,32.7765&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Charleston (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/31002-united-states-of-america-south-carolina-charleston"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-81.90754,28.87399&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Lake (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/29031-united-states-of-america-florida-lake"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-82.46051,28.57102&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Hernando (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/29023-united-states-of-america-florida-hernando"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-82.14009,29.1872&level=12"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-81.06132,34.02452&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Richland (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/31032-united-states-of-america-south-carolina-richland"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-82.52556,35.62922&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Buncombe (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/30577-united-states-of-america-north-carolina-buncombe"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-82.55084,35.59536&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Buncombe (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/30577-united-states-of-america-north-carolina-buncombe"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-80.24405,36.09981&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Forsyth (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/30600-united-states-of-america-north-carolina-forsyth"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-79.79198,36.07264&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Guilford (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/30607-united-states-of-america-north-carolina-guilford"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-78.61183,35.79794&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Wake (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/30658-united-states-of-america-north-carolina-wake"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "plan",
+"l": "Community Climate Action Plan (Raleigh)",
+"u": "https://cityofraleigh0drupal.blob.core.usgovcloudapi.net/drupal-prod/COR27/RaleighCCAP.pdf"
+},
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-78.6391,35.7804&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Wake (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/30658-united-states-of-america-north-carolina-wake"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-78.90181,35.99665&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Durham (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/30598-united-states-of-america-north-carolina-durham"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "plan",
+"l": "Climate Action Plan (comté de Prince George)",
+"u": "https://www.epa.gov/system/files/documents/2023-12/prince-georges-county-climate-action-plan.pdf"
+},
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-76.85187,38.80393&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Prince George's (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/29887-united-states-of-america-maryland-prince-george-s"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "plan",
+"l": "Governor's Council on Climate Change (Connecticut)",
+"u": "https://portal.ct.gov/DEEP/Climate-Change/GC3/Governors-Council-on-Climate-Change"
+},
+{
+"k": "plan",
+"l": "Building a More Resilient Connecticut : rapport GC3",
+"u": "https://portal.ct.gov/-/media/DEEP/climatechange/GC3/GC3_Phase1_Report_011521.pdf"
+},
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-72.73422,41.65002&level=12"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-89.52883,34.36209&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Lafayette (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/30114-united-states-of-america-mississippi-lafayette"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-86.44287,36.99292&level=12"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-84.49704,38.04641&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Fayette (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/29704-united-states-of-america-kentucky-fayette"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-97.14746,31.54919&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de McLennan (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/31360-united-states-of-america-texas-mclennan"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-97.10712,32.73558&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Tarrant (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/31419-united-states-of-america-texas-tarrant"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-102.36054,31.83305&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Ector (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/31267-united-states-of-america-texas-ector"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-101.84702,33.58557&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Lubbock (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/31351-united-states-of-america-texas-lubbock"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-97.4649,35.65714&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Oklahoma (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/30862-united-states-of-america-oklahoma-oklahoma"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-105.7089,40.33332&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Larimer (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/28957-united-states-of-america-colorado-larimer"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-110.96741,32.22515&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Pima (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/28785-united-states-of-america-arizona-pima"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-110.96741,32.22515&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Pima (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/28785-united-states-of-america-arizona-pima"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-114.61981,32.72542&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Yuma (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/28789-united-states-of-america-arizona-yuma"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-113.05078,37.29998&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Washington (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/31480-united-states-of-america-utah-washington"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-119.28851,36.3317&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Tulare (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/28918-united-states-of-america-california-tulare"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-120.96567,35.73274&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de San Luis Obispo (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/28904-united-states-of-america-california-san-luis-obispo"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-119.07794,34.44582&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Ventura (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/28920-united-states-of-america-california-ventura"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-120.08174,34.61288&level=12"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-120.4579,34.63915&level=12"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-120.43586,34.95313&level=12"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-81.02283,29.21081&level=12"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Volusia (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/29061-united-states-of-america-florida-volusia"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "plan",
+"l": "Plan de gestion des pluies torrentielles de Copenhague (Eurocities)",
+"u": "https://eurocities.eu/stories/preventing-flooding-with-urban-spaces/"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Cartographie des inondations, City of Melbourne",
+"u": "https://participate.melbourne.vic.gov.au/flood-mapping/project-overview"
+},
+{
+"k": "carte",
+"l": "Nouvelles cartes d'inondation, Melbourne Water",
+"u": "https://www.melbournewater.com.au/node/10641"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : Melbourne (C) (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/5396-australia-victoria-melbourne-c"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "plan",
+"l": "Adapting for climate change, City of Sydney",
+"u": "https://www.cityofsydney.nsw.gov.au/strategies-action-plans/adapting-for-climate-change"
+},
+{
+"k": "plan",
+"l": "Stratégie de résilience, City of Sydney",
+"u": "https://www.cityofsydney.nsw.gov.au/strategies-action-plans/resilience-strategy"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : Sydney (C) (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/154637-australia-new-south-wales-sydney-c"
+}
+]
+},
+{
+"np": 0,
+"commune": "Brest",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · Brest Métropole",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1636/documents/10a808b2180a3afe183dd65ec4f03ba1c05bb9c1.pdf"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Brest (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/29019"
+}
+]
+},
+{
+"np": 1,
+"commune": "Villejuif",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · Métropole du Grand Paris",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1357/documents/8dc01feec29ff05a862ffd7f9dc5ffd929d479e5.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRi Ruissellement urbain (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/94DRIEA_IF20120001"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Villejuif (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/94076"
+}
+]
+},
+{
+"np": 1,
+"commune": "Caen",
+"l": [
+{
+"k": "plan",
+"l": "PCAET Caen Normandie Métropole : avis de l'Autorité environnementale",
+"u": "https://www.mrae.developpement-durable.gouv.fr/IMG/pdf/a_2022-4678_pcaet_caen-normandie-metropole_delibere.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRN-Multi-basse-vallée-orne-revisé (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/14DDTM20110006"
+}
+]
+},
+{
+"np": 1,
+"commune": "Orly",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · Métropole du Grand Paris",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1357/documents/8dc01feec29ff05a862ffd7f9dc5ffd929d479e5.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRI Marne et Seine (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/94DDT20090002"
+}
+]
+},
+{
+"np": 2,
+"commune": "Angers",
+"l": [
+{
+"k": "plan",
+"l": "Plan d'adaptation au changement climatique (Angers Loire Métropole)",
+"u": "https://presse.angers.fr/private/uploads/piecesjointes/1-pacc.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRi-Confluence de Maine (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/49DDT20050006"
+},
+{
+"k": "ppri",
+"l": "PPRi-Val de Louet-Révision (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/49DDT20150011"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs d’Angers (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/49007"
+}
+]
+},
+{
+"np": 1,
+"commune": "Bayonne",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA du Pays Basque",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1736/documents/7ac03d5f54b9e7b879374e53ee4317ef02dc8811.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRi - BAYONNE (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/64DDTM20060002"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Bayonne (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/64102"
+}
+]
+},
+{
+"np": 2,
+"commune": "Rennes",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · Rennes Métropole",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/2330/documents/6379ec84f748549e3669bc01a262a0ef24f295a8.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRi BV Vilaine région rennaise (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/35DDTM20010003"
+},
+{
+"k": "ppri",
+"l": "PPRN-I - Vilaine amont - Bassin région rennaise (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/PPRN-I_2025_0051"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Rennes (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/35238"
+}
+]
+},
+{
+"np": 0,
+"commune": "Crépy-en-Valois",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CC du Pays de Valois",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1871/documents/15e2976167037b9adb4acbe2fa8e404627df9647.zip"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Crépy-en-Valois (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/60176"
+}
+]
+},
+{
+"np": 2,
+"commune": "Choisy-au-Bac",
+"l": [
+{
+"k": "ppri",
+"l": "PPRi des Vallées de l'Oise et de l'Aisne, Bief Oise / Aisne (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/60DDT20200001"
+},
+{
+"k": "ppri",
+"l": "PRNi Oise / Aisne (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/60DDT20200002"
+}
+]
+},
+{
+"np": 0,
+"commune": "Cambrai",
+"l": [
+{
+"k": "risque",
+"l": "Aléas naturels : Nord (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/16306-france-nord-pas-de-calais-nord"
+}
+]
+},
+{
+"np": 1,
+"commune": "Saintes",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA \"Saintes - Grandes Rives - L'Agglo\"",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/2192/documents/caf11e24e9655d4a92678b2e1312f8d46e3fe28d.pdf"
+},
+{
+"k": "ppri",
+"l": "PPR Saintes (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/17DDTM20060003"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Saintes (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/17415"
+}
+]
+},
+{
+"np": 2,
+"commune": "Monnetier-Mornex",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CC Arve et Salève",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1389/documents/cdb69751e974564cf6718649a79fe51adc7af604.pdf"
+},
+{
+"k": "ppri",
+"l": "PER - Monnetier-Mornex (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/74DDT19910004"
+},
+{
+"k": "ppri",
+"l": "PPR sur la commune Monnetier-Mornex (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/74DDT19990017"
+}
+]
+},
+{
+"np": 1,
+"commune": "Annemasse",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA Annemasse-Les Voirons-Agglomération",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1737/documents/2fa53ff2df000d69ae4efe8e867ecf57f4d960e3.pdf"
+},
+{
+"k": "ppri",
+"l": "PPR sur la commune Annemasse (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/74DDT19990009"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs d’Annemasse (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/74012"
+}
+]
+},
+{
+"np": 3,
+"commune": "Narbonne",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA Le Grand Narbonne",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1087/documents/7fd532fe08eb4742885a520378ce79f7b1673ddb.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRI du Rec du Veyret (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/11DDTM20050011"
+},
+{
+"k": "ppri",
+"l": "PPRI Narbonne BPA (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/11DDTM20080008"
+},
+{
+"k": "ppri",
+"l": "PPRL de Narbonne (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/11DDTM20120036"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Narbonne (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/11262"
+}
+]
+},
+{
+"np": 1,
+"commune": "Toulon",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · Métropole Toulon-Provence-Méditerranée",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1934/documents/3ff71b223251bffa8281343b7cfbb11b920507c1.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRN-Multi - Toulon 1989 [ MOD 1 - 2013 ] (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/83DDTM19860020"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Toulon (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/83137"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "plan",
+"l": "Politique climatique du canton de Genève",
+"u": "https://www.geneve.ch/themes/durabilite/climat/gouverner/politique-climatique-canton"
+},
+{
+"k": "carte",
+"l": "Zones indicatives de dangers d'inondation (SITG)",
+"u": "https://ckan.opendata.swiss/dataset/zones-indicatives-de-dangers1"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : Geneve (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/2814-switzerland-geneve"
+}
+]
+},
+{
+"np": 1,
+"commune": "Thonon-les-Bains",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA Thonon Agglomération",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1503/documents/bf5ea6e67717f52f07fa1b29e7e217b759a1f4af.pdf"
+},
+{
+"k": "ppri",
+"l": "PPR Thonon les Bains (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/74DDT20110045"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Thonon-les-Bains (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/74281"
+}
+]
+},
+{
+"np": 1,
+"commune": "Vienne",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA Vienne Condrieu",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1925/documents/19a517b810acc210ded99adcaeccede674ac3096.pdf"
+},
+{
+"k": "ppri",
+"l": "PPR - Vienne (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/38DDT20030043"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Vienne (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/38544"
+}
+]
+},
+{
+"np": 0,
+"commune": "Laon",
+"l": [
+{
+"k": "ppri",
+"l": "Risques majeurs de Laon (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/02408"
+}
+]
+},
+{
+"np": 1,
+"commune": "Brive-la-Gaillarde",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA du Bassin de Brive",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/2072/documents/359a31be049abb52d5bd7037eb45ad9c62a62b3e.pdf"
+},
+{
+"k": "ppri",
+"l": "PPR inondation bassin de Brive (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/19DDT20160001"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Brive-la-Gaillarde (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/19031"
+}
+]
+},
+{
+"np": 1,
+"commune": "Saint-Pierre-en-Faucigny",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CC du Pays Rochois",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1365/documents/97161c121c97f624a3efc55648052451dcbd8ec2.pdf"
+},
+{
+"k": "ppri",
+"l": "PPR sur la commune Saint-Pierre-en-Faucigny (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/74DDT19990020"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Saint-Pierre-en-Faucigny (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/74250"
+}
+]
+},
+{
+"np": 1,
+"commune": "Châteauroux",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA Châteauroux Métropole",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1372/documents/1862a529168493ffeb8bf1cdc67edbd873358720.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRI INDRE CACM (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/36DDT20160002"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Châteauroux (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/36044"
+}
+]
+},
+{
+"np": 1,
+"commune": "Quimperlé",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA Quimperlé Communauté",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1146/documents/9d05e842db891e78353c47df5d059be5bdd3388d.pdf"
+},
+{
+"k": "ppri",
+"l": "PPR Inondation Quimperlé (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/29DDTM20010024"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Quimperlé (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/29233"
+}
+]
+},
+{
+"np": 1,
+"commune": "Quimper",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA Quimper Bretagne Occidentale",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/2295/documents/14cc4cedbd569559c15ae1718ec605e2cc9eb210.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRN-I Quimper, Ergué-Gabéric et Guengat (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/PPRN-I_2022_0005"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Quimper (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/29232"
+}
+]
+},
+{
+"np": 0,
+"commune": "Reims",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CU du Grand Reims",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1911/documents/b2a947e99172f6c845d737dce8e2601c6879c286.pdf"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Reims (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/51454"
+}
+]
+},
+{
+"np": 1,
+"commune": "Châlons-en-Champagne",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA de Châlons-en-Champagne",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1279/documents/157af6fc9fac7c74c115c8b92eb396444b3707da.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRi - secteur Châlons - CAC (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/51DDT20090005"
+}
+]
+},
+{
+"np": 1,
+"commune": "Valenciennes",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA Valenciennes Métropole",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1705/documents/d7f58ccf6ab397112f29f3d9f103461244b0f24d.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRN-I-Rhonelle (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/PPRN-I_2022_0054"
+}
+]
+},
+{
+"np": 1,
+"commune": "Creil",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA Creil Sud Oise",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/2106/documents/cdb2cd149796ed6fdc465b6ec0e3426115d5f466.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRi des Vallées de l'Oise et de l'Aisne, Bief Brenouille / Boran-sur-Oise (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/60DDT20150001"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Creil (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/60175"
+}
+]
+},
+{
+"np": 1,
+"commune": "Épernay",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA Epernay, Coteaux et Plaine de Champagne",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/968/documents/c7d962196535734bf3c285494ad4e663a8500caf.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRi Marne aval - secteur Epernay CAECPC (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/PPRN-I_2022_0006"
+}
+]
+},
+{
+"np": 1,
+"commune": "Charleville-Mézières",
+"l": [
+{
+"k": "ppri",
+"l": "PPRN-I - Meuse Aval (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/PPRN-I_2022_0019"
+}
+]
+},
+{
+"np": 2,
+"commune": "Boulogne-sur-Mer",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA du Boulonnais",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1241/documents/58264a6cad402fb0e2f665f26269e672bdcf994a.zip"
+},
+{
+"k": "ppri",
+"l": "PPRL_évolution_des_falaises (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/62DDTM20050011"
+},
+{
+"k": "ppri",
+"l": "PPRN révisant Bassin de La Liane (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/62DDTM20190002"
+}
+]
+},
+{
+"np": 1,
+"commune": "Orléans",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · Orléans Métropole",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/986/documents/07583e46c8d462ccc099b044264938dbfabccdb6.pdf"
+},
+{
+"k": "ppri",
+"l": "Révision PPRi Val d'Orléans AO (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/45DDT20120002"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs d’Orléans (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/45234"
+}
+]
+},
+{
+"np": 1,
+"commune": "Aix-les-Bains",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA Grand Lac",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1060/documents/b7a4ccc7e8571ace369a80164643fb2c65b22836.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRi-Bassin Aixois (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/73PREF20050009"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs d’Aix-les-Bains (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/73008"
+}
+]
+},
+{
+"np": 1,
+"commune": "Laval",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA Laval Agglomération",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/2028/documents/8c555235b21ffc2df8d136d2f547ce37064870b7.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRI-agglo Laval - révision (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/53DREAL20200001"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Laval (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/53130"
+}
+]
+},
+{
+"np": 1,
+"commune": "La Roche-sur-Yon",
+"l": [
+{
+"k": "ppri",
+"l": "PPRN-I - Bassin versant de l'Yon (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/PPRN-I_2025_0030"
+}
+]
+},
+{
+"np": 1,
+"commune": "Bourges",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA Bourges Plus",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1585/documents/3c80797c9f917d0958ac09ee280be9ca98f7009c.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRi de l'Yèvre amont (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/18DDT20070007"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Bourges (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/18033"
+}
+]
+},
+{
+"np": 1,
+"commune": "Lorient",
+"l": [
+{
+"k": "plan",
+"l": "Plan climat (PCAET) · CA Lorient Agglomération",
+"u": "https://www.territoires-climat.ademe.fr/Uploads/Demarches/1066/documents/f86ac7c44c473873e4ca0fb6e028939f4be3efe1.pdf"
+},
+{
+"k": "ppri",
+"l": "PPR littoraux de Lorient (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/56DDTM20190002"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Lorient (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/56121"
+}
+]
+},
+{
+"np": 1,
+"commune": "Lyon",
+"l": [
+{
+"k": "plan",
+"l": "PCAET 2026-2031, synthèse (Métropole de Lyon)",
+"u": "https://mutu.grandlyon.com/jeparticipe/PCAET_MDL%205.%20Synth%C3%A8se.pdf"
+},
+{
+"k": "plan",
+"l": "Bilan du PCAET 2019-2025 (Métropole de Lyon)",
+"u": "https://plan-climat.grandlyon.com/app/uploads/2026/05/Metropole_de_Lyon_Bilan_final_PCAET_2019_2025.pdf"
+},
+{
+"k": "ppri",
+"l": "PPRI du Grand Lyon - secteur Lyon-Villeurbanne (Géorisques)",
+"u": "https://www.georisques.gouv.fr/donnee-risques/PPR/Fiche-ppr/pprn/69DDT20080006"
+},
+{
+"k": "ppri",
+"l": "Risques majeurs de Lyon (Géorisques)",
+"u": "https://www.georisques.gouv.fr/DICRIM/69123"
+},
+{
+"k": "ppri",
+"l": "Stratégie de gestion du risque inondation (Métropole de Lyon)",
+"u": "https://developpementdurable.grandlyon.com/app/uploads/2024/06/Cycle2-strategieinondation-nov2023-WEB.pdf"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "plan",
+"l": "Hong Kong's Climate Action Plan 2050",
+"u": "https://www.eeb.gov.hk/sites/default/files/pdf/cap_2050_en.pdf"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "risque",
+"l": "Aléas naturels : Riyad (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/2633-saudi-arabia-riyad"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "risque",
+"l": "Aléas naturels : Saudi Arabia (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/215-saudi-arabia"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "plan",
+"l": "Révision du Climate Action Plan (Ville de Johannesbourg, 2026)",
+"u": "https://joburg.org.za/media_/Newsroom/Pages/2026-News-Articles/Joburg-undertakes-comprehensive-review-of-Climate-Action-Plan.aspx"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : City of Johannesburg Metropolitan Municipality (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/77364-south-africa-gauteng-city-of-johannesburg-metropolitan-municipality"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "risque",
+"l": "Aléas naturels : Singapore (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/222-singapore"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "risque",
+"l": "Aléas naturels : New Cairo-1 (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/61635-arab-republic-of-egypt-cairo-new-cairo-1"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "risque",
+"l": "Aléas naturels : Casablanca (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/147343-morocco-grand-casablanca-casablanca"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "ppri",
+"l": "Plan de gestion du risque d'inondation, bassin de l'Arno (Appennino Settentrionale)",
+"u": "https://www.appenninosettentrionale.it/itc/"
+},
+{
+"k": "carte",
+"l": "Cartes d'aléas inondation et mouvements de terrain (ISPRA IdroGEO)",
+"u": "https://idrogeo.isprambiente.it/app/"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : Firenze (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/18400-italy-toscana-firenze"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "ppri",
+"l": "Plan de gestion du risque d'inondation (Appennino Settentrionale)",
+"u": "https://www.appenninosettentrionale.it/itc/"
+},
+{
+"k": "carte",
+"l": "Cartes d'aléas inondation et mouvements de terrain (ISPRA IdroGEO)",
+"u": "https://idrogeo.isprambiente.it/app/"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : Arezzo (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/18399-italy-toscana-arezzo"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Cartes d'aléas inondation et mouvements de terrain (ISPRA IdroGEO)",
+"u": "https://idrogeo.isprambiente.it/app/"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : Lazio (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/1622-italy-lazio"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "ppri",
+"l": "Plan de gestion du risque d'inondation (Appennino Settentrionale)",
+"u": "https://www.appenninosettentrionale.it/itc/"
+},
+{
+"k": "carte",
+"l": "Cartes d'aléas inondation et mouvements de terrain (ISPRA IdroGEO)",
+"u": "https://idrogeo.isprambiente.it/app/"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : Toscana (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/1631-italy-toscana"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "plan",
+"l": "Qatar National Climate Change Action Plan 2030 (fiche PNUE)",
+"u": "https://leap.unep.org/en/countries/qa/national-legislation/qatar-national-climate-change-action-plan-2030"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "risque",
+"l": "Aléas naturels : Metropolitan Manila (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/24210-philippines-national-capital-region-ncr-metropolitan-manila"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "plan",
+"l": "Plan climat de la Ville de Québec",
+"u": "https://www.ville.quebec.qc.ca/apropos/planification-orientations/environnement/plan-climat/index.aspx"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : Nord-du-Québec (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/12776-canada-quebec-quebec-nord-du-quebec"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "plan",
+"l": "Plan d'adaptation de Belgrade (fiche Climate-ADAPT)",
+"u": "https://climate-adapt.eea.europa.eu/en/metadata/guidances/climate-change-adaptation-action-plan-and-vulnerability-assessment"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "plan",
+"l": "Climate Ready Boston (Ville de Boston)",
+"u": "https://www.boston.gov/departments/environment/climate-ready-boston"
+},
+{
+"k": "carte",
+"l": "Zones inondables réglementaires (FEMA)",
+"u": "https://hazards-fema.maps.arcgis.com/apps/webappviewer/index.html?id=8b0adb51996444d4879338b5529aa9cd&center=-71.0552,42.3522&level=12"
+},
+{
+"k": "carte",
+"l": "Comprendre les zones inondables (Ville de Boston)",
+"u": "https://boston.gov/node/4496"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : comté de Suffolk (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/29907-united-states-of-america-massachusetts-suffolk"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "carte",
+"l": "Cartographie des inondations, City of Melbourne",
+"u": "https://participate.melbourne.vic.gov.au/flood-mapping/project-overview"
+},
+{
+"k": "carte",
+"l": "Nouvelles cartes d'inondation, Melbourne Water",
+"u": "https://www.melbournewater.com.au/node/10641"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : Melbourne (C) (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/5396-australia-victoria-melbourne-c"
+}
+]
+},
+{
+"np": 0,
+"commune": null,
+"l": [
+{
+"k": "plan",
+"l": "Plan d'action climat de Dublin 2024-2029",
+"u": "https://www.dublincity.ie/environment-and-climate-action/acting-against-climate-change/climate-change-action-plan"
+},
+{
+"k": "carte",
+"l": "Cartes d'inondation floodinfo.ie (OPW, Irlande)",
+"u": "https://www.floodinfo.ie/"
+},
+{
+"k": "risque",
+"l": "Aléas naturels : Dublin (ThinkHazard!)",
+"u": "https://thinkhazard.org/en/report/1587-ireland-dublin"
+}
+]
+}
+]
+}
