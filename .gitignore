@@ -5,5 +5,5 @@ __pycache__/
 .venv/
 venv/
 
-# Écriture temporaire de build.py (remplacée par docs/index.html en fin de construction)
+# Écriture temporaire de build.py (remplacée par la page finale en fin de construction)
 *.html.tmp

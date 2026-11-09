@@ -13,19 +13,19 @@ La page produite est un fichier HTML unique et autonome : les données, les bibl
 Double-cliquer sur `lancer.command` : il construit la page puis l'ouvre. Ou, dans un terminal :
 
 ```bash
-python build.py                 # écrit docs/index.html (Python 3.9+, aucune dépendance)
-open docs/index.html            # ou double-clic sur le fichier
+python build.py                 # écrit docs/<version>.html (Python 3.9+, aucune dépendance)
+open "docs/Alpha V0.26.11.9.7.html"   # le fichier porte le nom de la version affichée dans la page
 ```
 
 ## Version
 
 La version affichée en haut de la page, à droite de l'année, suit la forme **Alpha V0.aa.mois.jour.n** (par exemple *Alpha V0.26.11.7.1*) :
 - *aa.mois.jour* : date de la dernière mise à jour du code (`src/`, `data/`, `scripts/`, `build.py`), l'année sur deux chiffres (26 pour 2026) ;
-- *n* : numéro de la mise à jour ce jour-là. Il augmente d'un cran chaque fois que `docs/index.html` est reconstruit après une modification du code, et repart à 1 le jour suivant.
+- *n* : numéro de la mise à jour ce jour-là. Il augmente d'un cran chaque fois que la page officielle est reconstruite après une modification du code, et repart à 1 le jour suivant.
 
 `build.py` compare une empreinte du code à celle notée dans `version.json` : reconstruire sans rien changer garde la même version. Une construction d'essai (`python build.py --out autre.html`) affiche la version suivante sans l'enregistrer. `version.json` est à versionner avec le reste, pour que la numérotation suive le dépôt.
 
-Pour publier la carte avec GitHub Pages : *Settings → Pages → Deploy from a branch → `main` / `docs`*.
+Pour publier la carte avec GitHub Pages : *Settings → Pages → Deploy from a branch → `main` / `docs`*. GitHub Pages ouvre `index.html` à la racine du site : la page, nommée d'après sa version, se consulte alors à son adresse complète, ou il faut ajouter un `index.html` qui y redirige.
 
 Pour vérifier la page (facultatif) :
 
@@ -50,7 +50,7 @@ Les filets (cadres blancs) et le logotype groupe RATP ne sont pas utilisés : la
 ## Structure
 
 ```
-build.py                  assemble src/template.html + data/ + src/vendor/ → docs/index.html, gère la version
+build.py                  assemble src/template.html + data/ + src/vendor/ → docs/<version>.html, gère la version
 version.json              dernière version enregistrée (date, numéro du jour, empreinte du code)
 lancer.command            construit puis ouvre la page (double-clic dans le Finder)
 src/template.html         page : mise en page, styles, logique de la carte (Leaflet)
@@ -79,7 +79,7 @@ scripts/
   prepare_basemap.py      fond de carte précis (IGN BD TOPO, Natural Earth 10m) → data/basemap.json.gz
   prepare_links.py        plans de prévention, plans climat, cartes d'aléas → data/links.json
   check_page.py           test de fumée de la page construite (Playwright)
-docs/index.html           page construite (servie par GitHub Pages)
+docs/<version>.html       page construite, nommée d'après la version (ex. « Alpha V0.26.11.9.7.html »), seule la dernière est conservée
 ```
 
 Pour modifier la carte, éditer `src/template.html` puis relancer `python build.py`. Le gabarit contient des marqueurs (`/*__DATA__*/`, `/*__FLOOD__*/`, etc.) remplacés par les données au moment de la construction.

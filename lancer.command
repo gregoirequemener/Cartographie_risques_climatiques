@@ -12,4 +12,5 @@ stop() { # garde la fenêtre ouverte pour laisser lire le message
 
 command -v python3 >/dev/null 2>&1 || stop "Python 3 est introuvable : installez-le (https://www.python.org/downloads/) puis relancez."
 python3 build.py || stop "La construction de la carte a échoué : voir le message ci-dessus."
-open docs/index.html
+version=$(python3 -c 'import json; print(json.load(open("version.json", encoding="utf-8"))["version"])')
+open "docs/$version.html"

@@ -8,13 +8,14 @@ plans de réseau masqués par défaut puis tronçons exposés affichés sur Lyon
 regroupements conservés au zoom manuel, tous les points et noms après un clic sur une zone, prospects analysés et séparés du portefeuille, liens utiles.
 
 Prérequis : pip install -r requirements-dev.txt && playwright install chromium
-Usage     : python scripts/check_page.py [--page docs/index.html] [--chrome /chemin/vers/chrome]
+Usage     : python scripts/check_page.py [--page docs/<version>.html] [--chrome /chemin/vers/chrome]
 La page est autonome : aucune connexion Internet n'est nécessaire.
 """
 from __future__ import annotations
 
 import argparse
 import asyncio
+import json
 import re
 import sys
 from pathlib import Path
@@ -140,7 +141,8 @@ async def run(page_path: Path, chrome: str | None, shot: Path | None) -> int:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--page", type=Path, default=ROOT / "docs/index.html")
+    current = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
+    ap.add_argument("--page", type=Path, default=ROOT / "docs" / f"{current}.html")
     ap.add_argument("--chrome", help="exécutable Chrome/Chromium à utiliser (facultatif)")
     ap.add_argument("--screenshot", type=Path, help="enregistre une capture de la page")
     args = ap.parse_args()

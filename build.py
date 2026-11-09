@@ -13,11 +13,12 @@ Version affichée en haut de la page : « Alpha V0.aa.mois.jour.n ».
   - aa.mois.jour : date de la dernière mise à jour du code de l'application (src/, data/, scripts/, build.py),
     l'année sur deux chiffres (26 pour 2026) ;
   - n : numéro de la mise à jour ce jour-là (1, 2, 3…). Il augmente d'un cran chaque fois que la page officielle
-    (docs/index.html) est reconstruite après une modification du code ; reconstruire sans modification ne change
+    (docs/<version>.html) est reconstruite après une modification du code ; reconstruire sans modification ne change
     rien. Le dernier état est noté dans version.json.
 
 Usage :
-    python build.py                       # écrit docs/index.html et enregistre la version
+    python build.py                       # écrit docs/<version>.html (ex. « Alpha V0.26.11.9.6.html »), retire la version
+                                          # précédente de docs/ et enregistre la version
     python build.py --out carte.html      # autre destination (essai) : la version n'est pas enregistrée
 
 Aucune dépendance hors bibliothèque standard (Python 3.9+).
@@ -35,7 +36,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 SRC, DATA = ROOT / "src", ROOT / "data"
-OUT = ROOT / "docs/index.html"
+DOCS = ROOT / "docs"  # la page officielle y porte le nom de sa version
 VERSION_FILE = ROOT / "version.json"
 CODE = ("src", "data", "scripts", "build.py")  # ce qui compose l'application ; docs/ en est le résultat
 IGNORED = {"__pycache__", ".DS_Store"}
@@ -215,14 +216,20 @@ def build(label: str, title: str) -> str:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--out", type=Path, default=OUT, help="fichier HTML à écrire (par défaut docs/index.html)")
+    ap.add_argument("--out", type=Path, help="fichier HTML d'essai à écrire (par défaut : docs/<version>.html)")
     args = ap.parse_args()
-    official = args.out.resolve() == OUT.resolve()
+    official = args.out is None
     label, title = version(record=official)
+    if official:
+        args.out = DOCS / f"{label}.html"
     args.out.parent.mkdir(parents=True, exist_ok=True)
     tmp = args.out.with_name(args.out.name + ".tmp")  # écriture atomique : jamais de page à moitié écrite
     tmp.write_text(build(label, title), encoding="utf-8")
     tmp.replace(args.out)
+    if official:  # une seule page officielle : celle de la version courante
+        for old in DOCS.glob("Alpha V0.*.html"):
+            if old != args.out:
+                old.unlink()
     print(f"{args.out} : {args.out.stat().st_size / 1024:,.0f} Ko · {label}".replace(",", " ")
           + ("" if official else " (essai : version non enregistrée)"))
 
