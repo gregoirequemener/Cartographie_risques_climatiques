@@ -28,6 +28,7 @@ import argparse
 import base64
 import hashlib
 import json
+import re
 import subprocess
 from datetime import date
 from pathlib import Path
@@ -173,6 +174,8 @@ def logo() -> str:
 
 def build(label: str, title: str) -> str:
     tpl = read(SRC / "template.html")
+    if re.search(r"^(<<<<<<<|>>>>>>>) ", tpl, re.M):
+        raise SystemExit("src/template.html contient des marqueurs de conflit Git : résoudre la fusion avant de construire la page")
     css = read(SRC / "vendor/leaflet.css") + "\n" + read(SRC / "vendor/MarkerCluster.css")
     geo = "{" + ",".join([
         '"world":' + compact(DATA / "geo/world-countries-50m.json"),

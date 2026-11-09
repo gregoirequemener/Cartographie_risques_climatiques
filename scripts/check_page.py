@@ -60,6 +60,8 @@ async def run(page_path: Path, chrome: str | None, shot: Path | None) -> int:
         bad_links = await page.evaluate("LINKS.filter(d => !d.l.length).length")
         if bad_links:
             failures.append(f"{bad_links} réseau(x) sans lien utile")
+        if await page.evaluate("OV.on || map.hasLayer(tempLayer)"):
+            failures.append("le calque des températures est affiché sans action de l'utilisateur")
         if await page.evaluate("linesBase.getLayers().length + linesRisk.getLayers().length") or await page.evaluate("LN.on"):
             failures.append("les plans de réseau sont affichés sans action de l'utilisateur")
         if n_lines != 25:

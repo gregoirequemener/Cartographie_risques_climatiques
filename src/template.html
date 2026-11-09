@@ -102,7 +102,7 @@ button, input, select { font: inherit; color: inherit; }
 
 /* Barre de pilotage */
 .topbar {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px;
   padding: 10px 16px;
   background: var(--card);
   border-bottom: 1px solid var(--line);
@@ -115,7 +115,7 @@ button, input, select { font: inherit; color: inherit; }
 .ctl-label { font: 700 10.5px/1 var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--paper); }
 .seg button {
-  border: 0; background: none; padding: 6px 10px; cursor: pointer; font-size: 13.5px; font-weight: 400; color: var(--ink-2);
+  border: 0; background: none; padding: 6px 8px; cursor: pointer; font-size: 13.5px; font-weight: 400; color: var(--ink-2);
   border-right: 1px solid var(--line);
 }
 .seg button:last-child { border-right: 0; }
@@ -241,7 +241,7 @@ button, input, select { font: inherit; color: inherit; }
 .switch input:checked::after { transform: translateX(14px); }
 .ov-body { display: flex; flex-direction: column; gap: 8px; }
 .ov-body[hidden] { display: none; }
-.ov-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.ov-row { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 6px; }
 .ov-body select { min-width: 0; padding: 5px 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); font-size: 12px; }
 .ov-sub { color: var(--muted); font-size: 11.5px; margin-top: -2px; }
 .ramp { height: 10px; border-radius: 3px; }
@@ -251,6 +251,7 @@ button, input, select { font: inherit; color: inherit; }
 .ramp-ticks span:last-child { transform: translateX(-100%); }
 .ov-probe { color: var(--ink-2); font-size: 11.5px; min-height: 1.35em; padding-top: 6px; border-top: 1px solid var(--line); }
 .ov-title { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; font: 700 10.5px/1.2 var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--title); }
+.ov-title span { font: 400 15px/1 system-ui, sans-serif; color: var(--muted); }
 .ov-title[aria-expanded="false"] span { transform: rotate(-90deg); }
 .ov-content { display: flex; flex-direction: column; gap: 8px; }
 .ov-content[hidden] { display: none; }
@@ -468,11 +469,11 @@ button, input, select { font: inherit; color: inherit; }
         <button type="button" class="ov-title" id="ov-toggle" aria-expanded="true" aria-controls="ov-content">Calques <span aria-hidden="true">▾</span></button>
         <div class="ov-content" id="ov-content">
         <section class="ov-sec">
-        <label class="switch" for="ov-on"><span>Températures</span><input type="checkbox" id="ov-on" role="switch" checked></label>
-        <div class="ov-body" id="ov-body">
+        <label class="switch" for="ov-on"><span>Températures</span><input type="checkbox" id="ov-on" role="switch"></label>
+        <div class="ov-body" id="ov-body" hidden>
           <div class="ov-row">
             <select id="ov-var" aria-label="Variable de température"><option value="tas">Moyenne annuelle</option><option value="txx">Jour le plus chaud</option></select>
-            <select id="ov-mode" aria-label="Valeur ou écart"><option value="abs">Valeur</option><option value="anom">Écart vs 1995–2014</option></select>
+            <select id="ov-mode" aria-label="Valeur ou écart"><option value="abs">Valeur</option><option value="anom">Écart à la réf.</option></select>
           </div>
           <div class="ov-sub" id="ov-sub"></div>
           <div class="ramp" id="ov-ramp"></div>
@@ -731,7 +732,7 @@ panelBtn.addEventListener("click", () => {
 });
 
 /* ---------- Carte ---------- */
-const map = L.map("map", { zoomControl: false, minZoom: 2, maxZoom: 15, zoomSnap: 0.25, zoomDelta: 0.5, maxBounds: [[-80, -210], [85, 210]], maxBoundsViscosity: 0.8 });
+const map = L.map("map", { zoomControl: false, minZoom: 2, maxZoom: 15, zoomSnap: 0.25, zoomDelta: 0.5, wheelDebounceTime: 80, wheelPxPerZoomLevel: 120 });
 L.control.zoom({ position: "topright", zoomInTitle: "Zoomer", zoomOutTitle: "Dézoomer" }).addTo(map);
 map.attributionControl.setPrefix(false).addAttribution('Climat : Banque mondiale (CMIP6) · Inondation : WRI Aqueduct · Relief : AWS Terrain Tiles · Fonds : IGN (BD TOPO), Natural Earth, US Census · Réseaux : ratpdev.com');
 map.createPane("base"); map.getPane("base").style.zIndex = 200;
@@ -804,7 +805,7 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => onTh
 new MutationObserver(() => onTheme()).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
 /* ---------- Calque températures (grille CMIP6 0,5°) ---------- */
-const OV = { on: true, v: "tas", mode: "abs", opacity: 0.8 };
+const OV = { on: false, v: "tas", mode: "abs", opacity: 0.8 }; // températures : affichées à la demande
 const RAMPS = {
   tas: { min: -20, max: 30, stops: [[-20, "#0a0082"], [-10, "#2a86cc"], [-3, "#afe1fa"], [0, "N"], [4, "#faedb0"], [9, "#f5d750"], [15, "#f0aa00"], [21, "#d75a19"], [26, "#b3261e"], [30, "#6b1611"]], ticks: [-20, -10, 0, 10, 20, 30] },
   txx: { min: 15, max: 50, stops: [[15, "#fdf6dc"], [25, "#f8e27d"], [32, "#f0aa00"], [36, "#d75a19"], [40, "#b3261e"], [45, "#6b1611"], [50, "#3a0a08"]], ticks: [15, 25, 35, 45, 50] },
@@ -889,7 +890,7 @@ const tempLayer = new TempLayer({ pane: "temp", opacity: OV.opacity, updateWhenZ
 let seaMask = null;
 function styleSea() { if (seaMask) seaMask.setStyle({ fillColor: tok("--sea"), color: tok("--coast") }); }
 basemapReady.then(() => {
-  seaMask = L.polygon([[[-85, -220], [86, -220], [86, 220], [-85, 220]], ...BASEMAP.land.coordinates.flatMap(pg => pg.map(r => r.map(([lo, la]) => [la, lo])))],
+  seaMask = L.polygon([[[-85, -1400], [86, -1400], [86, 1400], [-85, 1400]], ...BASEMAP.land.coordinates.flatMap(pg => pg.map(r => r.map(([lo, la]) => [la, lo])))],
     // découpé à la vue (noClip: false) : seule la partie visible est redessinée à chaque déplacement
     { renderer: L.canvas({ padding: 0.5, pane: "sea" }), pane: "sea", interactive: false, fillOpacity: 1, weight: 0.7, noClip: false, smoothFactor: 1.5 });
   BASEMAP.land = null; // les couches Leaflet ont leur propre copie des contours : mémoire libérée
@@ -1556,7 +1557,7 @@ function renderLnLegend() {
     : useRel ? `Écart à la médiane de chaque réseau (relief, gradient régional) · ${state.year} · ${SCEN.find(s => s.key === state.scen).label}`
     : `Jour le plus chaud, corrigé de l’altitude · ${state.year} · ${SCEN.find(s => s.key === state.scen).label}`;
 }
-document.getElementById("ln-on").addEventListener("change", e => { LN.on = e.target.checked; document.getElementById("ln-body").hidden = !LN.on; if (LN.on) refreshLines(); else syncLinesVisibility(); });
+document.getElementById("ln-on").addEventListener("change", e => { LN.on = e.target.checked; document.getElementById("ln-body").hidden = !LN.on; if (LN.on) refreshLines(); else syncLinesVisibility(); if (state.sel != null) renderDrawer(); });
 document.getElementById("ln-hl").addEventListener("change", e => { LN.hl = e.target.checked; refreshLines(); });
 document.getElementById("ln-heat").addEventListener("change", e => { useRel = e.target.value === "rel"; refreshLines(); });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => refreshLines());
@@ -1667,8 +1668,9 @@ function updateMarkers(vis) {
    Vue normale : seuls les prospects sont écartés des points et regroupements qu'ils recouvriraient ; les noms suivent la règle CSS (zoom 7 et plus).
    Vue détaillée (clic sur une zone) : deux réseaux voisins sont écartés de ce qu'il faut pour rester lisibles (un trait relie alors
    le point à sa position réelle), et chaque nom cherche une place libre autour de son point. Le calcul se refait à chaque changement de vue. */
+const labelCache = new Map();
 const labelWidth = (() => {
-  const ctx = document.createElement("canvas").getContext("2d"), cache = new Map();
+  const ctx = document.createElement("canvas").getContext("2d"), cache = labelCache;
   return s => { if (!cache.has(s)) { ctx.font = "700 12.5px Carlito, Calibri, sans-serif"; cache.set(s, Math.ceil(ctx.measureText(s).width) + 9); } return cache.get(s); };
 })();
 const area = (a, b) => Math.max(0, Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1)) * Math.max(0, Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1));
@@ -1716,7 +1718,10 @@ function layoutPoints() {
     }
   }
 }
+const nameMemo = new Map(); let nameMemoKey = ""; // place retenue pour chaque nom, à zoom et disposition d'écran constants
 function placeNames(items, bodies, box, rel) {
+  const memoKey = `${map.getZoom()}|${state.sel != null}|${box.x}|${box.y}`;
+  if (memoKey !== nameMemoKey) { nameMemo.clear(); nameMemoKey = memoKey; }
   const dots = bodies.map(t => ({ t, x1: t.x + t.dx - t.r, y1: t.y + t.dy - t.r, x2: t.x + t.dx + t.r, y2: t.y + t.dy + t.r }));
   const panels = [...map.getContainer().parentElement.querySelectorAll(".overlay-panel, .legend, .zones, .leaflet-control-zoom, .leaflet-control-attribution")].map(e => rel(e.getBoundingClientRect()));
   if (state.sel != null) panels.push({ x1: box.x - Math.min(420, box.x), y1: 0, x2: box.x, y2: box.y }); // fiche ouverte (position finale, sans attendre son animation)
@@ -1724,11 +1729,20 @@ function placeNames(items, bodies, box, rel) {
   const onScreen = items.filter(t => t.x >= 0 && t.y >= 0 && t.x <= box.x && t.y <= box.y).length;
   const placed = [], H = 17, allNames = !!state.pays || onScreen <= MAX_NAMES;
   for (const t of items) t.crowd = items.reduce((c, o) => c + (Math.abs(o.x + o.dx - t.x - t.dx) < 120 && Math.abs(o.y + o.dy - t.y - t.dy) < 60 ? 1 : 0), 0);
-  const order = [...items].sort((a, b) => (isP(b.i) - isP(a.i)) || (b.crowd - a.crowd) || (a.i - b.i)); // les plus contraints d'abord ; ordre stable d'une année à l'autre
+  const clash = (q, t) => placed.reduce((c, o) => c + area(q, o), 0) + dots.reduce((c, o) => c + (o.t !== t ? area(q, o) : 0), 0);
+  // Noms déjà placés d'abord, puis les plus contraints ; ordre stable d'une année à l'autre
+  const order = [...items].sort((a, b) => (nameMemo.has(b.i) - nameMemo.has(a.i)) || (isP(b.i) - isP(a.i)) || (b.crowd - a.crowd) || (a.i - b.i));
   for (const t of order) {
     const w = labelWidth(labelOf(t.i)), cx = t.x + t.dx, cy = t.y + t.dy;
     t.label = null;
+    if (panels.some(o => cx > o.x1 && cx < o.x2 && cy > o.y1 && cy < o.y2)) continue; // point caché par la fiche ou un panneau
     if (t.x < -30 || t.y < -30 || t.x > box.x + 30 || t.y > box.y + 30) continue; // point hors de l'écran : pas de nom
+    const kept = nameMemo.get(t.i);
+    if (kept) { // pas de saut en déplaçant la carte : le nom ne change de place que si la sienne est désormais occupée
+      const q = { x1: cx + kept.ox, y1: cy + kept.oy, x2: cx + kept.ox + w, y2: cy + kept.oy + H };
+      if (clash(q, t) <= kept.over + 1) { t.label = { ...kept, q }; placed.push(q); continue; }
+      nameMemo.delete(t.i);
+    }
     let best = null, bestScore = Infinity, bestBad = 0;
     search: for (const g of [2, 15, 28, 44]) {
       const R = t.r + g, D = R * 0.72;
@@ -1742,13 +1756,14 @@ function placeNames(items, bodies, box, rel) {
         if (score < bestScore) { bestScore = score; bestBad = bad; best = { ox, oy, q, g }; if (!bad) break search; }
       }
     }
-    if (!bestBad || allNames || isP(t.i)) { t.label = best; placed.push(best.q); }
+    if (!bestBad || allNames || isP(t.i)) { t.label = best; nameMemo.set(t.i, { ox: best.ox, oy: best.oy, g: best.g, over: clash(best.q, t) }); placed.push(best.q); }
   }
 }
 let layoutRaf = 0;
 const scheduleLayout = () => { if (!layoutRaf) layoutRaf = requestAnimationFrame(() => { layoutRaf = 0; layoutPoints(); }); };
 map.on("moveend zoomend resize", scheduleLayout);
 cluster.on("animationend", scheduleLayout);
+document.fonts.ready.then(() => { labelCache.clear(); scheduleLayout(); }); // polices chargées : largeurs des noms à remesurer
 
 /* ---------- Filtres ---------- */
 function visible() {
@@ -1757,7 +1772,7 @@ function visible() {
     const n = NETWORKS[i];
     if (state.pays && n.pays !== state.pays) return false;
     if (state.mode && n.p !== state.mode) return false;
-    if (q.length) { const hay = norm([n.ci, n.t, n.cl, n.pays].join(" ")); if (!q.every(w => hay.includes(w))) return false; }
+    if (q.length) { const hay = norm([n.nom, n.ci, n.t, n.s, n.cl, n.pays].join(" ")); if (!q.every(w => hay.includes(w))) return false; }
     return true;
   });
 }
@@ -1899,16 +1914,24 @@ function trajChart(i) {
   const refV = ind === "score" ? REF[i].score : REF[i][ind];
   const all = series.flatMap(x => x.v).concat(refV);
   let lo = Math.min(...all), hi = Math.max(...all);
-  if (ind === "score") { lo = Math.max(0, Math.floor((lo - 5) / 10) * 10); hi = Math.min(100, Math.ceil((hi + 5) / 10) * 10); }
+  if (ind === "score") { // axe de 10 points : les trois scénarios, et la référence si elle y tient ; plus large seulement si les courbes l'imposent
+    const sv = series.flatMap(x => x.v), a = Math.min(...sv), b = Math.max(...sv), A = Math.min(a, refV), B = Math.max(b, refV), [u, v] = B - A <= 9 ? [A, B] : [a, b];
+    if (v - u <= 9) {
+      lo = Math.max(0, Math.min(90, Math.round((u + v) / 2 - 5)));
+      if (lo % 2 && lo + 1 <= u) lo++; else if (lo % 2 && lo > 0 && v <= lo + 9) lo--;
+      hi = lo + 10;
+    } else { lo = Math.floor(u); hi = Math.max(lo + 10, Math.ceil(v)); }
+  }
   else if (ind === "txx") { lo = Math.floor(lo - 1); hi = Math.ceil(hi + 1); }
   else { lo = 0; hi = Math.max(1, hi * 1.12); }
   const niceStep = r => { const p = Math.pow(10, Math.floor(Math.log10(r / 3))); return [1, 2, 2.5, 5, 10].map(m => m * p).find(st => r / st <= 4) || p * 10; };
-  const st = niceStep(hi - lo); hi = Math.ceil(hi / st) * st; lo = Math.floor(lo / st) * st;
+  const st = ind === "score" ? (hi - lo <= 12 ? 2 : Math.ceil((hi - lo) / 5)) : niceStep(hi - lo);
+  if (ind !== "score") { hi = Math.ceil(hi / st) * st; lo = Math.floor(lo / st) * st; }
   const X = y => pl + (y - 2026) / 10 * iw, Y = v => pt + ih - (v - lo) / (hi - lo) * ih;
   let s = `<svg viewBox="0 0 ${W0} ${H0}" role="img" aria-label="Trajectoire ${esc(IND[ind].label)} de 2026 à 2036 selon trois scénarios">`;
   for (let v = lo; v <= hi + 1e-9; v += st) s += `<line x1="${pl}" x2="${pl + iw}" y1="${Y(v)}" y2="${Y(v)}" stroke="${tok("--line")}"/><text class="chart-label" x="${pl - 5}" y="${Y(v) + 3.5}" text-anchor="end">${money ? fmtInd(ind, v) : fmtN(v, st < 1 ? 1 : 0)}</text>`;
   [2026, 2028, 2030, 2032, 2034, 2036].forEach(y => s += `<text class="chart-label" x="${X(y)}" y="${H0 - 6}" text-anchor="middle">${y}</text>`);
-  if (refV >= lo && refV <= hi) s += `<line x1="${pl}" x2="${pl + iw}" y1="${Y(refV)}" y2="${Y(refV)}" stroke="${tok("--muted")}" stroke-dasharray="3 3"/><text class="chart-label" x="${pl + 4}" y="${Y(refV) - 4}">${state.hz === "flood" ? "Réf. 2010" : "Réf. 1995–2014"} : ${fmtInd(ind, refV)}</text>`;
+  if (refV >= lo && refV <= hi) s += `<line x1="${pl}" x2="${pl + iw}" y1="${Y(refV)}" y2="${Y(refV)}" stroke="${tok("--muted")}" stroke-dasharray="3 3"/><text class="chart-label" x="${pl + 4}" y="${series.some(x => x.v.slice(0, 5).some(v => Y(v) < Y(refV) + 1 && Y(v) > Y(refV) - 15)) ? Y(refV) + 12 : Y(refV) - 4}">${state.hz === "flood" ? "Réf. 2010" : "Réf. 1995–2014"} : ${fmtInd(ind, refV)}</text>`;
   s += `<line x1="${X(state.year)}" x2="${X(state.year)}" y1="${pt}" y2="${pt + ih}" stroke="${tok("--ink")}" stroke-width="1" opacity=".35"/>`;
   // incertitude p10–p90 en 2030 (SSP2-4.5) pour hd35 / tr
   if (state.hz === "heat" && (ind === "hd35" || ind === "tr")) {
@@ -2021,6 +2044,7 @@ document.getElementById("hazards").addEventListener("click", e => {
   if (b.dataset.h === "flood" && !M_FLOOD) { b.textContent = "Inondation…"; floodReady.then(() => { b.textContent = "Inondation"; b.click(); }); return; }
   setHazard(b.dataset.h);
 });
+let ovChoice = false;
 function setHazard(h) {
   state.hz = h; state.ind = "score";
   if (h === "flood") document.documentElement.dataset.hz = "flood"; else delete document.documentElement.dataset.hz; // classes en bleus / jaune → rouge
@@ -2028,7 +2052,8 @@ function setHazard(h) {
   document.querySelectorAll("#hazards button[data-h]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.h === h)));
   indEl.innerHTML = Object.entries(IND).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join("");
   document.getElementById("map").setAttribute("aria-label", `Carte du risque ${h === "flood" ? "inondation" : "chaleur"}`);
-  setLayer("ov", h === "heat"); setLayer("fl", h === "flood"); setLayer("wa", h === "flood"); setLayer("re", h === "flood");
+  if (h === "flood") { ovChoice = OV.on; setLayer("ov", false); } else setLayer("ov", ovChoice); // retour à la chaleur : le choix de l'utilisateur est retrouvé
+  setLayer("fl", h === "flood"); setLayer("wa", h === "flood"); setLayer("re", h === "flood");
   renderAll(); renderRadius(); refreshLines();
 }
 const scopeEl = document.getElementById("scope"), nProspects = NETWORKS.filter((_, i) => isP(i)).length;
@@ -2098,6 +2123,9 @@ function focusOn(key, bounds, maxZoom) {
   if (reduceMotion) arrive(); else map.once("moveend", arrive);
 }
 map.on("zoomend", () => { if (state.focus && map.getZoom() < focusZoom - 0.2) leaveFocus(); });
+// Carte déplacée sans limite ; on ne la ramène que si le monde est entièrement sorti de l'écran
+const WORLD = L.latLngBounds([[-85, -240], [85, 240]]);
+map.on("moveend", () => { if (!WORLD.intersects(map.getBounds())) fitTo(L.latLngBounds(ZONES[0].b)); });
 function fitTo(b, maxZoom = 9) { const wide = innerWidth > 860, o = wide ? { paddingTopLeft: [300, 40], paddingBottomRight: [30, 30], maxZoom } : { padding: [36, 36], maxZoom }; reduceMotion ? map.fitBounds(b, { ...o, animate: false }) : map.flyToBounds(b, { ...o, duration: 0.8 }); }
 
 document.getElementById("copy").addEventListener("click", async e => {
