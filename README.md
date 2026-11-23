@@ -8,6 +8,20 @@ La page produite est un fichier HTML unique et autonome : les données, les bibl
 
 **Version 11** : prospects en appel d'offres, avec la même analyse que les filiales ; vue détaillée (tous les points et les noms) après un clic sur une zone ; plans de réseau affichés à la demande ; liens utiles dans chaque fiche (plans climat et d'adaptation, PPRI, cartes d'aléas).
 
+## Vue 3D des dépôts de Toulon (réseau Mistral)
+
+Page séparée, `docs/toulon-depots-inondation.html`, autonome elle aussi (hors ligne) : maquette 3D des dépôts bus du réseau Mistral face au risque inondation.
+
+- **Sites** : dépôt de Brunet (Toulon), dépôt de Brégaillon (La Seyne-sur-Mer) et futur SEMR de Sainte-Musse (projet BHNS, emprise indicative). Emprises cadastrales, bâtiments BD TOPO à leur hauteur réelle, relief RGE ALTI, photo aérienne BD ORTHO ou fond « maquette ».
+- **Eau** : hauteurs d'eau des cartes du TRI Toulon-Hyères (débordement et submersion marine) pour quatre scénarios (fréquent, moyen, moyen + climat, extrême), avec animation de la montée des eaux.
+- **Espaces à risque** : surface de l'emprise, aires de remisage et bâtiments du dépôt touchés ; un curseur « Rehausser l'eau » (test de sensibilité statique) montre les points bas atteints si le niveau montait.
+- **Résultat** : aucun des trois sites n'est en zone inondable cartographiée. Brunet garde plus de 6 m de marge. Brégaillon est à 70 m du lit de crue de la Faveyrolles, avec 6 % de son emprise à moins de 50 cm du niveau d'eau voisin (exposition modérée). Le SEMR de Sainte-Musse est à 157 m de la zone de l'Eygoutier (exposition limitée). Le ruissellement urbain n'est pas couvert.
+
+```bash
+python scripts/prepare_toulon_depots.py   # télécharge IGN et Géorisques → data/toulon_depots.json (numpy, shapely, pyproj, rasterio, scipy)
+python build_toulon.py                    # écrit docs/toulon-depots-inondation.html
+```
+
 ## Démarrage rapide
 
 Double-cliquer sur `lancer.command` : il construit la page puis l'ouvre. Ou, dans un terminal :

@@ -7,6 +7,7 @@ Copies, sans modification, de fichiers publiés : bibliothèques npm télécharg
 | `leaflet.js`, `leaflet.css` | Leaflet | 1.9.4 | BSD-2-Clause | https://leafletjs.com |
 | `leaflet.markercluster.js`, `MarkerCluster.css` | Leaflet.markercluster | 1.5.3 | MIT | https://github.com/Leaflet/Leaflet.markercluster |
 | `topojson-client.min.js` | topojson-client | 3.1.0 | ISC | https://github.com/topojson/topojson-client |
+| `three.min.js`, `three-OrbitControls.js` | three.js (build UMD et `examples/js/controls/OrbitControls.js`), vue 3D des dépôts de Toulon (`build_toulon.py`) | r147 (0.147.0, dernière version avec `examples/js`) | MIT | https://threejs.org |
 | `fonts/montserrat-latin.woff2` | Montserrat (graisses 400 à 800), police des titres de la charte RATP Dev | Google Fonts v31 | SIL Open Font License 1.1 (`fonts/OFL-Montserrat.txt`) | https://fonts.google.com/specimen/Montserrat |
 | `fonts/carlito-latin-*.woff2` | Carlito (normal, gras, italique), équivalent libre de Calibri, substitut de Parisine Office admis par la charte | Google Fonts v4 | SIL Open Font License 1.1 (`fonts/OFL-Carlito.txt`) | https://fonts.google.com/specimen/Carlito |
 

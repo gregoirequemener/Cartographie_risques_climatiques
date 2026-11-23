@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dépôts Mistral · inondation</title>
+<style>
+/*__FONTS__*/
+</style>
+<style>
+/* Vue 3D des dépôts bus du réseau Mistral (Toulon) face au risque inondation.
+   Charte RATP Dev : Menthe dominante (bandeau), Bleu institutionnel par touches, Sapin pour les commandes,
+   eau en bleus (Ciel → Bleu institutionnel), comme la carte des risques climatiques. */
+:root {
+  color-scheme: light;
+  --paper: #ededed; --card: #ffffff; --ink: #262626; --ink-2: #595959; --muted: #6b6b6b; --line: #e0e0e0;
+  --brand: #64c3b9; --on-brand: #0a0082; --title: #0a0082; --accent: #007d69; --accent-wash: #e3f4f1;
+  --w1: #afe1fa; --w2: #62b6e8; --w3: #2a86cc; --w4: #1b4fa6; --w5: #0a0082; --sens: #d72864;
+  --lv1: #e3f4f1; --lv2: #afe1fa; --lv3: #62b6e8; --lv4: #1b4fa6; --lv5: #0a0082;
+  --on-lv1: #005a4b; --on-lv2: #0a0082; --on-lv3: #0a0a3a; --on-lv4: #ffffff; --on-lv5: #ffffff;
+  --sky1: #f4f7f8; --sky2: #dfe8eb;
+  --shadow: 0 1px 2px rgba(20,20,20,.18), 0 4px 14px rgba(20,20,20,.10);
+  --font-display: "Montserrat", Arial, system-ui, sans-serif;
+  --font-body: "Parisine Office", Calibri, Carlito, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #161616; --card: #1f1f1f; --ink: #ededed; --ink-2: #bdbdbd; --muted: #8f8f8f; --line: #333333;
+    --title: #ededed; --accent: #64c3b9; --accent-wash: #1d3633; --sky1: #1c2326; --sky2: #0f1416;
+    --lv1: #1d3633; --on-lv1: #9fe0d6; --sens: #f0659a;
+    --shadow: 0 1px 2px rgba(0,0,0,.5), 0 6px 18px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #161616; --card: #1f1f1f; --ink: #ededed; --ink-2: #bdbdbd; --muted: #8f8f8f; --line: #333333;
+  --title: #ededed; --accent: #64c3b9; --accent-wash: #1d3633; --sky1: #1c2326; --sky2: #0f1416;
+  --lv1: #1d3633; --on-lv1: #9fe0d6; --sens: #f0659a;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--paper); color: var(--ink); font: 400 14px/1.45 var(--font-body); font-size-adjust: .5; -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.app { height: 100%; display: grid; grid-template-rows: auto 1fr; }
+
+.topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 16px; background: var(--card); border-bottom: 1px solid var(--line); z-index: 5; }
+.lead { display: flex; align-items: center; gap: 10px; align-self: stretch; margin: -10px 0 -10px -16px; padding: 10px 44px 10px 16px;
+  background: var(--brand); clip-path: polygon(0 0, 100% 0, calc(100% - 24px) 100%, 0 100%); color: var(--on-brand); }
+.logo-box { display: inline-flex; align-items: center; padding: 5px 8px; background: #fff; }
+.logo { display: block; height: 24px; width: auto; }
+.brand b { display: block; font: 700 16px/1.15 var(--font-display); letter-spacing: -.01em; }
+.brand span { font-size: 12px; }
+.ctl { display: flex; align-items: center; gap: 8px; }
+.ctl-label { font: 700 10.5px/1 var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--paper); }
+.seg button { border: 0; border-right: 1px solid var(--line); background: none; padding: 6px 10px; cursor: pointer; font-size: 13.5px; color: var(--ink-2); line-height: 1.15; text-align: left; }
+.seg button:last-child { border-right: 0; }
+.seg button small { display: block; font-size: 10.5px; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--brand); color: var(--on-brand); }
+.seg button[aria-pressed="true"] small { color: var(--on-brand); opacity: .8; }
+
+.main { display: grid; grid-template-columns: minmax(320px, 380px) 1fr; min-height: 0; }
+.panel { display: flex; flex-direction: column; gap: 14px; min-height: 0; overflow-y: auto; padding: 16px; border-right: 1px solid var(--line); }
+.panel h2 { margin: 0; font: 700 11.5px/1.25 var(--font-display); letter-spacing: .05em; text-transform: uppercase; color: var(--title); }
+.sites { display: flex; flex-direction: column; gap: 8px; }
+.site-btn { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; width: 100%; padding: 10px 12px; border: 1px solid var(--line);
+  border-radius: 10px; background: var(--card); cursor: pointer; text-align: left; }
+.site-btn:hover { border-color: var(--accent); }
+.site-btn[aria-pressed="true"] { border-color: var(--brand); box-shadow: inset 4px 0 0 var(--brand); background: var(--accent-wash); }
+.site-btn b { font: 700 14px/1.2 var(--font-display); }
+.site-btn span { grid-column: 1; font-size: 12px; color: var(--muted); }
+.badge { grid-row: 1 / span 2; grid-column: 2; padding: 3px 8px; border-radius: 999px; font: 700 11px/1.2 var(--font-display); white-space: nowrap; }
+.card { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); display: flex; flex-direction: column; gap: 8px; }
+.card .role { margin: 0; font-size: 13px; color: var(--ink-2); }
+.card .addr { font-size: 12px; color: var(--muted); }
+.statut { align-self: flex-start; padding: 2px 8px; border-radius: 6px; font: 600 11px/1.3 var(--font-body); background: var(--paper); color: var(--ink-2); border: 1px solid var(--line); }
+.statut.projet { border-color: #d72864; color: #d72864; }
+.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kpi { padding: 9px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); min-width: 0; }
+.kpi.wide { grid-column: 1 / -1; }
+.kpi .k-label { font-size: 11.5px; color: var(--ink-2); line-height: 1.25; }
+.kpi .k-val { font: 700 20px/1.2 var(--font-display); font-variant-numeric: tabular-nums; }
+.kpi .k-val small { font: 500 12px var(--font-body); color: var(--muted); }
+.kpi .k-sub { font-size: 11.5px; color: var(--muted); }
+.verdict { margin: 0; padding: 10px 12px; border-radius: 10px; font-size: 13px; line-height: 1.4; }
+.locator svg { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+.locator .net { fill: none; stroke: var(--muted); stroke-opacity: .45; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.locator .pt { cursor: pointer; }
+.locator text { font: 600 11px var(--font-body); fill: var(--ink); paint-order: stroke; stroke: var(--card); stroke-width: 3px; }
+.method { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); font-size: 12.5px; color: var(--ink-2); }
+.method summary { cursor: pointer; font-weight: 600; color: var(--ink); }
+.method p, .method ul { margin: 8px 0 0; }
+.method ul { padding-left: 16px; display: flex; flex-direction: column; gap: 4px; }
+.method a { color: var(--accent); }
+
+.view { position: relative; min-height: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 20%, var(--sky1), var(--sky2)); }
+#gl { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; }
+.labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.lab { position: absolute; transform: translate(-50%, -100%); white-space: nowrap; }
+.lab.site { padding: 5px 10px; border-radius: 8px; background: var(--card); box-shadow: var(--shadow); font: 700 13px/1.2 var(--font-display); color: var(--title); border-left: 4px solid var(--brand); }
+.lab.site::after { content: ""; position: absolute; left: 50%; top: 100%; width: 1px; height: 26px; background: var(--ink-2); }
+.lab.site { margin-top: -26px; }
+.lab.river { font: italic 600 12.5px var(--font-body); color: #0a5fa8; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 6px #fff; transform: translate(-50%, -50%); }
+.overlay { position: absolute; z-index: 2; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
+  background: color-mix(in srgb, var(--card) 94%, transparent); box-shadow: var(--shadow); font-size: 12px; }
+.legend { left: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 7px; max-width: 300px; }
+.legend h3 { margin: 0; font: 700 10.5px/1.2 var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--title); }
+.ramp { display: flex; gap: 2px; }
+.ramp span { flex: 1; padding: 3px 0; text-align: center; font: 600 10.5px/1.2 var(--font-body); border-radius: 3px; }
+.leg-row { display: flex; align-items: center; gap: 7px; color: var(--ink-2); }
+.leg-sw { width: 22px; height: 10px; border-radius: 3px; flex: none; }
+.tools { right: 12px; top: 12px; display: flex; flex-direction: column; gap: 9px; width: 250px; }
+.tools label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; color: var(--ink); }
+.tools input[type=range] { width: 100%; accent-color: var(--sens); }
+.tools .hint { font-weight: 400; color: var(--muted); font-size: 11.5px; }
+.row { display: flex; gap: 6px; }
+.btn { flex: 1; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); cursor: pointer; font-size: 12.5px; }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn[aria-pressed="true"] { background: var(--brand); color: var(--on-brand); border-color: var(--brand); }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; font: 600 14px var(--font-display); color: var(--muted); }
+.attrib { position: absolute; right: 8px; bottom: 6px; z-index: 2; font-size: 10.5px; color: var(--muted); background: color-mix(in srgb, var(--paper) 80%, transparent); padding: 1px 6px; border-radius: 4px; }
+@media (max-width: 900px) {
+  .main { grid-template-columns: 1fr; grid-template-rows: 60vh auto; }
+  .panel { order: 2; border-right: 0; border-top: 1px solid var(--line); overflow: visible; }
+  .view { order: 1; }
+  .tools { width: 200px; }
+  .legend { max-width: 220px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="lead">
+      <!--__LOGO__-->
+      <div class="brand"><b>Dépôts bus du réseau Mistral</b><span>Risque inondation · Toulon Provence Méditerranée</span></div>
+    </div>
+    <div class="ctl"><span class="ctl-label">Scénario</span><div class="seg" id="scen" role="group" aria-label="Scénario d'inondation"></div></div>
+  </header>
+  <div class="main">
+    <aside class="panel">
+      <section>
+        <h2>Sites</h2>
+        <div class="sites" id="sites" style="margin-top:8px"></div>
+      </section>
+      <section class="card" id="card"></section>
+      <section>
+        <h2>Situation</h2>
+        <div class="locator" id="locator" style="margin-top:8px"></div>
+      </section>
+      <details class="method">
+        <summary>Méthode et sources</summary>
+        <p><b>Zones inondables</b> : cartes du TRI Toulon-Hyères (Directive inondation, rapportage 2020, Géorisques) — débordement de cours d'eau (Eygoutier, Las, Faveyrolles…) et submersion marine, avec leurs classes de hauteur d'eau. Les scénarios sont cumulatifs : une crue plus rare inonde au moins les zones d'une crue plus fréquente. « Moyenne + climat » associe la crue moyenne au scénario de submersion avec élévation du niveau de la mer de 60 cm.</p>
+        <p><b>Test de sensibilité</b> (curseur « Rehausser l'eau », hachures roses) : on compare le sol de chaque maille au niveau d'eau le plus bas du scénario dans un rayon de 150 m (sol + hauteur d'eau). Une maille est atteinte si l'écart est inférieur au rehaussement choisi. C'est une approche statique, sans modélisation hydraulique : elle repère les points bas d'un dépôt (embâcle, ruissellement, incertitude des cartes), elle ne prévoit pas une crue.</p>
+        <p><b>Niveau d'exposition</b> du site, pour la crue moyenne : <i>fort</i> s'il est inondé dès la crue fréquente, <i>élevé</i> s'il l'est en crue moyenne, <i>modéré</i> si au moins 3 % de l'emprise est à moins de 50 cm du niveau d'eau voisin, <i>limité</i> au-delà de 0,5 %, <i>faible</i> sinon.</p>
+        <ul>
+          <li>Emprises : parcelles cadastrales (Parcellaire Express, IGN) ; Brunet AX 566, Brégaillon AD 38 (déclaration ICPE, 306 av. Yitzhak Rabin), SEMR de Sainte-Musse AW 360 — ancien marché de gros, emprise <b>indicative</b> (plan masse non publié).</li>
+          <li>Relief : RGE ALTI (IGN), maille de 2 à 2,6 m, relief exagéré ×<span id="ex"></span>. Bâtiments : BD TOPO (hauteurs mesurées). Photo : BD ORTHO. Licence Ouverte.</li>
+          <li>Sites : rapport d'activités 2025 et bilan du PDU de la Métropole TPM, dossier de DUP du BHNS (arrêté du 9 octobre 2025).</li>
+          <li>Limites : le ruissellement urbain, principale cause d'inondation locale, n'est pas cartographié par le TRI ; les réseaux pluviaux, murs et digues ne sont pas pris en compte. Les sites des sous-traitants (Hyères notamment) ne sont pas représentés.</li>
+        </ul>
+        <p>Données préparées le <span id="genere"></span> par <code>scripts/prepare_toulon_depots.py</code>.</p>
+      </details>
+    </aside>
+    <main class="view" id="view">
+      <canvas id="gl" aria-label="Vue 3D du site"></canvas>
+      <div class="labels" id="labels"></div>
+      <div class="loading" id="loading">Préparation de la vue 3D…</div>
+      <div class="overlay tools">
+        <div class="row" role="group" aria-label="Fond">
+          <button class="btn" id="bt-photo" aria-pressed="true">Photo aérienne</button>
+          <button class="btn" id="bt-maq" aria-pressed="false">Maquette</button>
+        </div>
+        <label>Rehausser l'eau : <span id="delta-out">+0,0 m</span>
+          <input type="range" id="delta" min="0" max="3" step="0.1" value="0">
+          <span class="hint">Test de sensibilité : jusqu'où l'eau irait si son niveau montait.</span>
+        </label>
+        <div class="row">
+          <button class="btn" id="bt-play">▶ Montée des eaux</button>
+          <button class="btn" id="bt-reset">Recentrer</button>
+        </div>
+      </div>
+      <div class="overlay legend">
+        <h3>Hauteur d'eau</h3>
+        <div class="ramp">
+          <span style="background:var(--w1);color:#262626">&lt; 0,5 m</span><span style="background:var(--w2);color:#262626">0,5–1 m</span><span style="background:var(--w4);color:#fff">1–2 m</span><span style="background:var(--w5);color:#fff">&gt; 2 m</span>
+        </div>
+        <div class="leg-row"><span class="leg-sw" style="background:repeating-linear-gradient(135deg,var(--sens) 0 3px,#f6c6d8 3px 6px)"></span>Atteint si l'eau monte (test)</div>
+        <div class="leg-row"><span class="leg-sw" style="border:2px solid #64c3b9;background:transparent"></span>Emprise du dépôt</div>
+        <div class="leg-row"><span class="leg-sw" style="background:#f0aa00"></span>Bâtiment du dépôt touché</div>
+      </div>
+      <div class="attrib">IGN (RGE ALTI, BD TOPO, BD ORTHO, cadastre) · Géorisques (TRI 2020) · OpenStreetMap</div>
+    </main>
+  </div>
+</div>
+
+<!--__SCRIPTS__-->
+<script>
+"use strict";
+const D = /*__DATA__*/;
+const EX = 1.5;            // exagération verticale (relief, bâtiments, eau)
+const SENS_MAX = 255;
+const fmt = (v, d = 0) => v.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d });
+const m2 = v => v >= 10000 ? fmt(v / 10000, 2) + " ha" : fmt(Math.round(v / 10) * 10) + " m²";
+const b64 = s => { const b = atob(s), a = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; };
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+const state = { site: 0, scen: 1, delta: 0, photo: true, prog: 1 };
+document.getElementById("genere").textContent = new Date(D.genere).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+document.getElementById("ex").textContent = fmt(EX, 1);
+
+// ---------- données décodées par site ----------
+for (const S of D.sites) {
+  S.demA = new Int16Array(b64(S.dem).buffer);
+  S.mask = b64(S.masque);
+  for (const sc of S.scen) { sc.grid = b64(sc.g); sc.marge = b64(sc.m); }
+}
+function elev(S, i, j) { return S.demA[i * S.n + j] / 20; }  // m au-dessus de S.base
+function sampleLocal(S, x, y) {             // x, y locaux (m) → altitude au-dessus de base
+  const h = S.demi, r = S.res, n = S.n;
+  const j = Math.min(n - 1, Math.max(0, Math.round((x + h) / r))), i = Math.min(n - 1, Math.max(0, Math.round((h - y) / r)));
+  return elev(S, i, j);
+}
+
+// statistiques pour le scénario et le rehaussement courants
+function stats(S, si, delta) {
+  const sc = S.scen[si], n2 = S.n * S.n, cell = S.res * S.res, H = D.hauteurs;
+  let siteC = 0, wetC = 0, openC = 0, openWet = 0, hmax = 0, sensC = 0; const bw = new Set(); let minM = Infinity;
+  for (let k = 0; k < n2; k++) {
+    const m = S.mask[k]; if (!m) continue;
+    siteC++; if (m === 1) openC++;
+    const g = sc.grid[k], mg = sc.marge[k];
+    if (mg < SENS_MAX && mg / 10 < minM) minM = mg / 10;
+    const wetTri = g > 0, wetSens = !wetTri && mg < SENS_MAX && mg / 10 < delta - 1e-6;
+    if (wetTri || wetSens) {
+      wetC++; if (wetSens) sensC++;
+      if (m === 1) openWet++; else bw.add(m - 2);
+      hmax = Math.max(hmax, wetTri ? H[g] + delta : delta - mg / 10);
+    }
+  }
+  return { part: wetC / Math.max(1, siteC), surf: wetC * cell, open: openC * cell, openWet: openWet * cell, bats: bw, hmax, sens: sensC, minM };
+}
+function level(S) {   // niveau d'exposition, crue moyenne
+  const f = S.scen[0].st, m = S.scen[1].st;
+  if (f.part > 0) return 5;
+  if (m.part > 0) return 4;
+  let siteC = 0, low = 0; const sc = S.scen[1];
+  for (let k = 0; k < S.mask.length; k++) if (S.mask[k]) { siteC++; if (sc.marge[k] < 5) low++; }
+  S.lowShare = low / siteC;
+  return S.lowShare >= .03 ? 3 : S.lowShare >= .005 ? 2 : 1;
+}
+const LEVELS = ["", "Faible", "Limité", "Modéré", "Élevé", "Fort"];
+D.sites.forEach(S => S.level = level(S));
+
+// ---------- interface ----------
+const scenEl = document.getElementById("scen");
+D.scenarios.forEach((s, i) => {
+  const b = document.createElement("button");
+  b.innerHTML = `${s.nom}<small>${s.periode}</small>`;
+  b.onclick = () => { state.scen = i; refresh(true); };
+  scenEl.appendChild(b);
+});
+const sitesEl = document.getElementById("sites");
+D.sites.forEach((S, i) => {
+  const b = document.createElement("button");
+  b.className = "site-btn";
+  b.innerHTML = `<b>${S.nom}</b><span>${S.commune} · ${S.statut}</span>
+    <em class="badge" style="background:var(--lv${S.level});color:var(--on-lv${S.level})">${LEVELS[S.level]}</em>`;
+  b.onclick = () => selectSite(i);
+  sitesEl.appendChild(b);
+});
+
+function verdict(S) {
+  const m = S.scen[1].st;
+  if (S.level >= 4) return `Le site est dans la zone inondable de la crue ${S.level === 5 ? "fréquente" : "moyenne"}.`;
+  const near = m.dist != null ? `à ${fmt(m.dist)} m de la zone inondable de la crue moyenne` : "loin des zones inondables cartographiées";
+  if (S.level === 1) return `Hors zone inondable, ${near}. Le sol du dépôt est au moins ${fmt(m.atteint ?? 0, 1)} m au-dessus du niveau d'eau voisin : marge confortable, le ruissellement reste le principal point d'attention.`;
+  return `Hors zone inondable cartographiée, mais ${near}, et ${fmt(S.lowShare * 100, 1)} % de l'emprise est à moins de 50 cm du niveau d'eau voisin : des points bas (cour de remisage, accès) pourraient être atteints par une crue un peu plus forte ou un embâcle.`;
+}
+
+function renderCard() {
+  const S = D.sites[state.site], st = stats(S, state.scen, state.delta), sc = D.scenarios[state.scen];
+  const nb = S.bat.filter(b => b.s).length;
+  const lv = S.level;
+  document.getElementById("card").innerHTML = `
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
+      <h2 style="font-size:15px;text-transform:none;letter-spacing:0">${S.nom}</h2>
+      <span class="statut ${S.statut.startsWith("Projet") ? "projet" : ""}">${S.statut}</span>
+    </div>
+    <div class="addr">${S.adresse} · emprise ${m2(S.surface)} · sol de ${fmt(S.zmin, 1)} à ${fmt(S.zmax, 1)} m NGF</div>
+    <p class="role">${S.role}</p>
+    <p class="verdict" style="background:var(--lv${lv});color:var(--on-lv${lv})"><b>Exposition ${LEVELS[lv].toLowerCase()}.</b> ${verdict(S)}</p>
+    <div class="kpis">
+      <div class="kpi wide"><div class="k-label">${sc.nom} (${sc.periode})${state.delta > 0 ? `, eau rehaussée de ${fmt(state.delta, 1)} m` : ""}</div>
+        <div class="k-val">${fmt(st.part * 100, st.part > 0 && st.part < .1 ? 1 : 0)} %<small> de l'emprise sous l'eau</small></div>
+        <div class="k-sub">${st.surf ? m2(st.surf) + (st.sens ? " dont une partie atteinte au test de sensibilité" : "") : "aucune maille du site n'est atteinte"}</div></div>
+      <div class="kpi"><div class="k-label">Aires de remisage et circulation</div><div class="k-val">${st.openWet ? m2(st.openWet) : "0"}</div><div class="k-sub">sur ${m2(st.open)}</div></div>
+      <div class="kpi"><div class="k-label">Bâtiments du dépôt touchés</div><div class="k-val">${st.bats.size}<small> / ${nb}</small></div><div class="k-sub">${st.bats.size ? "ateliers, remisage couvert ou bureaux" : "aucun"}</div></div>
+      <div class="kpi"><div class="k-label">Distance à la zone inondable</div><div class="k-val">${S.scen[state.scen].st.dist == null ? "—" : fmt(S.scen[state.scen].st.dist) + "<small> m</small>"}</div><div class="k-sub">${S.scen[state.scen].st.types.map(t => t === "submersion" ? "submersion marine" : "débordement").join(" et ") || "pas de zone cartographiée"}</div></div>
+      <div class="kpi"><div class="k-label">Le dépôt est atteint si l'eau monte de</div><div class="k-val">${!Number.isFinite(st.minM) ? "> 25<small> m</small>" : st.minM < 0.1 ? "0<small> m</small>" : "+" + fmt(st.minM, 1) + "<small> m</small>"}</div><div class="k-sub">${Number.isFinite(st.minM) && st.minM < 0.1 ? "un point bas est déjà sous le niveau d'eau voisin, sans écoulement cartographié jusqu'au site" : "point le plus bas de l'emprise, test de sensibilité"}</div></div>
+    </div>`;
+}
+
+function renderLocator() {
+  const pts = D.reseau, W = 340, Hh = 200;
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (const l of pts) for (let k = 0; k < l.length; k += 2) { x0 = Math.min(x0, l[k]); x1 = Math.max(x1, l[k]); y0 = Math.min(y0, l[k + 1]); y1 = Math.max(y1, l[k + 1]); }
+  const kx = Math.cos(43.12 * Math.PI / 180), sx = (W - 20) / ((x1 - x0) * kx), sy = (Hh - 20) / (y1 - y0), s = Math.min(sx, sy);
+  const P = (lo, la) => [10 + (lo - x0) * kx * s, Hh - 10 - (la - y0) * s];
+  const path = pts.map(l => { let d = ""; for (let k = 0; k < l.length; k += 2) { const [x, y] = P(l[k], l[k + 1]); d += (k ? "L" : "M") + x.toFixed(1) + " " + y.toFixed(1); } return d; }).join("");
+  const dots = D.sites.map((S, i) => { const [x, y] = P(S.centre84[0], S.centre84[1]); const on = i === state.site;
+    return `<g class="pt" data-i="${i}"><circle cx="${x}" cy="${y}" r="${on ? 8 : 6}" fill="var(--lv${S.level})" stroke="${on ? "#0a0082" : "#262626"}" stroke-width="${on ? 2.5 : 1}"/><text x="${x + 10}" y="${y + (i === 2 ? -8 : 14)}">${S.nom.replace("Dépôt de ", "").replace("SEMR de ", "")}</text></g>`; }).join("");
+  document.getElementById("locator").innerHTML = `<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="Position des sites sur le réseau Mistral"><path class="net" d="${path}"/>${dots}</svg>
+    <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Lignes du réseau Mistral (GTFS) et sites ; cliquer un point pour l'afficher.</div>`;
+  document.querySelectorAll("#locator .pt").forEach(g => g.onclick = () => selectSite(+g.dataset.i));
+}
+
+// ---------- scène 3D ----------
+const canvas = document.getElementById("gl");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(32, 1, 5, 20000);
+const controls = new THREE.OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.dampingFactor = .08; controls.maxPolarAngle = 1.42; controls.screenSpacePanning = false;
+scene.add(new THREE.HemisphereLight(0xffffff, 0xb8b0a2, .75));
+const sun = new THREE.DirectionalLight(0xfff4e2, 1.25);
+sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.6;
+scene.add(sun, sun.target);
+
+const SITE_CACHE = [];
+let current = null;
+const clock = new THREE.Clock();
+
+function gridGeometry(S, yFn) {
+  const n = S.n, h = S.demi, r = S.res, pos = new Float32Array(n * n * 3), uv = new Float32Array(n * n * 2);
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    const k = i * n + j;
+    pos[3 * k] = -h + j * r; pos[3 * k + 1] = yFn(i, j); pos[3 * k + 2] = -h + i * r;
+    uv[2 * k] = j / (n - 1); uv[2 * k + 1] = 1 - i / (n - 1);
+  }
+  const idx = new Uint32Array((n - 1) * (n - 1) * 6); let t = 0;
+  for (let i = 0; i < n - 1; i++) for (let j = 0; j < n - 1; j++) {
+    const a = i * n + j, b = a + 1, c = a + n, d = c + 1;
+    idx[t++] = a; idx[t++] = c; idx[t++] = b; idx[t++] = b; idx[t++] = c; idx[t++] = d;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  g.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+  g.setIndex(new THREE.BufferAttribute(idx, 1));
+  return g;
+}
+
+function maquetteTexture(S) {
+  const N = 2048, c = document.createElement("canvas"); c.width = c.height = N;
+  const x = c.getContext("2d"), h = S.demi, k = N / (2 * h);
+  const P = (a, b) => [(a / 10 + h) * k, (h - b / 10) * k];
+  x.fillStyle = "#ded8c9"; x.fillRect(0, 0, N, N);
+  // mer
+  if (S.mer) {
+    const s = document.createElement("canvas"); s.width = s.height = S.n; const sx = s.getContext("2d"), im = sx.createImageData(S.n, S.n);
+    for (let q = 0; q < S.n * S.n; q++) if (S.demA[q] / 20 + S.base < -1) { im.data[4 * q] = 191; im.data[4 * q + 1] = 223; im.data[4 * q + 2] = 236; im.data[4 * q + 3] = 255; }
+    sx.putImageData(im, 0, 0); x.imageSmoothingEnabled = true; x.drawImage(s, 0, 0, N, N);
+  }
+  const poly = (rings, fill, stroke, lw) => {
+    x.beginPath();
+    for (const r of rings) { for (let q = 0; q < r.length; q += 2) { const [a, b] = P(r[q], r[q + 1]); q ? x.lineTo(a, b) : x.moveTo(a, b); } x.closePath(); }
+    if (fill) { x.fillStyle = fill; x.fill("evenodd"); }
+    if (stroke) { x.strokeStyle = stroke; x.lineWidth = lw; x.stroke(); }
+  };
+  for (const v of S.veg) poly(v, "#b9d1a3");
+  for (const w of S.eaux) poly(w, "#bfe3f5");
+  for (const e of S.emprise) poly(e, "#c4e6df");
+  x.lineCap = x.lineJoin = "round";
+  for (const pass of [0, 1]) for (const r of S.routes) {
+    x.beginPath();
+    for (let q = 0; q < r.l.length; q += 2) { const [a, b] = P(r.l[q], r.l[q + 1]); q ? x.lineTo(a, b) : x.moveTo(a, b); }
+    x.strokeStyle = pass ? "#f7f5f0" : "#b9b2a3"; x.lineWidth = (r.w + (pass ? 0 : 1.6)) * k; x.stroke();
+  }
+  for (const r of S.hydro) {
+    x.beginPath();
+    for (let q = 0; q < r.l.length; q += 2) { const [a, b] = P(r.l[q], r.l[q + 1]); q ? x.lineTo(a, b) : x.moveTo(a, b); }
+    x.setLineDash(r.s ? [6, 6] : []); x.strokeStyle = "#2fb3cf"; x.lineWidth = 2.2 * k; x.stroke(); x.setLineDash([]);
+  }
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
+}
+
+function buildSite(S) {
+  const group = new THREE.Group(), h = S.demi, n = S.n;
+  const Y = (i, j) => elev(S, i, j) * EX;
+  // terrain
+  const tg = gridGeometry(S, Y); tg.computeVertexNormals();
+  const terrainMat = new THREE.MeshStandardMaterial({ roughness: .95, metalness: 0 });
+  const terrain = new THREE.Mesh(tg, terrainMat); terrain.receiveShadow = true; group.add(terrain);
+  const maq = maquetteTexture(S);
+  const photo = new THREE.Texture(); photo.encoding = THREE.sRGBEncoding; photo.anisotropy = 8;
+  const img = new Image(); img.onload = () => { photo.image = img; photo.needsUpdate = true; }; img.src = S.ortho;
+  // socle
+  const floor = -10;
+  const skirtPos = [], skirtIdx = [];
+  const edges = [[0, 0, 0, 1], [0, n - 1, 1, 0], [n - 1, n - 1, 0, -1], [n - 1, 0, -1, 0]];
+  for (const [i0, j0, di, dj] of edges) {
+    const base = skirtPos.length / 3;
+    for (let s = 0; s < n; s++) {
+      const i = i0 + di * s, j = j0 + dj * s, xx = -h + j * S.res, zz = -h + i * S.res;
+      skirtPos.push(xx, Y(i, j), zz, xx, floor, zz);
+      if (s) { const a = base + 2 * (s - 1); skirtIdx.push(a, a + 1, a + 2, a + 2, a + 1, a + 3); }
+    }
+  }
+  const sg = new THREE.BufferGeometry(); sg.setAttribute("position", new THREE.Float32BufferAttribute(skirtPos, 3)); sg.setIndex(skirtIdx); sg.computeVertexNormals();
+  group.add(new THREE.Mesh(sg, new THREE.MeshStandardMaterial({ color: 0xcbbfa8, roughness: 1, side: THREE.DoubleSide })));
+  const bottom = new THREE.Mesh(new THREE.PlaneGeometry(2 * h, 2 * h), new THREE.MeshStandardMaterial({ color: 0xb9ab92 }));
+  bottom.rotation.x = Math.PI / 2; bottom.position.y = floor; group.add(bottom);
+
+  // bâtiments
+  const parts = [], cols = [], ranges = [];
+  let vcount = 0;
+  const cCtx = new THREE.Color(0xf1efea), cSite = new THREE.Color(0xffffff);
+  S.bat.forEach((b, bi) => {
+    const shape = new THREE.Shape(), r0 = b.p[0];
+    for (let q = 0; q < r0.length; q += 2) (q ? shape.lineTo : shape.moveTo).call(shape, r0[q] / 10, r0[q + 1] / 10);
+    for (let hI = 1; hI < b.p.length; hI++) { const hr = b.p[hI], path = new THREE.Path(); for (let q = 0; q < hr.length; q += 2) (q ? path.lineTo : path.moveTo).call(path, hr[q] / 10, hr[q + 1] / 10); shape.holes.push(path); }
+    let z0;
+    if (b.z != null) z0 = b.z - S.base; else { let m = Infinity; for (let q = 0; q < r0.length; q += 2) m = Math.min(m, sampleLocal(S, r0[q] / 10, r0[q + 1] / 10)); z0 = m; }
+    let zg = Infinity; for (let q = 0; q < r0.length; q += 2) zg = Math.min(zg, sampleLocal(S, r0[q] / 10, r0[q + 1] / 10));
+    z0 = Math.min(z0, zg);
+    const g = new THREE.ExtrudeGeometry(shape, { depth: Math.max(2, b.h) * EX, bevelEnabled: false });
+    g.rotateX(-Math.PI / 2); g.translate(0, z0 * EX - 0.3, 0);
+    const ng = g.index ? g.toNonIndexed() : g;
+    parts.push(ng); ranges.push([vcount, ng.attributes.position.count, bi]); vcount += ng.attributes.position.count;
+  });
+  const bpos = new Float32Array(vcount * 3), bnor = new Float32Array(vcount * 3), bcol = new Float32Array(vcount * 3);
+  let off = 0;
+  for (const g of parts) { bpos.set(g.attributes.position.array, off * 3); bnor.set(g.attributes.normal.array, off * 3); off += g.attributes.position.count; g.dispose(); }
+  const bg = new THREE.BufferGeometry();
+  bg.setAttribute("position", new THREE.BufferAttribute(bpos, 3)); bg.setAttribute("normal", new THREE.BufferAttribute(bnor, 3)); bg.setAttribute("color", new THREE.BufferAttribute(bcol, 3));
+  const bm = new THREE.Mesh(bg, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .85 }));
+  bm.castShadow = bm.receiveShadow = true; group.add(bm);
+  function colorBuildings(wetSet) {
+    const site = S.bat.map((b, i) => i);
+    const tmp = new THREE.Color();
+    for (const [start, count, bi] of ranges) {
+      const b = S.bat[bi];
+      if (b.s && wetSet.has(b.k)) tmp.set(0xf0aa00); else if (b.s) tmp.copy(cSite); else tmp.copy(cCtx);
+      for (let v = start; v < start + count; v++) {
+        const shade = bnor[3 * v + 1] > .5 ? 1 : .9;   // toits légèrement plus clairs
+        bcol[3 * v] = tmp.r * shade; bcol[3 * v + 1] = tmp.g * shade; bcol[3 * v + 2] = tmp.b * shade;
+      }
+    }
+    bg.attributes.color.needsUpdate = true;
+  }
+
+  // emprise du dépôt : ruban posé sur le sol
+  for (const ringSet of S.emprise) {
+    const r = ringSet[0], pts = [];
+    for (let q = 0; q <= r.length; q += 2) { const a = r[q % r.length] / 10, c = r[(q + 1) % r.length] / 10; pts.push(new THREE.Vector3(a, sampleLocal(S, a, c) * EX + 1.2, -c)); }
+    const curve = new THREE.CatmullRomCurve3(pts, true, "catmullrom", 0);
+    const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, pts.length * 4, 1.1, 6, true), new THREE.MeshStandardMaterial({ color: 0x64c3b9, emissive: 0x1b6f66, emissiveIntensity: .35, roughness: .5 }));
+    group.add(tube);
+  }
+
+  // eau : même grille, hauteur et couleur calculées dans le shader
+  const wg = gridGeometry(S, Y);
+  const dA = new Float32Array(n * n), mA = new Float32Array(n * n);
+  wg.setAttribute("d", new THREE.BufferAttribute(dA, 1)); wg.setAttribute("mg", new THREE.BufferAttribute(mA, 1));
+  const waterMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false,
+    uniforms: { uProg: { value: 1 }, uDelta: { value: 0 }, uEx: { value: EX }, uTime: { value: 0 },
+      c1: { value: new THREE.Color(0xafe1fa) }, c2: { value: new THREE.Color(0x62b6e8) }, c3: { value: new THREE.Color(0x2a86cc) }, c4: { value: new THREE.Color(0x1b4fa6) }, c5: { value: new THREE.Color(0x0a0082) },
+      cs: { value: new THREE.Color(0xd72864) } },
+    vertexShader: `
+      attribute float d; attribute float mg; uniform float uProg, uDelta, uEx;
+      varying float vD; varying float vS; varying vec3 vW;
+      void main() {
+        float tri = d > 0.0 ? d + uDelta : 0.0;
+        float sens = (d <= 0.0 && mg < 25.0) ? uDelta - mg : 0.0;
+        float h = max(tri, sens) * uProg;
+        vD = h; vS = (uDelta > 0.0 && sens > tri) ? 1.0 : 0.0;
+        vec3 p = position; p.y += h * uEx + 0.15;
+        vec4 w = modelMatrix * vec4(p, 1.0); vW = w.xyz;
+        gl_Position = projectionMatrix * viewMatrix * w;
+      }`,
+    fragmentShader: `
+      uniform vec3 c1, c2, c3, c4, c5, cs; uniform float uTime;
+      varying float vD; varying float vS; varying vec3 vW;
+      void main() {
+        if (vD < 0.03) discard;
+        vec3 col = vD < 0.5 ? mix(c1, c2, vD / 0.5) : vD < 1.0 ? mix(c2, c3, (vD - 0.5) / 0.5) : vD < 2.0 ? mix(c3, c4, vD - 1.0) : mix(c4, c5, clamp(vD - 2.0, 0.0, 1.0));
+        float a = 0.80;
+        if (vS > 0.5) { float s = step(0.5, fract((vW.x + vW.z) / 6.0)); col = mix(cs, vec3(1.0, 0.82, 0.88), s * 0.6); a = 0.78; }
+        float rip = sin(vW.x * 0.35 + uTime * 1.6) * sin(vW.z * 0.31 - uTime * 1.2);
+        col += 0.05 * rip;
+        float edge = smoothstep(0.03, 0.25, vD);
+        gl_FragColor = vec4(col, a * edge);
+      }`,
+  });
+  const water = new THREE.Mesh(wg, waterMat); water.renderOrder = 2; group.add(water);
+
+  // mer (sites littoraux)
+  if (S.mer) {
+    const sea = new THREE.Mesh(new THREE.PlaneGeometry(2 * h, 2 * h), new THREE.MeshStandardMaterial({ color: 0x6fb7d6, transparent: true, opacity: .85, roughness: .2, metalness: .1 }));
+    sea.rotation.x = -Math.PI / 2; sea.position.y = (0 - S.base) * EX + .05; group.add(sea);
+  }
+
+  // étiquettes
+  const labels = [];
+  const top = Math.max(...S.bat.filter(b => b.s).map(b => (b.z ?? S.base) - S.base + b.h), 10);
+  labels.push({ el: mkLabel("site", S.nom), p: new THREE.Vector3(S.label[0], top * EX + 30, -S.label[1]) });
+  for (const r of S.rivieres) labels.push({ el: mkLabel("river", r.n), p: new THREE.Vector3(r.x, sampleLocal(S, r.x, r.y) * EX + 6, -r.y) });
+
+  function setScenario(si) {
+    const sc = S.scen[si], H = D.hauteurs;
+    for (let k = 0; k < n * n; k++) { dA[k] = sc.grid[k] ? H[sc.grid[k]] : 0; mA[k] = sc.marge[k] === SENS_MAX ? 99 : sc.marge[k] / 10; }
+    wg.attributes.d.needsUpdate = true; wg.attributes.mg.needsUpdate = true;
+  }
+  function setPhoto(on) { terrainMat.map = on ? photo : maq; terrainMat.needsUpdate = true; }
+  return { group, setScenario, setPhoto, colorBuildings, waterMat, labels, S };
+}
+
+function mkLabel(cls, text) { const d = document.createElement("div"); d.className = "lab " + cls; d.textContent = text; return d; }
+
+function frameCamera(S) {
+  const h = S.demi;
+  const t = new THREE.Vector3(S.label[0] * .6, 0, -S.label[1] * .6);
+  t.y = sampleLocal(S, t.x, -t.z) * EX;
+  controls.target.copy(t);
+  camera.position.set(t.x - h * 1.05, t.y + h * 1.15, t.z + h * 1.45);
+  controls.minDistance = 120; controls.maxDistance = h * 5;
+  sun.position.set(t.x - h * .7, h * 1.6, t.z + h * .9); sun.target.position.copy(t);
+  const sc = sun.shadow.camera; sc.left = sc.bottom = -h * 1.5; sc.right = sc.top = h * 1.5; sc.near = 10; sc.far = h * 5; sc.updateProjectionMatrix();
+  controls.update();
+}
+
+function selectSite(i) {
+  state.site = i;
+  if (current) { scene.remove(current.group); current.labels.forEach(l => l.el.remove()); }
+  current = SITE_CACHE[i] || (SITE_CACHE[i] = buildSite(D.sites[i]));
+  scene.add(current.group);
+  const lab = document.getElementById("labels"); current.labels.forEach(l => lab.appendChild(l.el));
+  frameCamera(D.sites[i]);
+  refresh(true);
+}
+
+function refresh(animate) {
+  [...scenEl.children].forEach((b, i) => b.setAttribute("aria-pressed", String(i === state.scen)));
+  [...sitesEl.children].forEach((b, i) => b.setAttribute("aria-pressed", String(i === state.site)));
+  document.getElementById("bt-photo").setAttribute("aria-pressed", String(state.photo));
+  document.getElementById("bt-maq").setAttribute("aria-pressed", String(!state.photo));
+  document.getElementById("delta-out").textContent = "+" + fmt(state.delta, 1) + " m";
+  if (current) {
+    current.setScenario(state.scen);
+    current.setPhoto(state.photo);
+    current.waterMat.uniforms.uDelta.value = state.delta;
+    current.colorBuildings(stats(current.S, state.scen, state.delta).bats);
+    if (animate) startRise(1400);
+  }
+  renderCard(); renderLocator();
+}
+
+let rise = null;
+function startRise(ms) { rise = { t0: performance.now(), ms }; }
+
+document.getElementById("delta").oninput = e => { state.delta = +e.target.value; refresh(false); };
+document.getElementById("bt-photo").onclick = () => { state.photo = true; refresh(false); };
+document.getElementById("bt-maq").onclick = () => { state.photo = false; refresh(false); };
+document.getElementById("bt-reset").onclick = () => frameCamera(D.sites[state.site]);
+document.getElementById("bt-play").onclick = () => startRise(4000);
+
+function resize() {
+  const v = document.getElementById("view"), w = v.clientWidth, h = v.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / Math.max(1, h); camera.updateProjectionMatrix();
+}
+window.addEventListener("resize", resize);
+
+const tmpV = new THREE.Vector3();
+function loop() {
+  requestAnimationFrame(loop);
+  controls.update();
+  if (current) {
+    const u = current.waterMat.uniforms;
+    u.uTime.value = clock.getElapsedTime();
+    if (rise) { const p = Math.min(1, (performance.now() - rise.t0) / rise.ms); u.uProg.value = 1 - Math.pow(1 - p, 3); if (p >= 1) rise = null; }
+    const v = document.getElementById("view"), w = v.clientWidth, hh = v.clientHeight;
+    for (const l of current.labels) {
+      tmpV.copy(l.p).project(camera);
+      const vis = tmpV.z < 1 && Math.abs(tmpV.x) < 1.1 && Math.abs(tmpV.y) < 1.1;
+      l.el.style.display = vis ? "" : "none";
+      if (vis) { l.el.style.left = ((tmpV.x + 1) / 2 * w) + "px"; l.el.style.top = ((1 - tmpV.y) / 2 * hh) + "px"; }
+    }
+  }
+  renderer.render(scene, camera);
+}
+
+resize();
+selectSite(0);
+document.getElementById("loading").remove();
+window.READY = true;
+loop();
+</script>
+</body>
+</html>

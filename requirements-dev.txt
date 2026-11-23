@@ -5,3 +5,4 @@ numpy
 pillow
 rasterio
 h5py
+scipy
